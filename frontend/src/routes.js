@@ -17,8 +17,10 @@ import AngsuranFinance from "views/AngsuranFinance";
 import SuratPernyataan from "views/SuratPernyataan";
 
 import MasterBarang from "views/MasterBarang";
+import MasterVendor from "views/MasterVendor";
 
 import Login from "views/Login.js";
+
 
 const dashboardRoutes = [
   {
@@ -33,6 +35,20 @@ const dashboardRoutes = [
     name: "Master Barang",
     icon: "nc-icon nc-money-coins",
     component: MasterBarang,
+    layout: "/admin"
+  },
+  {
+    path: "/master-karyawan",
+    name: "Master Karyawan",
+    icon: "nc-icon nc-single-02",
+    component: MasterKaryawan,
+    layout: "/admin"
+  },
+  {
+    path: "/master-vendor",
+    name: "Master Vendor",
+    icon: "nc-icon nc-single-02",
+    component: MasterVendor,
     layout: "/admin"
   },
 
@@ -56,13 +72,6 @@ const dashboardRoutes = [
     name: "Laporan Piutang",
     icon: "nc-icon nc-paper-2",
     component: LaporanPiutang,
-    layout: "/admin"
-  },
-  {
-    path: "/master-karyawan",
-    name: "Master Karyawan",
-    icon: "nc-icon nc-single-02",
-    component: MasterKaryawan,
     layout: "/admin"
   },
 

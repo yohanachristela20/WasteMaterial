@@ -6,7 +6,9 @@ import http from "http";
 
 // import cron from "node-cron";
 import KaryawanRoute from "./routes/KaryawanRoute.js"
+import DetailBarangRoute from "./routes/DetailBarangRoute.js";
 import UserRoute from "./routes/UserRoutes.js";
+import VendorRoute from "./routes/VendorRoute.js";
 import verifyToken from "./middlewares/authMiddleware.js";
 import dotenv from 'dotenv';
 
@@ -14,7 +16,9 @@ import './models/KaryawanModel.js';
 import './models/Association.js';
 import './models/UserModel.js';
 import './models/DetailBarang.js';
+import './models/VendorModel.js';
 import jwt from 'jsonwebtoken';
+import Vendor from "./models/VendorModel.js";
 
 
 // import io from "socket.io-client";
@@ -51,6 +55,8 @@ app.use(UserRoute); // Rute user untuk login, tanpa middleware otentikasi
 
 const protectedRoutes = [
     KaryawanRoute,
+    DetailBarangRoute,
+    VendorRoute,
 ];
 
 // Terapkan middleware otentikasi pada routes yang dilindungi

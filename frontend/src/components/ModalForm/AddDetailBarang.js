@@ -4,7 +4,7 @@ import axios from "axios";
 import { toast } from 'react-toastify';
 
 const AddDetailBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
-    const [id_detailbarang, setIdDetailBarang] = useState("1-K");
+    const [id_detailbarang, setIdDetailBarang] = useState("");
     const [nama_detailbarang, setNamaDetailBarang] = useState("");
     const [tanggal_penetapan, setTanggalPenetapan] = useState("");
     const [satuan, setSatuan] = useState("");
@@ -14,37 +14,40 @@ const AddDetailBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
 
     const token = localStorage.getItem("token");
 
-    useEffect(() => {
-        const fetchNextId = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/detail-barang/getNextBarangId', {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                setIdDetailBarang(response.data.nextId);
-            } catch (error) {
-                console.error('Error fetching next barang ID:', error);
+    const IdBarang = async(e) => {
+        const response = await axios.get('http://localhost:5000/getLastBarangId', {
+            headers: {
+                Authorization: `Bearer ${token}`,
             }
-        };
+        });
 
-        const today = new Date().toISOString().split("T")[0];
-        setTanggalPenetapan(today); 
-        fetchNextId();
+        const newId = response.data?.nextId || "1-K";
+        setIdDetailBarang(newId);
 
-        console.log("Next id: ", id_detailbarang);
+        console.log("newId: ", newId);
+    };
+
+    useEffect(() => {
+        const now = new Date();
+        const jakartaTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Jakarta"}));
+        const yyyy = jakartaTime.getFullYear();
+        const mm = String(jakartaTime.getMonth() + 1).padStart(2, '0'); // bulan dimulai dari 0
+        const dd = String(jakartaTime.getDate()).padStart(2, '0');
+        const formattedDate = `${yyyy}-${mm}-${dd}`;
+        setTanggalPenetapan(formattedDate); 
+        IdBarang();
     }, []);
-
+    
 
     const saveDetailBarang = async (e) => {
         e.preventDefault();
 
         if (!jenis_barang) {
             setJenisBarangError(true);
-            e.preventDefault();
             return;
         }
         try {
+
             await axios.post('http://localhost:5000/detail-barang', {
                 id_detailbarang,
                 nama_detailbarang,
@@ -58,7 +61,7 @@ const AddDetailBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
                 },
             });
             setShowAddModal(false); 
-            onSuccess(); 
+            onSuccess();
             
         } catch (error) {
             console.log(error.message);
@@ -167,7 +170,7 @@ const AddDetailBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
                                         placeholder="Rp"
                                         type="text"
                                         required
-                                        value={formatRupiah(harga_barang)}
+                                        value={"Rp " + formatRupiah(harga_barang)}
                                         onChange={(e) => handleHargaBarang(e.target.value)}
                                     />
                                 </Form.Group>

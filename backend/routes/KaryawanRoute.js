@@ -11,7 +11,8 @@ import {getKaryawan,
         getKaryawanById, 
         createKaryawan, 
         updateKaryawan, 
-        deleteKaryawan
+        deleteKaryawan,
+        getLastKaryawanId
 } from "../controllers/KaryawanController.js"; 
 
 const router = express.Router(); 
@@ -38,6 +39,7 @@ router.get('/karyawan/:id_karyawan', getKaryawanById);
 router.post('/karyawan', createKaryawan);  
 router.patch('/karyawan/:id_karyawan', updateKaryawan);
 router.delete('/karyawan/:id_karyawan', deleteKaryawan);
+router.get('/getLastKaryawanId', getLastKaryawanId);
 
 router.post('/karyawan/import-csv', upload.single("csvfile"), (req,res) => {
         if (!req.file) {
@@ -94,6 +96,6 @@ router.post('/karyawan/import-csv', upload.single("csvfile"), (req,res) => {
           res.status(500).json({ success: false, message: "Error parsing file" });
         });
         
-        });
+});
 
 export default router;

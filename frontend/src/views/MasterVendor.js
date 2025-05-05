@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { FaFileCsv, FaFileImport, FaFilePdf, FaPlusCircle, FaRegEdit, FaTrashAlt, FaSortUp, FaSortDown} from 'react-icons/fa'; 
 import SearchBar from "components/Search/SearchBar.js";
 import axios from "axios";
-import AddKaryawan from "components/ModalForm/AddKaryawan.js";
-import EditKaryawan from "components/ModalForm/EditKaryawan.js";
+import AddVendor from "components/ModalForm/AddVendor.js";
+import EditVendor from "components/ModalForm/EditVendor.js";
 import ImportKaryawan from "components/ModalForm/ImportKaryawan.js";
 import {toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -19,45 +19,40 @@ import "../assets/scss/lbd/_loading.scss";
 // react-bootstrap components
 import {Button, Container, Row, Col, Card, Table, Spinner } from "react-bootstrap";
 
-function MasterKaryawan() {
+function MasterVendor() {
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [showEditModal, setShowEditModal] = React.useState(false);
   const [showImportModal, setShowImportModal] = useState(false); 
-  const [karyawan, setKaryawan] = useState([]); 
-  const [selectedKaryawan, setSelectedKaryawan] = useState(null); 
+  const [vendor, setVendor] = useState([]); 
+  const [selectedVendor, setSelectedVendor] = useState(null); 
   const [searchQuery, setSearchQuery] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [loading, setLoading] = useState(true);
 
-  const [sortBy, setSortBy] = useState("id_karyawan");
+  const [sortBy, setSortBy] = useState("id_vendor");
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortOrderDibayar, setSortOrderDibayar] = useState("asc");
 
-  const filteredKaryawan = karyawan.filter((karyawan) =>
-    (karyawan.id_karyawan && String(karyawan.id_karyawan).toLowerCase().includes(searchQuery)) ||
-    (karyawan.nama && String(karyawan.nama).toLowerCase().includes(searchQuery)) ||
-    (karyawan.jenis_kelamin && String(karyawan.jenis_kelamin).toLowerCase().includes(searchQuery)) ||
-    (karyawan.departemen && String(karyawan.departemen).toLowerCase().includes(searchQuery)) ||
-    (karyawan.divisi && String(karyawan.divisi).toLowerCase().includes(searchQuery)) ||
-    (karyawan.tanggal_lahir && String(karyawan.tanggal_lahir).toLowerCase().includes(searchQuery)) ||
-    (karyawan.tanggal_masuk && String(karyawan.tanggal_masuk).toLowerCase().includes(searchQuery)) ||
-    (karyawan.gaji_pokok && String(karyawan.gaji_pokok).toLowerCase().includes(searchQuery)) 
+  const filteredVendor = vendor.filter((vendor) =>
+    (vendor.id_vendor && String(vendor.id_vendor).toLowerCase().includes(searchQuery)) ||
+    (vendor.nama_vendor && String(vendor.nama_vendor).toLowerCase().includes(searchQuery)) ||
+    (vendor.alamat_vendor && String(vendor.alamat_vendor).toLowerCase().includes(searchQuery)) ||
+    (vendor.no_telepon && String(vendor.no_telepon).toLowerCase().includes(searchQuery)) ||
+    (vendor.no_kendaraan && String(vendor.no_kendaraan).toLowerCase().includes(searchQuery)) 
   );
 
   const handleSort = (key) => {
     if (sortBy === key) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-      setSortOrderDibayar(sortOrderDibayar === "asc" ? "desc" : "asc");
     } else {
       setSortBy(key);
       setSortOrder("asc");
-      setSortOrderDibayar("asc");
     }
   }
 
-  const sortedPlafond = filteredKaryawan.sort((a, b) => {
+  const sortedVendor = filteredVendor.sort((a, b) => {
     const aValue = a[sortBy];
     const bValue = b[sortBy];
 
@@ -71,7 +66,7 @@ function MasterKaryawan() {
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = sortedPlafond.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = sortedVendor.slice(indexOfFirstItem, indexOfLastItem);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -79,7 +74,7 @@ function MasterKaryawan() {
 
   const token = localStorage.getItem("token");
 
-  const getKaryawan = async () =>{
+  const getVendor = async () =>{
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
 
@@ -88,12 +83,12 @@ function MasterKaryawan() {
 
       setLoading(true);
       
-      const response = await axios.get("http://localhost:5000/karyawan", {
+      const response = await axios.get("http://localhost:5000/vendor", {
         headers: {
           Authorization: `Bearer ${token}`,
       },
       });
-      setKaryawan(response.data);
+      setVendor(response.data);
     } catch (error) {
       console.error("Error fetching data:", error.message); 
     } finally {
@@ -101,19 +96,19 @@ function MasterKaryawan() {
     }
   };
 
-  const deleteKaryawan = async(id_karyawan) =>{
+  const deleteVendor = async(id_vendor) =>{
     try {
-      await axios.delete(`http://localhost:5000/karyawan/${id_karyawan}` , {
+      await axios.delete(`http://localhost:5000/vendor/${id_vendor}` , {
         headers: {
           Authorization: `Bearer ${token}`,
       },
       }); 
-      toast.success("Data karyawan berhasil dihapus.", {
+      toast.success("Data vendor berhasil dihapus.", {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: true,
     });
-      getKaryawan(); 
+      getVendor(); 
      
     } catch (error) {
       console.log(error.message); 
@@ -127,7 +122,7 @@ function MasterKaryawan() {
         return;
       }
 
-      getKaryawan();
+      getVendor();
       
     } catch (error) {
       console.error("Error fetching data", error.message); 
@@ -156,8 +151,8 @@ function MasterKaryawan() {
   };
 
   const handleAddSuccess = () => {
-    getKaryawan();
-    toast.success("Data karyawan baru berhasil ditambahkan!", {
+    getVendor();
+    toast.success("Data vendor baru berhasil dibuat!", {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: true,
@@ -165,8 +160,8 @@ function MasterKaryawan() {
   };
 
   const handleEditSuccess = () => {
-    getKaryawan();
-    toast.success("Data karyawan berhasil diperbarui!", {
+    getVendor();
+    toast.success("Data vendor berhasil diperbarui!", {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: true,
@@ -178,8 +173,8 @@ function MasterKaryawan() {
   }
 
   const handleImportSuccess = () => {
-    getKaryawan();
-    toast.success("Data Karyawan berhasil diimport!", {
+    getVendor();
+    toast.success("Data vendor berhasil diimport!", {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: true,
@@ -261,7 +256,7 @@ function MasterKaryawan() {
   };
   
   useEffect(() => {
-    getKaryawan();
+    getVendor();
     setTimeout(() => setLoading(false), 1000)
   }, []); 
 
@@ -281,12 +276,12 @@ function MasterKaryawan() {
               Tambah Data
             </Button>
 
-            <AddKaryawan showAddModal={showAddModal} setShowAddModal={setShowAddModal} onSuccess={handleAddSuccess} />
+            <AddVendor showAddModal={showAddModal} setShowAddModal={setShowAddModal} onSuccess={handleAddSuccess} />
 
-            <EditKaryawan
+            <EditVendor
                         showEditModal={showEditModal}
                         setShowEditModal={setShowEditModal}
-                        karyawan={selectedKaryawan}
+                        vendor={selectedVendor}
                         onSuccess={handleEditSuccess}
             />
           </div>
@@ -326,7 +321,7 @@ function MasterKaryawan() {
           <Col md="12">
             <Card className="striped-tabled-with-hover mt-2">
               <Card.Header>
-                <Card.Title as="h4">Master Karyawan</Card.Title>
+                <Card.Title as="h4">Master Vendor</Card.Title>
               </Card.Header>
               <Card.Body className="table-responsive px-0" style={{ overflowX: 'auto' }}>
                 {loading ? (
@@ -340,18 +335,22 @@ function MasterKaryawan() {
                      <table className="flex-table table table-striped table-hover">
                      <thead >
                      <tr>
-                       <th onClick={() => handleSort("id_karyawan")}>ID Karyawan {sortBy==="id_karyawan" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
-                       <th className="border-0 text-wrap">Nama Lengkap</th>
-                       <th className="border-0 text-wrap" onClick={() => handleSort("divisi")}>Divisi {sortBy==="divisi" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                       <th onClick={() => handleSort("id_vendor")}>ID Vendor {sortBy==="id_vendor" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                       <th className="border-0 text-wrap">Nama Vendor</th>
+                       <th className="border-0 text-wrap" onClick={() => handleSort("alamat_vendor")}>Alamat Vendor {sortBy==="alamat_vendor" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                       <th className="border-0 text-wrap">No. Telepon</th>
+                       <th className="border-0 text-wrap">No. Kendaraan</th>
                        <th className="border-0 text-wrap">Aksi</th>
                      </tr>
                    </thead>
                    <tbody className="scroll scroller-tbody">
-                     {currentItems.map((karyawan, index) => (
-                       <tr key={karyawan.id_karyawan}>
-                       <td className="text-center">{karyawan.id_karyawan}</td>
-                       <td className="text-center">{karyawan.nama}</td>
-                       <td className="text-center">{karyawan.divisi}</td>
+                     {currentItems.map((vendor, index) => (
+                       <tr key={vendor.id_vendor}>
+                       <td className="text-center">{vendor.id_vendor}</td>
+                       <td className="text-center">{vendor.nama_vendor}</td>
+                       <td className="text-center">{vendor.alamat_vendor}</td>
+                       <td className="text-center">{vendor.no_telepon}</td>
+                       <td className="text-center">{vendor.no_kendaraan}</td>
                        <td className="text-center">
                        <Button
                          className="btn-fill pull-right warning"
@@ -359,7 +358,7 @@ function MasterKaryawan() {
                          variant="warning"
                          onClick={() => {
                            setShowEditModal(true);
-                           setSelectedKaryawan(karyawan);
+                           setSelectedVendor(vendor);
                            // console.log("Berhasil");
                          }}
                          style={{
@@ -373,7 +372,7 @@ function MasterKaryawan() {
                          className="btn-fill pull-right ml-2"
                          type="button"
                          variant="danger"
-                         onClick={() => deleteKaryawan(karyawan.id_karyawan)}
+                         onClick={() => deleteVendor(vendor.id_vendor)}
                          style={{
                            width: 103,
                            fontSize: 14,
@@ -396,7 +395,7 @@ function MasterKaryawan() {
             <Pagination
                   activePage={currentPage}
                   itemsCountPerPage={itemsPerPage}
-                  totalItemsCount={filteredKaryawan.length}
+                  totalItemsCount={filteredVendor.length}
                   pageRangeDisplayed={5}
                   onChange={handlePageChange}
                   itemClass="page-item"
@@ -420,4 +419,4 @@ function MasterKaryawan() {
   );
 }
 
-export default MasterKaryawan;
+export default MasterVendor;

@@ -4,7 +4,7 @@ import { FaFileImport, FaFileCsv } from "react-icons/fa";
 import { toast } from 'react-toastify';
 
 
-const ImportPlafond = ({showImportModal, setShowImportModal, onSuccess}) => {
+const ImportMasterBarang = ({showImportModal, setShowImportModal, onSuccess}) => {
   const token = localStorage.getItem("token");
   
   const [file, setFile] = useState(null);
@@ -26,7 +26,7 @@ const ImportPlafond = ({showImportModal, setShowImportModal, onSuccess}) => {
     const formData = new FormData();
     formData.append("csvfile", file);
 
-    fetch("http://localhost:5000/plafond/import-csv", {
+    fetch("http://localhost:5000/detail-barang/import-csv", {
       method: "POST",
       body: formData,
       headers: {
@@ -55,7 +55,7 @@ const ImportPlafond = ({showImportModal, setShowImportModal, onSuccess}) => {
   };
 
   const downloadCSV = (data) => {
-    const header = ["id_plafond", "tanggal_penetapan", "jumlah_plafond", "keterangan"];
+    const header = ["id_detailbarang", "nama_detailbarang", "satuan", "harga_barang", "jenis_barang", "tanggal_penetapan"];
   
     const csvContent = [header]
       .map((e) => e.join(","))
@@ -65,7 +65,7 @@ const ImportPlafond = ({showImportModal, setShowImportModal, onSuccess}) => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", "format-plafond.csv");
+    link.setAttribute("download", "format-masterbarang.csv");
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
@@ -78,12 +78,12 @@ const ImportPlafond = ({showImportModal, setShowImportModal, onSuccess}) => {
       show={showImportModal}
       onHide={() => setShowImportModal(false)}>
     <Modal.Header className="text-center pb-1">
-      <h3 className="mt-2 mb-0">Import Plafond</h3>
+      <h3 className="mt-2 mb-0">Import Master Barang</h3>
     </Modal.Header>
     <Modal.Body className="text-left pt-0">
       <hr />
       <div>
-      <span className="text-danger required-select">*Gunakan format CSV di bawah ini untuk mengimpor data plafond.</span>
+      <span className="text-danger required-select">*Gunakan format CSV di bawah ini untuk mengimport master barang.</span>
       <p>Unduh format CSV disini.</p>
       <Button
         className="btn-fill pull-right mb-4"
@@ -115,6 +115,6 @@ const ImportPlafond = ({showImportModal, setShowImportModal, onSuccess}) => {
   );
 };
 
-export default ImportPlafond;
+export default ImportMasterBarang;
 
 

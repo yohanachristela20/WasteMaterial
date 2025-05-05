@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import {FaFileCsv, FaFileImport, FaFilePdf, FaPlusCircle, FaSortDown, FaSortUp} from 'react-icons/fa'; 
+import {FaFileCsv, FaFileImport, FaFilePdf, FaPlusCircle, FaSortDown, FaSortUp, FaRegEdit, FaTrashAlt} from 'react-icons/fa'; 
 import SearchBar from "components/Search/SearchBar.js";
 import axios from "axios";
 import AddDetailBarang from "components/ModalForm/AddDetailBarang";
-import EditPlafond from "components/ModalForm/EditPlafond.js";
-import ImportPlafond from "components/ModalForm/ImportPlafond.js"; 
+import EditDetailBarang from "components/ModalForm/EditDetailBarang.js";
+import ImportMasterBarang from "components/ModalForm/ImportMasterBarang.js"; 
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import jsPDF from "jspdf";
@@ -90,7 +90,7 @@ function MasterBarang() {
   const getDataBarang = async () =>{
     try {
       // setLoading(true);
-      const response = await axios.get("http://localhost:5000/detail-detailBarang", {
+      const response = await axios.get("http://localhost:5000/detail-barang", {
         headers: {
           Authorization: `Bearer ${token}`,
       },
@@ -124,7 +124,7 @@ function MasterBarang() {
 
   const handleAddSuccess = () => {
     getDataBarang();
-    toast.success("Data detailBarang berhasil ditambahkan!", {
+    toast.success("Data master barang berhasil ditambahkan!", {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: true,
@@ -133,7 +133,7 @@ function MasterBarang() {
 
 const handleEditSuccess = () => {
   getDataBarang();
-  toast.success("Data detailBarang berhasil diperbarui!", {
+  toast.success("Data master barang berhasil diperbarui!", {
       position: "top-right",
       autoClose: 5000,
       hideProgressBar: true,
@@ -152,6 +152,25 @@ const handleImportSuccess = () => {
   //     hideProgressBar: true,
   // });
 };
+
+const deleteDetailBarang = async(id_detailbarang) => {
+  try {
+    await axios.delete(`http://localhost:5000/detail-barang/${id_detailbarang}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    });
+    toast.success("Data master barang berhasil dihapus.", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: true,
+    });
+
+    getDataBarang();
+  } catch (error) {
+    console.log(error.message);
+  }
+}
 
 
 
@@ -243,7 +262,7 @@ const downloadPDF = (data) => {
 
               <AddDetailBarang showAddModal={showAddModal} setShowAddModal={setShowAddModal} onSuccess={handleAddSuccess} />
 
-              <EditPlafond
+              <EditDetailBarang
                           showEditModal={showEditModal}
                           setShowEditModal={setShowEditModal}
                           detailBarang={selectedBarang}
@@ -259,9 +278,9 @@ const downloadPDF = (data) => {
               <FaFileImport style={{ marginRight: '8px' }} />
               Import Data
             </Button>
-            {/* {showImport && <ImportPlafond />} */}
+            {/* {showImport && <ImportMasterBarang />} */}
 
-            <ImportPlafond showImportModal={showImportModal} setShowImportModal={setShowImportModal} onSuccess={handleImportSuccess} />
+            <ImportMasterBarang showImportModal={showImportModal} setShowImportModal={setShowImportModal} onSuccess={handleImportSuccess} />
 
             <Button
               className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
@@ -305,30 +324,31 @@ const downloadPDF = (data) => {
                           <th className="border-0" onClick={() => handleSort("satuan")}>Satuan {sortBy==="satuan" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                           <th className="border-0">Harga Barang</th>
                           <th className="border-0">Jenis Barang</th>
-                          <th className="border-0">Tanggal Penetapan</th>
-                          {/* <th className="border-0">Aksi</th> */}
+                          <th className="border-0">Dibuat</th>
+                          <th className="border-0">Terakhir Diubah</th>
+                          <th className="border-0">Aksi</th>
                         </tr>
                           </thead>
                           <tbody className="scroll scroller-tbody">
                             {currentItems.map((detailBarang) => (
                               <tr key={detailBarang.id_detailbarang}>
+                                <td className="text-center">{detailBarang.id_detailbarang}</td>
                                 <td className="text-center">{detailBarang.nama_detailbarang}</td>
                                 <td className="text-center">{detailBarang.satuan}</td>
-                                <td className="text-right">{detailBarang.harga_barang}</td>
+                                <td className="text-right">{formatRupiah(detailBarang.harga_barang)}</td>
                                 <td className="text-center">{detailBarang.jenis_barang}</td>
-                                <td className="text-center">{new Date(detailBarang.tanggal_penetapan).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
-                                {/* <td className="text-center">
-                                  <Button className="btn-fill pull-right warning" variant="warning" onClick={() => { setShowEditModal(true); setSelectedPlafond(plafond); }} style={{ width: 96, fontSize: 14 }}>
+                                <td className="text-center">{detailBarang.tanggal_penetapan}</td>
+                                <td className="text-center">{new Date(detailBarang.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
+                                <td className="text-center">
+                                  <Button className="btn-fill pull-right warning" variant="warning" onClick={() => { setShowEditModal(true); setSelectedBarang(detailBarang); }} style={{ width: 96, fontSize: 14 }}>
                                     <FaRegEdit style={{ marginRight: '8px' }} />
                                     Ubah
                                   </Button>
-                                </td> */}
-                                {/* <td className="text-center">
-                                  <Button className="btn-fill pull-right danger" variant="danger"  onClick={() => deletePlafond(plafond.id_plafond)} style={{ width: 96, fontSize: 14 }}>
+                                  <Button className="btn-fill pull-right danger mt-2" variant="danger"  onClick={() => deleteDetailBarang(detailBarang.id_detailbarang)} style={{ width: 96, fontSize: 13 }}>
                                     <FaTrashAlt style={{ marginRight: '8px' }} />
-                                    Batal
+                                    Hapus
                                   </Button>
-                                </td> */}
+                                </td>
                               </tr>
                             ))}
                           </tbody>

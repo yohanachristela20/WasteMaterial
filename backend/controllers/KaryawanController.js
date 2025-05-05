@@ -58,3 +58,26 @@ export const deleteKaryawan = async(req, res) => {
         res.status(500).json({message: error.message}); 
     }
 }
+
+
+export const getLastKaryawanId = async (req, res) => {
+    try {
+        const latestIdKaryawan = await Karyawan.findOne({
+            order: [['id_karyawan', 'DESC']]
+        });
+
+        let nextId = 'KRY0001';
+        if (latestIdKaryawan && latestIdKaryawan.id_karyawan) {
+            const lastNumeric = parseInt(latestIdKaryawan.id_karyawan.substring(3), 10);
+            const incremented = (lastNumeric + 1).toString().padStart(4, '0');
+            nextId = `KRY${incremented}`;
+        }
+        console.log("getLastIdKaryawan: ", nextId);
+        return res.status(200).json({nextId});
+
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({message: 'error retrieving last id detail barang'});
+    }
+};

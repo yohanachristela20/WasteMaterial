@@ -9,10 +9,10 @@ const DetailBarang = db.define('detail_barang', {
         primaryKey: true,
     },
     nama_detailbarang: DataTypes.STRING,
-    satuan: DataTypes.INTEGER,
+    satuan: DataTypes.STRING,
     harga_barang: DataTypes.DECIMAL(19,2),
     jenis_barang: DataTypes.STRING,
-    tanggal_penetapan: DataTypes.DATE,
+    tanggal_penetapan: DataTypes.DATEONLY,
 }, {
     freezeTableName: true,
     timestamps: true,
