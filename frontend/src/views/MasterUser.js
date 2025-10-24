@@ -16,7 +16,6 @@ import "../assets/scss/lbd/_table-header.scss";
 import { stopInactivityTimer } from "views/Heartbeat";
 import { useLocation, useHistory } from "react-router-dom";
 
-// react-bootstrap components
 import {Button, Container, Row, Col, Card, Table, Spinner, Badge} from "react-bootstrap";
 
 function MasterUser() {
@@ -33,19 +32,23 @@ function MasterUser() {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
   const history = useHistory();
+  const [detailUser, setDetailUser] = useState([]);
 
   const [sortBy, setSortBy] = useState("id_user");
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortOrderDibayar, setSortOrderDibayar] = useState("asc");
 
-  const filteredUser = user.filter((user) =>
+  const filteredUser = detailUser.filter((user) =>
     (user.id_user && String(user.id_user).toLowerCase().includes(searchQuery)) ||
     (user.username && String(user.username).toLowerCase().includes(searchQuery)) ||
     (user.role && String(user.role).toLowerCase().includes(searchQuery)) ||
-    (user.user_active && String(user.user_active).toLowerCase().includes(searchQuery)) //search berdasarkan boolean
+    (user.user_active && String(user.user_active).toLowerCase().includes(searchQuery)) || 
+    (user.KaryawanPengguna?.nama && String(user.KaryawanPengguna?.nama).toLowerCase().includes(searchQuery)) ||
+    (user.KaryawanPengguna?.divisi && String(user.KaryawanPengguna?.divisi).toLowerCase().includes(searchQuery)) ||
+    (user.createdAt && String(user.createdAt).toLowerCase().includes(searchQuery)) ||
+    (user.updatedAt && String(user.updatedAt).toLowerCase().includes(searchQuery))
   );
 
-  
   const handleSort = (key) => {
     if (sortBy === key) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -57,16 +60,27 @@ function MasterUser() {
     }
   }
 
-  const sortedUser = filteredUser.sort((a, b) => {
-    const aValue = a[sortBy];
-    const bValue = b[sortBy];
+  const getNestedValue = (obj, path) => {
+    if (!obj || !path) return undefined;
+    return path.split('.').reduce((o, k) => (o ? o[k] : undefined), obj);
+  };
 
-    if (sortOrder === "asc") {
-      return aValue < bValue ? -1 : aValue > bValue ? 1 : 0; 
-    } else {
-      return bValue < aValue ? -1 : bValue > aValue ? 1 : 0; 
+  const sortedUser = [...filteredUser].sort((a, b) => {
+    const aRaw = getNestedValue(a, sortBy) ?? "";
+    const bRaw = getNestedValue(b, sortBy) ?? "";
+
+    const aNum = (aRaw);
+    const bNum = (bRaw);
+
+    if (!isNaN(aNum) && !isNaN(bNum)) {
+      return sortOrder === "asc" ? aNum - bNum : bNum - aNum;
     }
 
+    const aStr = String(aRaw).toLowerCase();
+    const bStr = String(bRaw).toLowerCase();
+    if (aStr < bStr) return sortOrder === "asc" ? -1 : 1;
+    if (aStr > bStr) return sortOrder === "asc" ? 1 : -1;
+    return 0;
   });
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -82,6 +96,7 @@ function MasterUser() {
   useEffect(()=> {
     getUser();
     fetchUserData();
+    getDetailUsers();
   }, []); 
 
   const getUser = async () =>{
@@ -92,6 +107,21 @@ function MasterUser() {
       },
       });
       setUser(response.data);
+    } catch (error) {
+      console.error("Error fetching data:", error.message); 
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getDetailUsers = async () =>{
+    try {
+      const response = await axios.get("http://localhost:5000/detail-users", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setDetailUser(response.data);
     } catch (error) {
       console.error("Error fetching data:", error.message); 
     } finally {
@@ -112,6 +142,7 @@ function MasterUser() {
         autoClose: 5000,
         hideProgressBar: true,
       });
+      window.location.reload();
       getUser(); 
     } catch (error) {
       console.log(error.message); 
@@ -181,11 +212,13 @@ function MasterUser() {
   };
 
   const downloadCSV = (data) => {
-    const header = ["id_user", "username", "role"];
-    const rows = data.map((item) => [
+    const header = ["id_user", "nama_karyawan", "divisi" , "username", "role"];
+    const rows = currentItems.map((item) => [
       item.id_user,
+      item.KaryawanPengguna?.nama,
+      item.KaryawanPengguna?.divisi,
       item.username,
-      item.role
+      item.role,
     ]);
   
     const csvContent = [header, ...rows]
@@ -223,12 +256,16 @@ function MasterUser() {
     doc.setFontSize(12); 
     doc.text(`Tanggal cetak: ${formattedDate}`, 12, 30);
   
-    const headers = [["ID User", "Username", "Role"]];
+    const headers = [["ID User", "Nama Karyawan", "Divisi", "Username", "Role", "Dibuat", "Terakhir Diubah"]];
   
-    const rows = data.map((item) => [
+    const rows = currentItems.map((item) => [
       item.id_user,
+      item.KaryawanPengguna?.nama,
+      item.KaryawanPengguna?.divisi,
       item.username,
       item.role,
+      (new Date(item.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')),
+      (new Date(item.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', ''))
     ]);
 
     const marginTop = 15; 
@@ -386,9 +423,13 @@ function MasterUser() {
                       <thead>
                       <tr>
                         <th onClick={() => handleSort("id_user")}>ID User {sortBy==="id_user" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                        <th className="border-0" onClick={() => handleSort("KaryawanPengguna.nama")}>Nama Karyawan {sortBy==="KaryawanPengguna.nama" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                        <th className="border-0" onClick={() => handleSort("KaryawanPengguna.divisi")}>Divisi{sortBy==="KaryawanPengguna.divisi" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                         <th className="border-0" onClick={() => handleSort("username")}>Username {sortBy==="username" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                         <th className="border-0" onClick={() => handleSort("role")}>Role {sortBy==="role" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
-                        <th className="border-0">Status</th>
+                        <th className="border-0" onClick={() => handleSort("user_active")}>Status {sortBy==="user_active" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                        <th className="border-0" onClick={() => handleSort("createdAt")}>Dibuat {sortBy==="createdAt" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                        <th className="border-0" onClick={() => handleSort("updatedAt")}>Terakhir Diubah {sortBy==="updatedAt" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                         <th className="border-0">Aksi</th>
                       </tr>
                       </thead>
@@ -396,19 +437,24 @@ function MasterUser() {
                         {currentItems.map((user, index) => (
                         <tr key={user.id_user}>
                           <td className="text-center">{user.id_user}</td>
+                          <td className="text-center">{user.KaryawanPengguna?.nama}</td>
+                          <td className="text-center">{user.KaryawanPengguna?.divisi}</td>
                           <td className="text-center">{user.username}</td>
                           <td className="text-center">{user.role}</td>
                           <td className="text-center">
-                              {user.user_active === true ? (
-                                <Badge pill bg="success p-2" style={{ color: 'white'}} >
-                                  Aktif
-                                </Badge >
-                                ) : (
-                                <Badge pill bg="secondary p-2" style={{ color: 'white'}} >
-                                  Tidak Aktif
-                                </Badge >
-                              )}
-                            </td>
+                            {user.user_active === true ? (
+                              <Badge pill bg="success p-2" style={{ color: 'white'}} >
+                                Aktif
+                              </Badge >
+                              ) : (
+                              <Badge pill bg="secondary p-2" style={{ color: 'white'}} >
+                                Tidak Aktif
+                              </Badge >
+                            )}
+                          </td>
+                          <td className="text-center">{new Date(user.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
+                          <td className="text-center">{new Date(user.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
+                         
                           <td className="text-center">
                           <Button
                             className="btn-fill pull-right info mb-md-2"

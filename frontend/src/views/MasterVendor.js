@@ -4,7 +4,7 @@ import SearchBar from "components/Search/SearchBar.js";
 import axios from "axios";
 import AddVendor from "components/ModalForm/AddVendor.js";
 import EditVendor from "components/ModalForm/EditVendor.js";
-import ImportKaryawan from "components/ModalForm/ImportKaryawan.js";
+import ImportVendor from "components/ModalForm/ImportVendor.js";
 import {toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import jsPDF from "jspdf";
@@ -16,7 +16,6 @@ import ReactLoading from "react-loading";
 import "../assets/scss/lbd/_loading.scss";
 
 
-// react-bootstrap components
 import {Button, Container, Row, Col, Card, Table, Spinner } from "react-bootstrap";
 
 function MasterVendor() {
@@ -37,10 +36,13 @@ function MasterVendor() {
 
   const filteredVendor = vendor.filter((vendor) =>
     (vendor.id_vendor && String(vendor.id_vendor).toLowerCase().includes(searchQuery)) ||
-    (vendor.nama_vendor && String(vendor.nama_vendor).toLowerCase().includes(searchQuery)) ||
-    (vendor.alamat_vendor && String(vendor.alamat_vendor).toLowerCase().includes(searchQuery)) ||
+    (vendor.nama && String(vendor.nama).toLowerCase().includes(searchQuery)) ||
+    (vendor.alamat && String(vendor.alamat).toLowerCase().includes(searchQuery)) ||
     (vendor.no_telepon && String(vendor.no_telepon).toLowerCase().includes(searchQuery)) ||
-    (vendor.no_kendaraan && String(vendor.no_kendaraan).toLowerCase().includes(searchQuery)) 
+    (vendor.no_kendaraan && String(vendor.no_kendaraan).toLowerCase().includes(searchQuery)) ||
+    (vendor.createdAt && String(vendor.createdAt).toLowerCase().includes(searchQuery)) ||
+    (vendor.updatedAt && String(vendor.updatedAt).toLowerCase().includes(searchQuery)) ||
+    (vendor.sopir && String(vendor.sopir).toLowerCase().includes(searchQuery))
   );
 
   const handleSort = (key) => {
@@ -78,11 +80,8 @@ function MasterVendor() {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
 
-    // console.log("User token: ", token, "User role:", role);
     try {
-
-      setLoading(true);
-      
+      // setLoading(true);
       const response = await axios.get("http://localhost:5000/vendor", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -91,9 +90,10 @@ function MasterVendor() {
       setVendor(response.data);
     } catch (error) {
       console.error("Error fetching data:", error.message); 
-    } finally {
-      setLoading(false);
     }
+    // } finally {
+    //   setLoading(false);
+    // }
   };
 
   const deleteVendor = async(id_vendor) =>{
@@ -109,7 +109,7 @@ function MasterVendor() {
         hideProgressBar: true,
     });
       getVendor(); 
-     
+      window.location.reload();
     } catch (error) {
       console.log(error.message); 
     }
@@ -128,23 +128,6 @@ function MasterVendor() {
       console.error("Error fetching data", error.message); 
     }
   }, [token]); 
-
-
-  
-  const formatRupiah = (angka) => {
-    let pinjamanString = angka.toString().replace(".00");
-    let sisa = pinjamanString.length % 3;
-    let rupiah = pinjamanString.substr(0, sisa);
-    let ribuan = pinjamanString.substr(sisa).match(/\d{3}/g);
-
-    if (ribuan) {
-        let separator = sisa ? "." : "";
-        rupiah += separator + ribuan.join(".");
-    }
-    
-    return rupiah;
-  };
-
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value.toLowerCase());
@@ -213,7 +196,7 @@ function MasterVendor() {
     const doc = new jsPDF({ orientation: 'landscape' });
   
     doc.setFontSize(12); 
-    doc.text("Master Karyawan", 12, 20);
+    doc.text("Master Vendor", 12, 20);
 
     const currentDate = new Date();
     const formattedDate = currentDate.toLocaleString('id-ID', {
@@ -229,17 +212,17 @@ function MasterVendor() {
     doc.setFontSize(12); 
     doc.text(`Tanggal cetak: ${formattedDate}`, 12, 30);
   
-    const headers = [["ID Karyawan", "Nama", "Jenis Kelamin", "Departemen", "Divisi", "Tanggal Lahir", "Tanggal Masuk", "Gaji Pokok"]];
+    const headers = [["ID Vendor", "Nama", "Alamat", "No. Telepon", "No. Kendaraan", "Sopir", "Dibuat", "Terakhir Diubah"]];
   
     const rows = data.map((item) => [
-      item.id_karyawan,
+      item.id_vendor,
       item.nama,
-      item.jenis_kelamin,
-      item.departemen,
-      item.divisi,
-      item.tanggal_lahir,
-      item.tanggal_masuk,
-      formatRupiah(item.gaji_pokok),
+      item.alamat,
+      item.no_telepon,
+      item.no_kendaraan,
+      item.sopir,
+      (new Date(item.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')),
+      (new Date(item.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', ''))
     ]);
 
     const marginTop = 15; 
@@ -252,11 +235,12 @@ function MasterVendor() {
       headStyles: { fillColor: [3, 177, 252] }, 
     });
 
-    doc.save("master_karyawan.pdf");
+    doc.save("master_vendor.pdf");
   };
   
   useEffect(() => {
     getVendor();
+
     setTimeout(() => setLoading(false), 1000)
   }, []); 
 
@@ -295,22 +279,22 @@ function MasterVendor() {
             Import Data
           </Button>
 
-          <ImportKaryawan showImportModal={showImportModal} setShowImportModal={setShowImportModal} onSuccess={handleImportSuccess} />
+          <ImportVendor showImportModal={showImportModal} setShowImportModal={setShowImportModal} onSuccess={handleImportSuccess} />
 
-          <Button
+          {/* <Button
             className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
             type="button"
             variant="primary"
             onClick={() => downloadCSV(karyawan)}>
             <FaFileCsv style={{ marginRight: '8px' }} />
             Unduh CSV
-          </Button>
+          </Button> */}
 
           <Button
             className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
             type="button"
             variant="primary"
-            onClick={() => downloadPDF(karyawan)}>
+            onClick={() => downloadPDF(vendor)}>
             <FaFilePdf style={{ marginRight: '8px' }} />
             Unduh PDF
           </Button>
@@ -319,27 +303,30 @@ function MasterVendor() {
           <SearchBar searchQuery={searchQuery} handleSearchChange={handleSearchChange} />
           
           <Col md="12">
-            <Card className="striped-tabled-with-hover mt-2">
+            <Card className="p-3 striped-tabled-with-hover mt-2">
               <Card.Header>
-                <Card.Title as="h4">Master Vendor</Card.Title>
+                <Card.Title as="h4" className="mb-4"><strong>Master Vendor</strong></Card.Title>
               </Card.Header>
               <Card.Body className="table-responsive px-0" style={{ overflowX: 'auto' }}>
-                {loading ? (
+                {/* {loading ? (
                   <div className="text-center">
                     <Spinner animation="border" variant="primary" />
                     <p>Loading...</p>
                   </div>
-                ) : (
+                ) : ( */}
                   <Table className="table-striped table-hover">
                   <div className="table-scroll" style={{ height: 'auto' }}>
                      <table className="flex-table table table-striped table-hover">
                      <thead >
                      <tr>
                        <th onClick={() => handleSort("id_vendor")}>ID Vendor {sortBy==="id_vendor" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
-                       <th className="border-0 text-wrap">Nama Vendor</th>
-                       <th className="border-0 text-wrap" onClick={() => handleSort("alamat_vendor")}>Alamat Vendor {sortBy==="alamat_vendor" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
-                       <th className="border-0 text-wrap">No. Telepon</th>
-                       <th className="border-0 text-wrap">No. Kendaraan</th>
+                       <th className="border-0 text-wrap"onClick={() => handleSort("nama")}>Nama {sortBy==="nama" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                       <th className="border-0 text-wrap" onClick={() => handleSort("alamat")}>Alamat {sortBy==="alamat" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                       <th className="border-0 text-wrap" onClick={() => handleSort("no_telepon")}>No. Telepon {sortBy==="no_telepon" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                       <th className="border-0 text-wrap" onClick={() => handleSort("no_kendaraan")}>No. Kendaraan{sortBy==="no_kendaraan" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                       <th className="border-0 text-wrap"onClick={() => handleSort("sopir")}>Sopir {sortBy==="sopir" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                       <th className="border-0 text-wrap" onClick={() => handleSort("createdAt")}>Dibuat{sortBy==="createdAt" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                       <th className="border-0 text-wrap" onClick={() => handleSort("updatedAt")}>Terakhir Diubah{sortBy==="updatedAt" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                        <th className="border-0 text-wrap">Aksi</th>
                      </tr>
                    </thead>
@@ -347,48 +334,30 @@ function MasterVendor() {
                      {currentItems.map((vendor, index) => (
                        <tr key={vendor.id_vendor}>
                        <td className="text-center">{vendor.id_vendor}</td>
-                       <td className="text-center">{vendor.nama_vendor}</td>
-                       <td className="text-center">{vendor.alamat_vendor}</td>
+                       <td className="text-center">{vendor.nama}</td>
+                       <td className="text-center">{vendor.alamat}</td>
                        <td className="text-center">{vendor.no_telepon}</td>
                        <td className="text-center">{vendor.no_kendaraan}</td>
-                       <td className="text-center">
-                       <Button
-                         className="btn-fill pull-right warning"
-                         type="button"
-                         variant="warning"
-                         onClick={() => {
-                           setShowEditModal(true);
-                           setSelectedVendor(vendor);
-                           // console.log("Berhasil");
-                         }}
-                         style={{
-                           width: 103,
-                           fontSize: 14,
-                         }}>
-                         <FaRegEdit style={{ marginRight: '8px' }} />
-                         Ubah
-                       </Button>
-                       <Button
-                         className="btn-fill pull-right ml-2"
-                         type="button"
-                         variant="danger"
-                         onClick={() => deleteVendor(vendor.id_vendor)}
-                         style={{
-                           width: 103,
-                           fontSize: 14,
-                         }}>
-                         <FaTrashAlt style={{ marginRight: '8px' }} />
-                         Hapus
-                       </Button>
-                       
-                       </td>
+                       <td className="text-center">{vendor.sopir}</td>
+                       <td className="text-center">{new Date(vendor.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
+                       <td className="text-center">{new Date(vendor.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
+                        <td className="text-center">
+                          <Button className="btn-fill pull-right warning" variant="warning" onClick={() => { setShowEditModal(true); setSelectedVendor(vendor); }} style={{ width: 96, fontSize: 14 }}>
+                            <FaRegEdit style={{ marginRight: '8px' }} />
+                            Ubah
+                          </Button>
+                          <Button className="btn-fill pull-right danger mt-2" variant="danger"  onClick={() => deleteVendor(vendor.id_vendor)} style={{ width: 96, fontSize: 13 }}>
+                            <FaTrashAlt style={{ marginRight: '8px' }} />
+                            Hapus
+                          </Button>
+                        </td>
                      </tr>
                      ))}
                    </tbody>
                      </table>
                   </div>
                  </Table>
-                )}
+                {/* )} */}
               </Card.Body>
             </Card>
             <div className="pagination-container">

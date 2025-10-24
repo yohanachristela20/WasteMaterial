@@ -1,9 +1,9 @@
 import Beranda from "views/Beranda.js";
 import ScreeningKaryawan from "views/ScreeningKaryawan.js";
 import Angsuran from "views/Angsuran.js";
-import LaporanPiutang from "views/LaporanPiutangKaryawan.js";
+import DataPengajuan from "views/DataPengajuan.js";
 import MasterKaryawan from "views/MasterKaryawan.js";
-import ScreeningKaryawanManual from "views/ScreeningKaryawanManual.js";
+import PengajuanJual from "views/PengajuanJual";
 import BerandaFinance from "views/BerandaFinance.js";
 import BerandaKaryawan from "views/BerandaKaryawan.js";
 import ScreeningPinjamanKaryawan from "views/ScreeningPinjamanKaryawan.js";
@@ -15,11 +15,21 @@ import DashboardKaryawan from "views/DashboardKaryawan.js";
 import RiwayatPinjamanKaryawan from "views/RiwayatPinjamanKaryawan";
 import AngsuranFinance from "views/AngsuranFinance";
 import SuratPernyataan from "views/SuratPernyataan";
+import DataBarang from "views/DataBarang.js";
 
-import MasterBarang from "views/MasterBarang";
+import KategoriBarang from "views/KategoriBarang";
 import MasterVendor from "views/MasterVendor";
+import PengajuanScrapping from "views/PengajuanScrapping.js";
+import DetailPengajuan from "views/DetailPengajuan.js";
+import Transaksi from "views/Transaksi.js";
 
 import Login from "views/Login.js";
+import DataPengajuanUser from "views/DataPengajuanUser.js";
+import DetailPengajuanUser from "views/DetailPengajuanUser";
+import DokumenPengajuan from "views/DokumenPengajuan";
+import DokumenTransaksi from "views/DokumenTransaksi";
+import DokumenBPBB from "views/DokumenBPBB";
+import DokumenSuratJalan from "views/DokumenSuratJalan";
 
 
 const dashboardRoutes = [
@@ -31,17 +41,17 @@ const dashboardRoutes = [
     layout: "/admin"
   },
   {
-    path: "/detail-barang",
-    name: "Master Barang",
-    icon: "nc-icon nc-money-coins",
-    component: MasterBarang,
+    path: "/kategori-barang",
+    name: "Kategori Barang",
+    icon: "nc-icon nc-tag-content",
+    component: KategoriBarang,
     layout: "/admin"
   },
   {
-    path: "/master-karyawan",
-    name: "Master Karyawan",
-    icon: "nc-icon nc-single-02",
-    component: MasterKaryawan,
+    path: "/data-barang",
+    name: "Data Barang",
+    icon: "nc-icon nc-app",
+    component: DataBarang,
     layout: "/admin"
   },
   {
@@ -51,27 +61,74 @@ const dashboardRoutes = [
     component: MasterVendor,
     layout: "/admin"
   },
+ 
 
 
   {
-    path: "/screening-karyawan-manual",
-    name: "Screening Manual",
-    icon: "nc-icon nc-circle-09",
-    component: ScreeningKaryawanManual,
+    path: "/pengajuan-jual",
+    name: "Pengajuan Jual",
+    icon: "nc-icon nc-money-coins",
+    component: PengajuanJual,
     layout: "/admin"
   },
   {
-    path: "/angsuran",
-    name: "Angsuran",
+    path: "/pengajuan-scrapping",
+    name: "Pengajuan Scrapping",
+    icon: "nc-icon nc-delivery-fast",
+    component: PengajuanScrapping,
+    layout: "/admin"
+  },
+  {
+    path: "/data-pengajuan",
+    name: "Data Pengajuan",
     icon: "nc-icon nc-notes",
-    component: Angsuran,
+    component: DataPengajuan,
+    layout: "/admin"
+  },
+
+
+
+  // Tidak Ditampilkan di Sidebar
+  {
+    path: "/detail-pengajuan",
+    name: "Detail Pengajuan",
+    icon: "nc-icon nc-paper-2",
+    component: DetailPengajuan,
     layout: "/admin"
   },
   {
-    path: "/laporan-piutang-karyawan",
-    name: "Laporan Piutang",
+    path: "/transaksi",
+    name: "Transaksi",
     icon: "nc-icon nc-paper-2",
-    component: LaporanPiutang,
+    component: Transaksi,
+    layout: "/admin"
+  },
+  {
+    path: "/dok-pengajuan",
+    name: "Dokumen Pengajuan",
+    icon: "nc-icon nc-paper-2",
+    component: DokumenPengajuan,
+    layout: "/admin"
+  },
+  {
+    path: "/dok-transaksi",
+    name: "Dokumen Transaksi",
+    icon: "nc-icon nc-paper-2",
+    component: DokumenTransaksi,
+    layout: "/admin"
+  },
+  {
+    path: "/dok-bpbb",
+    name: "Dokumen BPBB",
+    icon: "nc-icon nc-paper-2",
+    component: DokumenBPBB,
+    layout: "/admin"
+  },
+  {
+    path: "/dok-surat-jalan",
+    name: "Dokumen Surat Jalan",
+    icon: "nc-icon nc-paper-2",
+    component: DokumenSuratJalan,
     layout: "/admin"
   },
 
@@ -86,43 +143,50 @@ const dashboardRoutes = [
   },
 
 
-  //FINANCE 
+  
+  //USER
   {
-    path: "/beranda-finance",
-    name: "Beranda",
-    icon: "nc-icon nc-single-02",
-    component: BerandaFinance,
-    layout: "/finance"
-  },
-  {
-    path: "/angsuran-finance",
-    name: "Angsuran",
-    icon: "nc-icon nc-notes",
-    component: AngsuranFinance,
-    layout: "/finance"
-  },
-  {
-    path: "/laporan-piutang-karyawan",
-    name: "Laporan Piutang",
-    icon: "nc-icon nc-paper-2",
-    component: LaporanPiutang,
-    layout: "/finance"
-  },
-
-  //KARYAWAN
-  {
-    path: "/dashboard-karyawan2",
+    path: "/dashboard-user",
     name: "Beranda",
     icon: "nc-icon nc-chart-pie-35",
     component: DashboardKaryawan,
-    layout: "/karyawan"
+    layout: "/user"
   },
+    {
+    path: "/pengajuan-jual",
+    name: "Pengajuan Jual",
+    icon: "nc-icon nc-money-coins",
+    component: PengajuanJual,
+    layout: "/user"
+  },
+  {
+    path: "/pengajuan-scrapping",
+    name: "Pengajuan Scrapping",
+    icon: "nc-icon nc-delivery-fast",
+    component: PengajuanScrapping,
+    layout: "/user"
+  },
+    {
+    path: "/detail-pengajuan-user",
+    name: "Detail Pengajuan",
+    icon: "nc-icon nc-paper-2",
+    component: DetailPengajuanUser,
+    layout: "/user"
+  },
+  {
+    path: "/data-pengajuan-user",
+    name: "Data Pengajuan",
+    icon: "nc-icon nc-notes",
+    component: DataPengajuanUser,
+    layout: "/user"
+  },
+
   // {
-  //   path: "/beranda-karyawan",
+  //   path: "/beranda-user",
   //   name: "Beranda",
   //   icon: "nc-icon nc-chart-pie-35",
   //   component: BerandaKaryawan,
-  //   layout: "/karyawan"
+  //   layout: "/user"
   // },
   
   // {
@@ -130,39 +194,25 @@ const dashboardRoutes = [
   //   name: "Screening Pinjaman",
   //   icon: "nc-icon nc-circle-09",
   //   component: ScreeningPinjamanKaryawan,
-  //   layout: "/karyawan"
+  //   layout: "/user"
   // },
   // {
   //   path: "/screening2",
   //   name: "Screening Pinjaman 2",
   //   icon: "nc-icon nc-circle-09",
   //   component: ScreeningPinjamanKaryawan2,
-  //   layout: "/karyawan"
+  //   layout: "/user"
   // },
-  {
-    path: "/riwayat-pengajuan",
-    name: "Riwayat Pengajuan",
-    icon: "nc-icon nc-paper-2",
-    component: RiwayatPengajuanKaryawan,
-    layout: "/karyawan"
-  },
-  {
-    path: "/riwayat-pinjaman",
-    name: "Riwayat Pinjaman",
-    icon: "nc-icon nc-money-coins",
-    component: RiwayatPinjamanKaryawan,
-    layout: "/karyawan"
-  },
-  {
-    path: "/angsuran-karyawan",
-    name: "Angsuran",
-    icon: "nc-icon nc-notes",
-    component: AngsuranKaryawan,
-    layout: "/karyawan"
-  },
 
 
   // SUPER ADMIN
+  {
+    path: "/master-karyawan",
+    name: "Master Karyawan",
+    icon: "nc-icon nc-single-02",
+    component: MasterKaryawan,
+    layout: "/super-admin"
+  },
   {
     path: "/master-user",
     name: "Master User",
@@ -173,21 +223,21 @@ const dashboardRoutes = [
 
 
 
-  {
-    path: "/screening-karyawan",
-    name: "Screening Karyawan",
-    icon: "nc-icon nc-circle-09",
-    component: ScreeningKaryawan,
-    layout: "/admin"
-  },
+  // {
+  //   path: "/screening-user",
+  //   name: "Screening Karyawan",
+  //   icon: "nc-icon nc-circle-09",
+  //   component: ScreeningKaryawan,
+  //   layout: "/admin"
+  // },
 
-  {
-    path: "/surat-pernyataan",
-    name: "Surat Pernyataan",
-    icon: "nc-icon nc-circle-09",
-    component: SuratPernyataan,
-    layout: "/admin"
-  },
+  // {
+  //   path: "/surat-pernyataan",
+  //   name: "Surat Pernyataan",
+  //   icon: "nc-icon nc-circle-09",
+  //   component: SuratPernyataan,
+  //   layout: "/admin"
+  // },
   
 ];
 

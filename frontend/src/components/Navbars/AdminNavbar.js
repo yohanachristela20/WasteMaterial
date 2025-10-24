@@ -236,7 +236,7 @@ function Header() {
 
     <Modal show={showModal} onHide={() => setShowModal(false)} dialogClassName="modal-warning">
       <Modal.Header>
-        <Modal.Title>Logout</Modal.Title>
+        <Modal.Title>Keluar</Modal.Title>
           <button
             type="button"
             className="close"
@@ -255,12 +255,12 @@ function Header() {
       </Modal.Header>
       <Modal.Body >Apakah anda yakin ingin keluar?</Modal.Body>
       <Modal.Footer className="mb-4">
-        <Button variant="success" onClick={handleLogout}>
-          Ya
-        </Button> 
         <Button variant="danger" onClick={() => setShowModal(false)}>
           Tidak
         </Button>
+        <Button variant="success" onClick={handleLogout}>
+          Ya
+        </Button> 
         
       </Modal.Footer>
     </Modal>

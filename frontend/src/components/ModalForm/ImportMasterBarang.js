@@ -26,7 +26,7 @@ const ImportMasterBarang = ({showImportModal, setShowImportModal, onSuccess}) =>
     const formData = new FormData();
     formData.append("csvfile", file);
 
-    fetch("http://localhost:5000/detail-barang/import-csv", {
+    fetch("http://localhost:5000/kategori-barang/import-csv", {
       method: "POST",
       body: formData,
       headers: {
@@ -55,7 +55,7 @@ const ImportMasterBarang = ({showImportModal, setShowImportModal, onSuccess}) =>
   };
 
   const downloadCSV = (data) => {
-    const header = ["id_detailbarang", "nama_detailbarang", "satuan", "harga_barang", "jenis_barang", "tanggal_penetapan"];
+    const header = ["nama", "satuan", "harga_barang", "jenis_barang", "tanggal_penetapan"];
   
     const csvContent = [header]
       .map((e) => e.join(","))
@@ -77,11 +77,10 @@ const ImportMasterBarang = ({showImportModal, setShowImportModal, onSuccess}) =>
       className="modal-primary"
       show={showImportModal}
       onHide={() => setShowImportModal(false)}>
-    <Modal.Header className="text-center pb-1">
-      <h3 className="mt-2 mb-0">Import Master Barang</h3>
+    <Modal.Header>
+      <h3 className="mt-2 mb-0"><strong>Import Kategori Barang</strong></h3>
     </Modal.Header>
-    <Modal.Body className="text-left pt-0">
-      <hr />
+    <Modal.Body className="text-left pt-0 mt-3 mb-1">
       <div>
       <span className="text-danger required-select">*Gunakan format CSV di bawah ini untuk mengimport master barang.</span>
       <p>Unduh format CSV disini.</p>

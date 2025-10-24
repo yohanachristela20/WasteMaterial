@@ -4,8 +4,8 @@ import axios from "axios";
 import { toast } from 'react-toastify';
 
 const AddDetailBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
-    const [id_detailbarang, setIdDetailBarang] = useState("");
-    const [nama_detailbarang, setNamaDetailBarang] = useState("");
+    const [id_kategori, setIdDetailBarang] = useState("");
+    const [nama, setNamaDetailBarang] = useState("");
     const [tanggal_penetapan, setTanggalPenetapan] = useState("");
     const [satuan, setSatuan] = useState("");
     const [harga_barang, setHargaBarang] = useState("");
@@ -48,9 +48,9 @@ const AddDetailBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
         }
         try {
 
-            await axios.post('http://localhost:5000/detail-barang', {
-                id_detailbarang,
-                nama_detailbarang,
+            await axios.post('http://localhost:5000/kategori-barang', {
+                id_kategori,
+                nama,
                 satuan,
                 harga_barang,
                 jenis_barang,
@@ -104,128 +104,126 @@ const AddDetailBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
 
     return (
         <>
-        {/* <ToastContainer /> */}
-            {/* Mini Modal */}
-            <Modal
-                className="modal-primary"
-                show={showAddModal}
-                onHide={() => setShowAddModal(false)}
-            >
-                <Modal.Header className="text-center pb-1">
-                    <h3 className="mt-3 mb-0">Form Detail Barang Baru</h3>
-                </Modal.Header>
-                <Modal.Body className="text-left pt-0">
-                    <hr />
-                    <Form onSubmit={saveDetailBarang}>
-                    <span className="text-danger required-select">(*) Wajib diisi.</span>
-                        <Row>
-                            <Col md="12">
-                                <Form.Group>
-                                <span className="text-danger">*</span>
-                                    <label>ID Detail Barang</label>
-                                    <Form.Control
-                                        type="text"
-                                        value={id_detailbarang}
-                                        readOnly
-                                    />
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col md="12">
-                                <Form.Group>
-                                <span className="text-danger">*</span>
-                                    <label>Nama Barang</label>
-                                    <Form.Control
-                                        type="text"
-                                        value={nama_detailbarang}
-                                        uppercase
-                                        required
-                                        onChange={(e) => handleNamaChange(e.target.value.toUpperCase())}
-                                    />
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col md="12">
-                                <Form.Group>
-                                <span className="text-danger">*</span>
-                                    <label>Satuan</label>
-                                    <Form.Control
-                                        type="text"
-                                        value={satuan}
-                                        uppercase
-                                        required
-                                        onChange={(e) => handleSatuan(e.target.value.toUpperCase())}
-                                    />
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col md="12">
-                                <Form.Group>
-                                <span className="text-danger">*</span>
-                                    <label>Harga Barang</label>
-                                    <Form.Control
-                                        placeholder="Rp"
-                                        type="text"
-                                        required
-                                        value={"Rp " + formatRupiah(harga_barang)}
-                                        onChange={(e) => handleHargaBarang(e.target.value)}
-                                    />
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col md="12">
-                                <Form.Group>
-                                <span className="text-danger">*</span>
-                                <label>Jenis Barang</label>
-                                <Form.Select 
-                                className="form-control"
-                                required
-                                value={jenis_barang}
-                                onChange={(e) => {
-                                    setJenisBarang(e.target.value);
-                                    setJenisBarangError(false);
-                                }}
-                                >
-                                    <option className="placeholder-form" key='blankChoice' hidden value>Pilih Jenis Barang</option>
-                                    <option value="ASSET">ASSET</option>
-                                    <option value="NON-ASSET">NON-ASSET</option>
-                                </Form.Select>
-                                {jenisBarangError && <span className="text-danger required-select">Jenis barang belum dipilih</span>}
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col md="12">
-                                <Form.Group>
-                                <span className="text-danger">*</span>
-                                    <label>Tanggal Penetapan</label>
-                                    <Form.Control
-                                        type="date"
-                                        value={tanggal_penetapan}
-                                        required
-                                        onChange={(e) => setTanggalPenetapan(e.target.value)}
-                                    />
-                                </Form.Group>
-                            </Col>
-                        </Row>
-                        
-                       
-                        <Row>
-                            <Col md="12">
-                                <div className="modal-footer d-flex flex-column">
-                                    <Button className="btn-fill w-100 mt-3" type="submit" variant="primary">
-                                        Simpan
-                                    </Button>
-                                </div>
-                            </Col>
-                        </Row>
-                    </Form>
-                </Modal.Body>
-            </Modal>
+            <div>
+                <Modal
+                    className="modal-primary"
+                    show={showAddModal}
+                    onHide={() => setShowAddModal(false)}
+                >
+                    <Modal.Header>
+                        <h3 className="mt-2 mb-0"><strong>Form Kategori Barang</strong></h3>
+                    </Modal.Header>
+                    <Modal.Body className="text-left pt-0 mt-2 mb-1">
+                        <Form onSubmit={saveDetailBarang}>
+                        <span className="text-danger required-select">(*) Wajib diisi.</span>
+                            <Row>
+                                <Col md="12" className="mt-3 mb-2">
+                                    <Form.Group>
+                                        <label>ID Detail Barang</label>
+                                        <Form.Control
+                                            type="text"
+                                            value={id_kategori}
+                                            readOnly
+                                        />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                            <Row className="mb-2">
+                                <Col md="12">
+                                    <Form.Group>
+                                    <span className="text-danger">*</span>
+                                        <label>Nama Barang</label>
+                                        <Form.Control
+                                            type="text"
+                                            value={nama}
+                                            uppercase
+                                            required
+                                            onChange={(e) => handleNamaChange(e.target.value.toUpperCase())}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                            <Row className="mb-2">
+                                <Col md="12">
+                                    <Form.Group>
+                                    <span className="text-danger">*</span>
+                                        <label>Satuan</label>
+                                        <Form.Control
+                                            type="text"
+                                            value={satuan}
+                                            uppercase
+                                            required
+                                            onChange={(e) => handleSatuan(e.target.value.toUpperCase())}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                            <Row className="mb-2">
+                                <Col md="12">
+                                    <Form.Group>
+                                    <span className="text-danger">*</span>
+                                        <label>Harga Barang</label>
+                                        <Form.Control
+                                            placeholder="Rp"
+                                            type="text"
+                                            required
+                                            value={"Rp " + formatRupiah(harga_barang)}
+                                            onChange={(e) => handleHargaBarang(e.target.value)}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                            <Row className="mb-2">
+                                <Col md="12">
+                                    <Form.Group>
+                                    <span className="text-danger">*</span>
+                                    <label>Jenis Barang</label>
+                                    <Form.Select 
+                                    className="form-control"
+                                    required
+                                    value={jenis_barang}
+                                    onChange={(e) => {
+                                        setJenisBarang(e.target.value);
+                                        setJenisBarangError(false);
+                                    }}
+                                    >
+                                        <option className="placeholder-form" key='blankChoice' hidden value>Pilih Jenis Barang</option>
+                                        <option value="ASSET">ASSET</option>
+                                        <option value="NON-ASSET">NON-ASSET</option>
+                                    </Form.Select>
+                                    {jenisBarangError && <span className="text-danger required-select">Jenis barang belum dipilih</span>}
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                            <Row className="mb-2">
+                                <Col md="12">
+                                    <Form.Group>
+                                    <span className="text-danger">*</span>
+                                        <label>Tanggal Penetapan</label>
+                                        <Form.Control
+                                            type="date"
+                                            value={tanggal_penetapan}
+                                            required
+                                            onChange={(e) => setTanggalPenetapan(e.target.value)}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                            
+                            
+                            <Row>
+                                <Col md="12">
+                                    <div className="d-flex flex-column">
+                                        <Button className="btn-fill w-100 my-3" type="submit" variant="primary">
+                                            Simpan
+                                        </Button>
+                                    </div>
+                                </Col>
+                            </Row>
+                        </Form>
+                    </Modal.Body>
+                </Modal>
+            </div>
         </>
     );
 };

@@ -38,7 +38,7 @@ export const createUser = async(req, res) => {
 export const updateUser = async (req, res) => {
     try {
         const { id_user } = req.params;
-        const { password, role } = req.body;
+        const { password, role, username } = req.body;
 
         const user = await User.findOne({ where: { id_user } });
 
@@ -46,7 +46,7 @@ export const updateUser = async (req, res) => {
             return res.status(404).json({ msg: "User tidak ditemukan." });
         }
 
-        const updatedData = { role };
+        const updatedData = { role, username };
 
         if (password) {
             const hashedPassword = await bcrypt.hash(password, 10);
@@ -63,7 +63,6 @@ export const updateUser = async (req, res) => {
 };
 
 
-
 export const deleteUser = async(req, res) => {
     try {
         await User.destroy({
@@ -77,39 +76,39 @@ export const deleteUser = async(req, res) => {
     }
 }
 
-  export const getUserDetails = async (req, res) => {
-    const { username } = req.params;
-  
+export const getUserDetails = async (req, res) => {
+const { username } = req.params;
+
     try {
-      const userData = await User.findOne({
+        const userData = await User.findOne({
         where: { username },
         include: [
-          {
+            {
             model: Karyawan,
             as: 'KaryawanPengguna',
             attributes: ['id_karyawan', 'nama', 'divisi'],
-          },
+            },
         ],
-      });
-  
-      if (!userData) {
-        return res.status(404).json({ message: "User not found" });
-      }
-  
-      const { id_karyawan, nama, divisi } = userData.KaryawanPengguna;
-  
-      res.json({
+        });
+
+        if (!userData) {
+        return res.status(404).json({ message: "Data User tidak ditemukan" });
+        }
+
+        const { id_karyawan, nama, divisi } = userData.KaryawanPengguna;
+
+        res.json({
         id_karyawan,
         nama,
         divisi,
-      });
+        });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Error fetching user details" });
+        console.error(error);
+        res.status(500).json({ message: "Error fetching user details" });
     }
-  };
+};
 
-  export const getLastUserId = async (req, res) => {
+export const getLastUserId = async (req, res) => {
     try {
         const lastRecord = await User.findOne({
             order: [['id_user', 'DESC']],
@@ -123,7 +122,7 @@ export const deleteUser = async(req, res) => {
         console.error(error);
         return res.status(500).json({ message: 'Error retrieving last user ID.' });
     }
-  }; 
+}; 
 
 const activeUsers = {};
 export const checkUserActivity = (req, res, next) => {
@@ -147,4 +146,23 @@ export const checkUserActivity = (req, res, next) => {
         console.error("Token error:", error.message);
         res.status(401).json({ message: 'Token tidak valid atau telah kedaluwarsa.' });
     }
-  };
+};
+
+export const detailUsers = async (req, res) => {
+    try {
+        const userData = await User.findAll({
+        include: [
+            {
+            model: Karyawan,
+            as: 'KaryawanPengguna',
+            attributes: ['id_karyawan', 'nama', 'divisi'],
+            },
+        ],
+        });
+
+        return res.status(200).json(userData);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error fetching user details" });
+    }
+};

@@ -3,37 +3,37 @@ import db from "../config/database.js";
 
 const {DataTypes} = Sequelize;
 
-const DetailBarang = db.define('detail_barang', {
-    id_detailbarang: {
+const Kategori = db.define('kategori', {
+    id_kategori: {
         type: DataTypes.STRING, 
         primaryKey: true,
     },
-    nama_detailbarang: DataTypes.STRING,
+    nama: DataTypes.STRING,
     satuan: DataTypes.STRING,
     harga_barang: DataTypes.DECIMAL(19,2),
     jenis_barang: DataTypes.STRING,
-    tanggal_penetapan: DataTypes.DATEONLY,
+    tanggal_penetapan: DataTypes.DATEONLY, 
 }, {
     freezeTableName: true,
     timestamps: true,
     hooks: {
-        beforeCreate: async (detail_barang, options) => {
-            const lastRecord = await DetailBarang.findOne({
-                order: [['id_detailbarang', 'DESC']]
+        beforeCreate: async (kategori, options) => {
+            const lastRecord = await Kategori.findOne({
+                order: [['id_kategori', 'DESC']]
             }); 
             let newId = "1-K"; //default id
 
-            if (lastRecord && lastRecord.id_detailbarang) {
-                const lastIdNumber = parseInt(lastRecord.id_detailbarang); 
+            if (lastRecord && lastRecord.id_kategori) {
+                const lastIdNumber = parseInt(lastRecord.id_kategori); 
                 const incrementedIdNumber = (lastIdNumber + 1).toString();
                 newId = `${incrementedIdNumber}-K`;
             }
-            detail_barang.id_detailbarang = newId;
+            kategori.id_kategori = newId;
         },
     },  
 }); 
 
-export default DetailBarang; 
+export default Kategori; 
 
 (async()=> {
     await db.sync();

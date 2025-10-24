@@ -13,10 +13,6 @@ const User = db.define('user', {
     username: {
         type: DataTypes.STRING,
         allowNull: false,
-        // references: {
-        //     model: Karyawan, 
-        //     key: 'id_karyawan' 
-        // }
     }, 
     password: {
         type: DataTypes.STRING, 

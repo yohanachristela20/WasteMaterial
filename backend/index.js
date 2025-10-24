@@ -4,24 +4,30 @@ import bodyParser from "body-parser";
 import {Server} from "socket.io";
 import http from "http";
 
-// import cron from "node-cron";
 import KaryawanRoute from "./routes/KaryawanRoute.js"
-import DetailBarangRoute from "./routes/DetailBarangRoute.js";
+import KategoriRoute from "./routes/KategoriRoute.js";
 import UserRoute from "./routes/UserRoutes.js";
 import VendorRoute from "./routes/VendorRoute.js";
+import BarangRoute from "./routes/BarangRoute.js";
 import verifyToken from "./middlewares/authMiddleware.js";
+import PengajuanRoute from "./routes/PengajuanRoute.js";
+import GenPengajuanRoute from "./routes/GenPengajuanRoute.js";
+import TransaksiRoute from "./routes/TransaksiRoute.js";
 import dotenv from 'dotenv';
 
 import './models/KaryawanModel.js';
 import './models/Association.js';
 import './models/UserModel.js';
-import './models/DetailBarang.js';
+import './models/KategoriModel.js';
 import './models/VendorModel.js';
+import './models/BarangModel.js';
+import './models/PengajuanModel.js';
+import './models/GenPengajuan.js';
+import './models/TransaksiModel.js';
 import jwt from 'jsonwebtoken';
 import Vendor from "./models/VendorModel.js";
 
 
-// import io from "socket.io-client";
 
 dotenv.config();
 
@@ -51,20 +57,22 @@ app.use(bodyParser.json());
 app.use(cors({origin: "http://localhost:3000", credentials: true}));
 app.use(express.json());
 
-app.use(UserRoute); // Rute user untuk login, tanpa middleware otentikasi
+app.use(UserRoute); 
 
 const protectedRoutes = [
     KaryawanRoute,
-    DetailBarangRoute,
+    KategoriRoute,
     VendorRoute,
+    BarangRoute,
+    PengajuanRoute,
+    GenPengajuanRoute,
+    TransaksiRoute,
 ];
 
-// Terapkan middleware otentikasi pada routes yang dilindungi
 protectedRoutes.forEach(route => {
     app.use(verifyToken, route); 
 });
 
-// app.listen(5000, () => console.log('Server up and running on port 5000'));
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

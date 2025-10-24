@@ -50,7 +50,7 @@ const ImportKaryawan = ({showImportModal, setShowImportModal, onSuccess}) => {
   };
 
   const downloadCSV = (data) => {
-    const header = ["id_karyawan", "nama", "jenis_kelamin", "departemen", "divisi", "tanggal_lahir", "tanggal_masuk", "gaji_pokok"];
+    const header = ["nama", "divisi"];
   
     const csvContent = [header]
       .map((e) => e.join(","))
@@ -75,11 +75,10 @@ const ImportKaryawan = ({showImportModal, setShowImportModal, onSuccess}) => {
     <Modal.Header className="text-center pb-1">
       <h3 className="mt-2 mb-0">Import Karyawan</h3>
     </Modal.Header>
-    <Modal.Body className="text-left pt-0">
-      <hr />
+    <Modal.Body className="text-left pt-0 mt-3">
       <div>
       <span className="text-danger required-select">*Gunakan format CSV di bawah ini untuk mengimpor data karyawan.</span>
-      <p>Unduh format CSV disini.</p>
+      <p className="mt-3">Unduh format CSV disini.</p>
       <Button
         className="btn-fill pull-right mb-4"
         type="button"

@@ -5,10 +5,11 @@ import { toast } from 'react-toastify';
 
 const AddVendor = ({showAddModal, setShowAddModal, onSuccess}) => {
     const [id_vendor, setIdVendor] = useState("");
-    const [nama_vendor, setNamaVendor] = useState("");
-    const [alamat_vendor, setAlamatVendor] = useState("");
+    const [nama, setNamaVendor] = useState("");
+    const [alamat, setAlamatVendor] = useState("");
     const [no_telepon, setTelepon] = useState("");
     const [no_kendaraan, setKendaraan] = useState("");
+    const [sopir, setSopir] = useState("");
 
     const token = localStorage.getItem("token");
 
@@ -34,10 +35,11 @@ const AddVendor = ({showAddModal, setShowAddModal, onSuccess}) => {
         try {
             await axios.post('http://localhost:5000/vendor', {
                 id_vendor,
-                nama_vendor, 
-                alamat_vendor,
+                nama, 
+                alamat,
                 no_telepon,
-                no_kendaraan
+                no_kendaraan,
+                sopir,
             }, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -45,6 +47,7 @@ const AddVendor = ({showAddModal, setShowAddModal, onSuccess}) => {
             });
             setShowAddModal(false);
             onSuccess();
+            window.location.reload();
         } catch (error) {
             console.log(error.message);
         }
@@ -54,6 +57,11 @@ const AddVendor = ({showAddModal, setShowAddModal, onSuccess}) => {
     const handleNamaChange = (value) => {
         const alphabetValue = value.replace(/[^a-zA-Z\s]/g, "");
         setNamaVendor(alphabetValue);
+    };
+
+    const handleNamaSopir = (value) => {
+        const alphabetValue = value.replace(/[^a-zA-Z\s]/g, "");
+        setSopir(alphabetValue);
     };
 
     const handleAlamatChange = (value) => {
@@ -69,27 +77,22 @@ const AddVendor = ({showAddModal, setShowAddModal, onSuccess}) => {
 
     return (
         <>
-            {/* Mini Modal */}
             <Modal
-            className=" modal-primary"
-            show={showAddModal}
-            onHide={() => setShowAddModal(false)}
+                className="modal-primary"
+                show={showAddModal}
+                onHide={() => setShowAddModal(false)}
             >
-            <Modal.Header className="text-center pb-1">
-                <h3 className="mt-3 mb-0">Form Master Vendor</h3>
-                
+            <Modal.Header>
+                <h3 className="mt-2 mb-0"><strong>Form Master Vendor</strong></h3>
             </Modal.Header>
-            <Modal.Body className="text-left pt-0">
-                <hr />
+            <Modal.Body className="text-left pt-0 mt-2 mb-1">
                 <Form onSubmit={saveVendor}>
-
                 <span className="text-danger required-select">(*) Wajib diisi.</span>
-
                 <Row>
-                    <Col md="12">
+                    <Col md="12" className="mt-3 mb-2">
                         <Form.Group>
                         <span className="text-danger">*</span>
-                            <label className="mt-3">ID Vendor</label>
+                            <label>ID Vendor</label>
                             <Form.Control
                                 placeholder="ID Vendor"
                                 type="text"
@@ -100,14 +103,14 @@ const AddVendor = ({showAddModal, setShowAddModal, onSuccess}) => {
                     </Col>
                 </Row>
                 <Row>
-                    <Col md="12">
+                    <Col md="12" className="mb-2">
                     <Form.Group>
                     <span className="text-danger">*</span>
                         <label>Nama Vendor</label>
                         <Form.Control
                             type="text"
                             required
-                            value={nama_vendor}
+                            value={nama}
                             uppercase
                             onChange={(e) => handleNamaChange(e.target.value.toUpperCase())}
                         ></Form.Control>
@@ -115,14 +118,14 @@ const AddVendor = ({showAddModal, setShowAddModal, onSuccess}) => {
                     </Col>
                 </Row>
                 <Row>
-                    <Col md="12">
+                    <Col md="12" className="mb-2">
                     <Form.Group>
                     <span className="text-danger">*</span>
                         <label>Alamat Vendor</label>
                         <Form.Control
                             type="text"
                             required
-                            value={alamat_vendor}
+                            value={alamat}
                             uppercase
                             onChange={(e) => setAlamatVendor(e.target.value.toUpperCase())}
                         ></Form.Control>
@@ -130,13 +133,11 @@ const AddVendor = ({showAddModal, setShowAddModal, onSuccess}) => {
                     </Col>
                 </Row>
                 <Row>
-                    <Col md="12">
+                    <Col md="12" className="mb-2">
                     <Form.Group>
-                    <span className="text-danger">*</span>
                         <label>Nomor Telepon</label>
                         <Form.Control
                             type="text"
-                            required
                             value={no_telepon}
                             onChange={(e) => handleTelepon(e.target.value)}
                         ></Form.Control>
@@ -144,13 +145,11 @@ const AddVendor = ({showAddModal, setShowAddModal, onSuccess}) => {
                     </Col>
                 </Row>
                 <Row>
-                    <Col md="12">
+                    <Col md="12" className="mb-2">
                     <Form.Group>
-                    <span className="text-danger">*</span>
                         <label>No. Kendaraan</label>
                         <Form.Control
                             type="text"
-                            required
                             value={no_kendaraan}
                             uppercase
                             onChange={(e) => setKendaraan(e.target.value.toUpperCase())}
@@ -158,15 +157,25 @@ const AddVendor = ({showAddModal, setShowAddModal, onSuccess}) => {
                         </Form.Group>
                     </Col>
                 </Row>
+                <Row>
+                    <Col md="12" className="mb-2">
+                    <Form.Group>
+                        <label>Sopir</label>
+                        <Form.Control
+                            type="text"
+                            value={sopir}
+                            uppercase
+                            onChange={(e) => handleNamaSopir(e.target.value.toUpperCase())}
+                        ></Form.Control>
+                        </Form.Group>
+                    </Col>
+                </Row>
                 
-
-
-
                 <Row>
                 <Col md="12">
-                    <div className="modal-footer d-flex flex-column">
+                    <div className="d-flex flex-column">
                         <Button
-                            className="btn-fill w-100 mt-3"
+                            className="btn-fill w-100 my-3"
                             type="submit"
                             variant="primary"
                             >
@@ -179,7 +188,6 @@ const AddVendor = ({showAddModal, setShowAddModal, onSuccess}) => {
             </Modal.Body>
             
             </Modal>
-            {/* End Modal */}
         </>
     )
 }

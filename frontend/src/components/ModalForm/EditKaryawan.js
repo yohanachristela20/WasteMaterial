@@ -23,8 +23,6 @@ const EditKaryawan = ({showEditModal, setShowEditModal, karyawan, onSuccess}) =>
 
     const updateKaryawan = async(e) => {
         e.preventDefault();
-
-
         if (!divisi) {
             setDivisiError(true);
             e.preventDefault();
@@ -41,15 +39,20 @@ const EditKaryawan = ({showEditModal, setShowEditModal, karyawan, onSuccess}) =>
                     Authorization: `Bearer ${token}`,
                 },
             });
+            toast.success('Data karyawan berhasil diperbarui.', {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: true,
+            });
+            window.location.reload();
             setShowEditModal(false);
-            onSuccess();
         } catch (error) {
             console.log(error.message);
             toast.error('Gagal mengubah data karyawan.', {
                 position: "top-right",
                 autoClose: 5000,
                 hideProgressBar: true,
-              });
+            });
         }
     }
 
@@ -85,7 +88,6 @@ const EditKaryawan = ({showEditModal, setShowEditModal, karyawan, onSuccess}) =>
 
     return (
         <>
-            {/* Mini Modal */}
             <Modal
             className=" modal-primary"
             show={showEditModal}
@@ -96,10 +98,9 @@ const EditKaryawan = ({showEditModal, setShowEditModal, karyawan, onSuccess}) =>
                 
             </Modal.Header>
             <Modal.Body className="text-left pt-0">
-                <hr />
                 <Form onSubmit={updateKaryawan}>
                 <Row>
-                <Col md="12">
+                <Col md="12" className="mt-3 mb-2">
                     <Form.Group>
                         <label>ID Karyawan</label>
                         <Form.Control
@@ -112,8 +113,9 @@ const EditKaryawan = ({showEditModal, setShowEditModal, karyawan, onSuccess}) =>
                 </Col>
                 </Row>
                 <Row>
-                <Col md="12">
+                <Col md="12" className="mb-2">
                 <Form.Group>
+                    <span className="text-danger">*</span>
                     <label>Nama Lengkap</label>
                     <Form.Control
                         placeholder="Nama Lengkap"
@@ -128,8 +130,9 @@ const EditKaryawan = ({showEditModal, setShowEditModal, karyawan, onSuccess}) =>
                 </Row>
 
                 <Row>
-                <Col md="12">
+                <Col md="12" className="mb-2">
                     <Form.Group>
+                    <span className="text-danger">*</span>
                     <label>Divisi</label>
                     <Form.Select 
                     className="form-control"
@@ -170,13 +173,13 @@ const EditKaryawan = ({showEditModal, setShowEditModal, karyawan, onSuccess}) =>
 
                 <Row>
                 <Col md="12">
-                    <div className="modal-footer d-flex flex-column">
+                    <div className="d-flex flex-column">
                         <Button
-                            className="btn-fill w-100 mt-3"
+                            className="btn-fill w-100 my-3"
                             type="submit"
                             variant="primary"
                             >
-                            Simpan
+                            Ubah
                         </Button>
                     </div>
                 </Col>
@@ -185,7 +188,6 @@ const EditKaryawan = ({showEditModal, setShowEditModal, karyawan, onSuccess}) =>
             </Modal.Body>
             
             </Modal>
-            {/* End Modal */}
         </>
     )
 }

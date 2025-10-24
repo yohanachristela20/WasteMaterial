@@ -12,7 +12,8 @@ import {getVendor,
         createVendor, 
         updateVendor, 
         deleteVendor,
-        getLastVendorId
+        getLastVendorId,
+        detailVendor
 } from "../controllers/VendorController.js"; 
 
 const router = express.Router(); 
@@ -40,62 +41,87 @@ router.post('/vendor', createVendor);
 router.patch('/vendor/:id_vendor', updateVendor);
 router.delete('/vendor/:id_vendor', deleteVendor);
 router.get('/getLastVendorId', getLastVendorId);
+router.get('/detail-vendor/:id_vendor', detailVendor);
 
-// router.post('/karyawan/import-csv', upload.single("csvfile"), (req,res) => {
-//         if (!req.file) {
-//                 return res.status(400).json({ success: false, message: 'No file uploaded' });
-//         }
-        
-//         const filePath = req.file.path;
-//         const data_karyawan = [];
-        
-//         if (!fs.existsSync('./uploads/karyawan')) {
-//                 fs.mkdirSync('./uploads/karywan');
-//         }    
-        
-//         fs.createReadStream(filePath)
-//         .pipe(csvParser())
-//         .on("data", (row) => {
-//           data_karyawan.push({
-//             id_karyawan: row.id_karyawan,
-//             nama: row.nama,
-//             jenis_kelamin: row.jenis_kelamin,
-//             departemen: row.departemen,
-//             divisi: row.divisi,
-//             tanggal_lahir: new Date(row.tanggal_lahir),
-//             tanggal_masuk: new Date(row.tanggal_masuk),
-//             gaji_pokok: parseInt(row.gaji_pokok, 10)
-            
-//           });
-//         })
-//         .on("end", async () => {
-//           try {
-//             if (data_karyawan.length === 0) {
-//               throw new Error("Tidak ada data untuk diimpor");
-//             }
-        
-//             await Karyawan.bulkCreate(data_karyawan);
-        
-//             res.status(200).json({
-//               success: true,
-//               message: "Data berhasil diimpor ke database",
-//             });
-//           } catch (error) {
-//             console.error("Error importing data:", error);
-//             res.status(500).json({
-//               success: false,
-//               message: "Gagal mengimpor data ke database",
-//               error: error.message,
-//             });
-//           } finally {
-//             fs.unlinkSync(filePath);
-//           }
-//         })
-//         .on("error", (error) => {
-//           console.error("Error parsing file:", error);
-//           res.status(500).json({ success: false, message: "Error parsing file" });
-//         });
-        
-//         });
+router.post('/vendor/import-csv', upload.single("csvfile"), async(req,res) => {
+  const latestVendor = await Vendor.findOne({
+      order: [['id_vendor', 'DESC']]
+  });
+
+  let nextId = '1-V';
+  if (latestVendor && latestVendor.id_vendor) {
+      const lastNumeric = parseInt(latestVendor.id_vendor.split('-')[0], 10);
+      const incremented = lastNumeric + 1;
+      nextId = `${incremented}-V`;
+  }
+
+  const lastNumeric = latestVendor && latestVendor.id_vendor 
+  ? parseInt(String(latestVendor.id_vendor).split('-')[0], 10) || 0
+  : 0;
+  const startNumeric = lastNumeric + 1;
+
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: 'No file uploaded' });
+  }
+  
+  const filePath = req.file.path;
+  const data_vendor = [];
+  
+  if (!fs.existsSync('./uploads/vendor')) {
+          fs.mkdirSync('./uploads/vendor');
+  }    
+  
+  fs.createReadStream(filePath)
+  .pipe(csvParser())
+  .on("data", (row) => {
+    data_vendor.push({
+      id_vendor: nextId,
+      nama: row.nama,
+      alamat: row.alamat,
+      no_telepon: row.no_telepon,
+      no_kendaraan: row.no_kendaraan,
+      sopir: row.sopir
+    });
+  })
+  .on("end", async () => {
+    let transaction = await db.transaction();
+    try {
+      if (data_vendor.length === 0) {
+        throw new Error("Tidak ada data untuk diimpor");
+      }
+  
+      const payload = data_vendor.map((r, idx) => ({
+        id_vendor: `${startNumeric + idx}-V`,
+        nama: r.nama,
+        alamat: r.alamat,
+        no_telepon: r.no_telepon,
+        no_kendaraan: r.no_kendaraan,
+        sopir: r.sopir,
+      }));
+
+      transaction = await db.transaction();
+      await Vendor.bulkCreate(payload, { transaction });
+      await transaction.commit();
+  
+      res.status(200).json({
+        success: true,
+        message: "Data berhasil diimpor ke database",
+      });
+    } catch (error) {
+      console.error("Error importing data:", error);
+      res.status(500).json({
+        success: false,
+        message: "Gagal mengimpor data ke database",
+        error: error.message,
+      });
+    } finally {
+      fs.unlinkSync(filePath);
+    }
+  })
+  .on("error", (error) => {
+    console.error("Error parsing file:", error);
+    res.status(500).json({ success: false, message: "Error parsing file" });
+  });
+});
 
 export default router;

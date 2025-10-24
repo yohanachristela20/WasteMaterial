@@ -3,20 +3,17 @@ import { useLocation, NavLink } from "react-router-dom";
 import { Nav } from "react-bootstrap";
 
 function Sidebar({ color, image, routes }) {
-  // Get the user role from localStorage
-  const role = localStorage.getItem("role"); // Assuming the role is stored in localStorage
+  const role = localStorage.getItem("role");
 
-  // Filter routes to exclude "/screening-karyawan" and "/login" first
   const filteredRoutes = routes.filter(
-    (route) => !["/screening-karyawan", "/login", "/surat-pernyataan"].includes(route.path)
+    (route) => !["/login", "/detail-pengajuan", "/transaksi", "/detail-pengajuan-user", "/dok-pengajuan", "/dok-transaksi", "/dok-bpbb", "/dok-surat-jalan"].includes(route.path)
   );
 
   const roleFilteredRoutes = filteredRoutes.filter((route) => {
     if (role === "Admin") return route.layout === "/admin";
-    if (role === "Finance") return route.layout === "/finance";
-    if (role === "Karyawan") return route.layout === "/karyawan";
+    if (role === "User") return route.layout === "/user";
     if (role === "Super Admin") return route.layout === "/super-admin";
-    return false; // If role doesn't match, exclude all routes
+    return false; 
   });
 
   const location = useLocation();
@@ -33,7 +30,7 @@ function Sidebar({ color, image, routes }) {
             className="simple-text logo-mini mx-3"
           >
             <div className="logo-img">
-              <img src={require("assets/img/company_logo4.png")} alt="..." />
+              <img src={require("assets/img/logo5.png")} alt="sidebar-logo" />
             </div>
           </a>
           <a className="simple-text">SIBABE</a>

@@ -72,12 +72,12 @@ function Login() {
       history.push("/finance/beranda-finance"); 
       <Heartbeat/>
     }
-    else if (role === "Karyawan") {
-      history.push("/karyawan/dashboard-karyawan2"); 
+    else if (role === "User") {
+      history.push("/user/dashboard-user"); 
       <Heartbeat/>
     } 
     else if (role === "Super Admin") {
-      history.push("/super-admin/master-user"); 
+      history.push("/super-admin/master-karyawan"); 
       <Heartbeat/>
     }
      else {
@@ -154,8 +154,7 @@ function Login() {
                     <option value="" hidden>
                       Pilih Role
                     </option>
-                    <option value="Karyawan">Karyawan</option>
-                    <option value="Finance">Finance</option>
+                    <option value="User">User</option>
                     <option value="Admin">Admin</option>
                     <option value="Super Admin">Super Admin</option>
                   </Form.Select>
@@ -170,7 +169,7 @@ function Login() {
                 >
                   Masuk
                 </Button>
-                <p className="text-center font-footer" style={{fontSize:15}}>Lupa Password? Hubungi Admin</p>
+                <p className="text-center font-footer" style={{fontSize:15}}>Lupa Password? Hubungi Super Admin</p>
               </Form>
             </Card.Body>
           </Card>

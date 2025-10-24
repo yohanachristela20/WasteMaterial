@@ -10,15 +10,14 @@ import "./assets/css/demo.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 import AdminLayout from "layouts/Admin.js";
-import FinanceLayout from "layouts/Finance.js";
-import KaryawanLayout from "layouts/Karyawan.js";
+import UserLayout from "layouts/User.js";
 import SuperAdminLayout from "layouts/SuperAdmin.js"; 
 import Login from "views/Login.js";
 import PrivateRoute from "components/PrivateRoute/PrivateRoute.js";
 
 import ScreeningKaryawan from "views/ScreeningKaryawan";
 import { PlafondProvider } from "components/Provider/PlafondContext.js";
-import LaporanPiutang from "views/LaporanPiutangKaryawan.js";
+import DataPengajuan from "views/DataPengajuan.js";
 import PageScreeningKaryawan from "views/ScreeningKaryawan.js"; 
 
 import { ToastContainer, toast } from 'react-toastify';
@@ -64,21 +63,14 @@ root.render(
             />
           )} /> 
 
-      <PrivateRoute path="/karyawan" roles={["Karyawan"]} render={(props) =>
+      <PrivateRoute path="/user" roles={["User"]} render={(props) =>
         (
           <>
-           <KaryawanLayout {...props} />
+           <UserLayout {...props} />
            <Heartbeat />
           </>
         )} />
         
-      <PrivateRoute path="/finance" roles={["Finance"]} render={(props) => (
-        <>
-          <FinanceLayout {...props} />
-          <Heartbeat />
-        </>
-        )
-        } />
       <PrivateRoute path="/admin" roles={["Admin"]} render={(props) => (
         <>
           <AdminLayout {...props} />
@@ -93,10 +85,9 @@ root.render(
       )} />
 
       <Route path="/admin/screening-karyawan" component={ScreeningKaryawan} />
-      <Route path="/laporan-piutang" element={<LaporanPiutang />} />
+      <Route path="/laporan-piutang" element={<DataPengajuan />} />
       <Route path="/screening-karyawan" element={<PageScreeningKaryawan />} />
       <Redirect from="/" to="/login" />
-
     </Switch>
   </BrowserRouter>
   </PlafondProvider>

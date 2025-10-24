@@ -38,6 +38,7 @@ const ImportUser = ({showImportModal, setShowImportModal, onSuccess}) => {
         if (data.success) {
             setShowImportModal(false); 
             onSuccess(); 
+            window.location.reload();
         } else {
             alert(data.message || "Gagal mengimpor data.");
         }
@@ -50,7 +51,7 @@ const ImportUser = ({showImportModal, setShowImportModal, onSuccess}) => {
   };
 
   const downloadCSV = (data) => {
-    const header = ["id_user", "username", "role"];
+    const header = ["username", "role", "id_karyawan"];
   
     const csvContent = [header]
       .map((e) => e.join(","))
@@ -75,8 +76,7 @@ const ImportUser = ({showImportModal, setShowImportModal, onSuccess}) => {
     <Modal.Header className="text-center pb-1">
       <h3 className="mt-2 mb-0">Import User</h3>
     </Modal.Header>
-    <Modal.Body className="text-left pt-0">
-      <hr />
+    <Modal.Body className="text-left pt-0 mt-3">
       <div>
       <span className="text-danger required-select">*Gunakan format CSV di bawah ini untuk mengimpor data karyawan.</span>
       <p>Unduh format CSV disini.</p>

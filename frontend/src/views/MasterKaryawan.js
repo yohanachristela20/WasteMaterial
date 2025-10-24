@@ -38,12 +38,9 @@ function MasterKaryawan() {
   const filteredKaryawan = karyawan.filter((karyawan) =>
     (karyawan.id_karyawan && String(karyawan.id_karyawan).toLowerCase().includes(searchQuery)) ||
     (karyawan.nama && String(karyawan.nama).toLowerCase().includes(searchQuery)) ||
-    (karyawan.jenis_kelamin && String(karyawan.jenis_kelamin).toLowerCase().includes(searchQuery)) ||
-    (karyawan.departemen && String(karyawan.departemen).toLowerCase().includes(searchQuery)) ||
     (karyawan.divisi && String(karyawan.divisi).toLowerCase().includes(searchQuery)) ||
-    (karyawan.tanggal_lahir && String(karyawan.tanggal_lahir).toLowerCase().includes(searchQuery)) ||
-    (karyawan.tanggal_masuk && String(karyawan.tanggal_masuk).toLowerCase().includes(searchQuery)) ||
-    (karyawan.gaji_pokok && String(karyawan.gaji_pokok).toLowerCase().includes(searchQuery)) 
+    (karyawan.createdAt && String(karyawan.createdAt).toLowerCase().includes(searchQuery)) ||
+    (karyawan.updatedAt && String(karyawan.updatedAt).toLowerCase().includes(searchQuery))
   );
 
   const handleSort = (key) => {
@@ -187,16 +184,11 @@ function MasterKaryawan() {
   };
 
   const downloadCSV = (data) => {
-    const header = ["id_karyawan", "nama", "jenis_kelamin", "departemen", "divisi", "tanggal_lahir", "tanggal_masuk", "gaji_pokok"];
+    const header = ["id_karyawan", "nama", "divisi"];
     const rows = data.map((item) => [
       item.id_karyawan,
       item.nama,
-      item.jenis_kelamin,
-      item.departemen,
       item.divisi,
-      item.tanggal_lahir,
-      item.tanggal_masuk,
-      item.gaji_pokok,
     ]);
   
     const csvContent = [header, ...rows]
@@ -234,17 +226,12 @@ function MasterKaryawan() {
     doc.setFontSize(12); 
     doc.text(`Tanggal cetak: ${formattedDate}`, 12, 30);
   
-    const headers = [["ID Karyawan", "Nama", "Jenis Kelamin", "Departemen", "Divisi", "Tanggal Lahir", "Tanggal Masuk", "Gaji Pokok"]];
+    const headers = [["ID Karyawan", "Nama Lengkap", "Divisi"]];
   
     const rows = data.map((item) => [
       item.id_karyawan,
       item.nama,
-      item.jenis_kelamin,
-      item.departemen,
-      item.divisi,
-      item.tanggal_lahir,
-      item.tanggal_masuk,
-      formatRupiah(item.gaji_pokok),
+      item.divisi
     ]);
 
     const marginTop = 15; 
@@ -284,10 +271,10 @@ function MasterKaryawan() {
             <AddKaryawan showAddModal={showAddModal} setShowAddModal={setShowAddModal} onSuccess={handleAddSuccess} />
 
             <EditKaryawan
-                        showEditModal={showEditModal}
-                        setShowEditModal={setShowEditModal}
-                        karyawan={selectedKaryawan}
-                        onSuccess={handleEditSuccess}
+              showEditModal={showEditModal}
+              setShowEditModal={setShowEditModal}
+              karyawan={selectedKaryawan}
+              onSuccess={handleEditSuccess}
             />
           </div>
 
@@ -341,8 +328,10 @@ function MasterKaryawan() {
                      <thead >
                      <tr>
                        <th onClick={() => handleSort("id_karyawan")}>ID Karyawan {sortBy==="id_karyawan" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
-                       <th className="border-0 text-wrap">Nama Lengkap</th>
+                       <th className="border-0 text-wrap" onClick={() => handleSort("nama")}>Nama Lengkap {sortBy==="nama" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                        <th className="border-0 text-wrap" onClick={() => handleSort("divisi")}>Divisi {sortBy==="divisi" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                       <th className="border-0 text-wrap" onClick={() => handleSort("createdAt")}>Dibuat {sortBy==="createdAt" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                       <th className="border-0 text-wrap" onClick={() => handleSort("updatedAt")}>Terakhir Diubah {sortBy==="updatedAt" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                        <th className="border-0 text-wrap">Aksi</th>
                      </tr>
                    </thead>
@@ -352,6 +341,8 @@ function MasterKaryawan() {
                        <td className="text-center">{karyawan.id_karyawan}</td>
                        <td className="text-center">{karyawan.nama}</td>
                        <td className="text-center">{karyawan.divisi}</td>
+                       <td className="text-center">{new Date(karyawan.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
+                       <td className="text-center">{new Date(karyawan.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
                        <td className="text-center">
                        <Button
                          className="btn-fill pull-right warning"

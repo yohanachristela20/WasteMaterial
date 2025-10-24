@@ -64,27 +64,22 @@ const AddKaryawan = ({showAddModal, setShowAddModal, onSuccess}) => {
 
     return (
         <>
-            {/* Mini Modal */}
             <Modal
-            className=" modal-primary"
+            className="modal-primary"
             show={showAddModal}
             onHide={() => setShowAddModal(false)}
             >
             <Modal.Header className="text-center pb-1">
                 <h3 className="mt-3 mb-0">Form Master Karyawan</h3>
-                
             </Modal.Header>
-            <Modal.Body className="text-left pt-0">
-                <hr />
+            <Modal.Body className="text-left pt-0 mt-3">
                 <Form onSubmit={saveKaryawan}>
-
                 <span className="text-danger required-select">(*) Wajib diisi.</span>
-
                 <Row>
-                    <Col md="12">
+                    <Col md="12" className="mt-3 mb-2">
                         <Form.Group>
                         <span className="text-danger">*</span>
-                            <label className="mt-3">ID Karyawan</label>
+                            <label>ID Karyawan</label>
                             <Form.Control
                                 placeholder="ID Karyawan"
                                 type="text"
@@ -95,7 +90,7 @@ const AddKaryawan = ({showAddModal, setShowAddModal, onSuccess}) => {
                     </Col>
                 </Row>
                 <Row>
-                    <Col md="12">
+                    <Col md="12" className="mb-2">
                     <Form.Group>
                     <span className="text-danger">*</span>
                         <label>Nama Lengkap</label>
@@ -111,7 +106,7 @@ const AddKaryawan = ({showAddModal, setShowAddModal, onSuccess}) => {
                     </Col>
                 </Row>
                 <Row>
-                    <Col md="12">
+                    <Col md="12" className="mb-2">
                         <Form.Group>
                         <span className="text-danger">*</span>
                         <label>Divisi</label>
@@ -154,9 +149,9 @@ const AddKaryawan = ({showAddModal, setShowAddModal, onSuccess}) => {
 
                 <Row>
                 <Col md="12">
-                    <div className="modal-footer d-flex flex-column">
+                    <div className="d-flex flex-column">
                         <Button
-                            className="btn-fill w-100 mt-3"
+                            className="btn-fill w-100 my-3"
                             type="submit"
                             variant="primary"
                             >

@@ -9,7 +9,7 @@ import routes from "routes.js";
 
 import sidebarImage from "assets/img/sidebar-3.jpg";
 
-function Karyawan() {
+function User() {
   const [image, setImage] = React.useState(sidebarImage);
   const [color, setColor] = React.useState("black");
   const [hasImage, setHasImage] = React.useState(true);
@@ -17,7 +17,7 @@ function Karyawan() {
   const mainPanel = React.useRef(null);
   const getRoutes = (routes) => {
     return routes.map((prop, key) => {
-      if (prop.layout === "/karyawan") {
+      if (prop.layout === "/user") {
         return (
           <Route
             path={prop.layout + prop.path}
@@ -60,4 +60,4 @@ function Karyawan() {
   );
 }
 
-export default Karyawan;
+export default User;

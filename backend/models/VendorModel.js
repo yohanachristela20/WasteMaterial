@@ -8,10 +8,11 @@ const Vendor = db.define('vendor', {
         type: DataTypes.STRING, 
         primaryKey: true,
     },
-    nama_vendor: DataTypes.STRING,
-    alamat_vendor: DataTypes.STRING,
+    nama: DataTypes.STRING,
+    alamat: DataTypes.STRING,
     no_telepon: DataTypes.STRING, 
     no_kendaraan: DataTypes.STRING,
+    sopir: DataTypes.STRING,
 }, {
     freezeTableName: true,
     timestamps: true,
@@ -25,7 +26,7 @@ const Vendor = db.define('vendor', {
             if (lastRecord && lastRecord.id_vendor) {
                 const lastIdNumber = parseInt(lastRecord.id_vendor); 
                 const incrementedIdNumber = (lastIdNumber + 1).toString();
-                newId = `${incrementedIdNumber}-K`;
+                newId = `${incrementedIdNumber}-V`;
             }
             vendor.id_vendor = newId;
         },

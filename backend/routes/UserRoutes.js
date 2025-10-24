@@ -4,12 +4,11 @@ import path from 'path';
 import fs from 'fs';
 import csvParser from "csv-parser";
 import bcrypt from 'bcrypt';
-import db from "../config/database.js";
 import User from "../models/UserModel.js";
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import verifyToken from '../middlewares/authMiddleware.js';
 import { clearUserSession } from "../middlewares/checkSessionTimeout.js";
+import db from "../config/database.js";
 
 dotenv.config();
 
@@ -20,7 +19,7 @@ import {getUser,
         deleteUser, 
         getUserDetails, 
         getLastUserId,
-        checkUserActivity,
+        detailUsers,
 } from "../controllers/UserController.js"; 
 
 const router = express.Router(); 
@@ -53,98 +52,117 @@ router.patch('/user/:id_user', updateUser);
 router.delete('/user/:id_user', deleteUser);
 router.get('/user-details/:username', getUserDetails); 
 router.get('/last-id', getLastUserId); 
-
+router.get('/detail-users', detailUsers);
 
 router.post('/change-password', async (req, res) => {
   const { username, role, oldPassword, newPassword } = req.body;
-
-  // Validasi input
   if (!username || !role || !oldPassword || !newPassword) {
       return res.status(400).json({ message: "Semua field harus diisi!" });
   }
 
   try {
-      // Cari user berdasarkan username dan role
       const user = await User.findOne({ where: { username, role } });
 
       if (!user) {
           return res.status(404).json({ message: "User tidak ditemukan." });
       }
 
-      // Validasi password lama
       const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
       if (!isPasswordValid) {
           return res.status(400).json({ message: "Password lama salah." });
       }
 
-      // Hash password baru
       const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
-      // Update password
       await User.update({ password: hashedNewPassword }, { where: { username, role } });
 
       res.status(200).json({ message: "Password berhasil diperbarui." });
 
-      // history.push("/login"); 
   } catch (error) {
       console.error("Error saat mengganti password:", error.message);
       res.status(500).json({ message: "Terjadi kesalahan server.", error: error.message });
   }
 });
 
-router.post('/user/import-csv', upload.single("csvfile"), (req,res) => {
-        if (!req.file) {
-                return res.status(400).json({ success: false, message: 'No file uploaded' });
+router.post('/user/import-csv', upload.single("csvfile"), async(req,res) => {
+  const latestUser = await User.findOne({
+    order: [['id_user', 'DESC']]
+  });
+
+  const lastNumeric = latestUser && latestUser.id_user 
+  ? parseInt(latestUser.id_user.substring(3), 10)
+  : 0;
+
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: 'No file uploaded' });
+  }
+  
+  const filePath = req.file.path;
+  const data_user = [];
+  const defaultPassword = process.env.DEFAULT_PASS; 
+  
+  if (!fs.existsSync('./uploads/user')) {
+    fs.mkdirSync('./uploads/user', { recursive: true });
+  }    
+  
+  fs.createReadStream(filePath)
+  .pipe(csvParser())
+  .on("data", (row) => {
+    const salt =  bcrypt.genSaltSync(10); //salt: data acak untuk hashing/ enkripsi pass
+    const hashedPassword =  bcrypt.hashSync(defaultPassword, salt); 
+
+    data_user.push({
+      // id_user: row.id_user,
+      username: row.username,
+      password: hashedPassword, 
+      role: row.role,
+      id_karyawan: row.id_karyawan,
+    });
+  })
+  .on("end", async () => {
+    let transaction = await db.transaction();
+    try {
+      if (data_user.length === 0) {
+        throw new Error("Tidak ada data untuk diimport");
+      }
+
+      const salt =  bcrypt.genSaltSync(10); //salt: data acak untuk hashing/ enkripsi pass
+      const hashedPassword =  bcrypt.hashSync(defaultPassword, salt); 
+
+      const payload = data_user.map((r, idx) => {
+        const numeric = lastNumeric + idx + 1;
+        return{
+          id_user: `USR${numeric.toString().padStart(4, '0')}`,
+          username: r.username,
+          password: hashedPassword,
+          role: r.role,
+          id_karyawan: r.id_karyawan,
         }
-        
-        const filePath = req.file.path;
-        const data_user = [];
-        const defaultPassword = process.env.DEFAULT_PASS; 
-        
-        if (!fs.existsSync('./uploads/user')) {
-                fs.mkdirSync('./uploads/user');
-        }    
-        
-        fs.createReadStream(filePath)
-        .pipe(csvParser())
-        .on("data", (row) => {
-          const salt =  bcrypt.genSaltSync(10); //salt: data acak untuk hashing/ enkripsi pass
-          const hashedPassword =  bcrypt.hashSync(defaultPassword, salt); 
-      
-          data_user.push({
-            id_user: row.id_user,
-            username: row.username,
-            password: hashedPassword, 
-            role: row.role
-          });
-        })
-        .on("end", async () => {
-          try {
-            if (data_user.length === 0) {
-              throw new Error("Tidak ada data untuk diimport");
-            }
-            
-            await User.bulkCreate(data_user);
-        
-            res.status(200).json({
-              success: true,
-              message: "Data berhasil diimport ke database",
-            });
-          } catch (error) {
-            console.error("Error importing data:", error);
-            res.status(500).json({
-              success: false,
-              message: "Gagal mengimport data ke database",
-              error: error.message,
-            });
-          } finally {
-            fs.unlinkSync(filePath);
-          }
-        })
-        .on("error", (error) => {
-          console.error("Error parsing file:", error);
-          res.status(500).json({ success: false, message: "Error parsing file" });
-        });
+      });
+
+      transaction = await db.transaction();
+      await User.bulkCreate(payload, {transaction});
+      await transaction.commit();
+  
+      res.status(200).json({
+        success: true,
+        message: "Data berhasil diimport ke database",
+      });
+    } catch (error) {
+      console.error("Error importing data:", error);
+      res.status(500).json({
+        success: false,
+        message: "Gagal mengimport data ke database",
+        error: error.message,
+      });
+    } finally {
+      fs.unlinkSync(filePath);
+    }
+  })
+  .on("error", (error) => {
+    console.error("Error parsing file:", error);
+    res.status(500).json({ success: false, message: "Error parsing file" });
+  });
         
 });
 

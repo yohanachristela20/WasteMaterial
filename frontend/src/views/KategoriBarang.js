@@ -3,7 +3,7 @@ import {FaFileCsv, FaFileImport, FaFilePdf, FaPlusCircle, FaSortDown, FaSortUp, 
 import SearchBar from "components/Search/SearchBar.js";
 import axios from "axios";
 import AddDetailBarang from "components/ModalForm/AddDetailBarang";
-import EditDetailBarang from "components/ModalForm/EditDetailBarang.js";
+import EditKategori from "components/ModalForm/EditKategori.js";
 import ImportMasterBarang from "components/ModalForm/ImportMasterBarang.js"; 
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -25,7 +25,7 @@ import {
   Spinner  
 } from "react-bootstrap";
 
-function MasterBarang() {
+function KategoriBarang() {
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [showEditModal, setShowEditModal] = React.useState(false);
   const [showImportModal, setShowImportModal] = useState(false); 
@@ -37,15 +37,21 @@ function MasterBarang() {
   const [itemsPerPage] = useState(10);
   const [loading, setLoading] = useState(true);
 
-  const [sortBy, setSortBy] = useState("id_detailbarang");
+  const [sortBy, setSortBy] = useState("id_kategori");
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortOrderDibayar, setSortOrderDibayar] = useState("asc");
+  const [sortedData, setSortedData] = useState();
+  const [sortDirection, setSortDirection] = useState('asc');
 
   const filteredBarang = detailBarang.filter((detailBarang) =>
-    (detailBarang.id_detailbarang && String(detailBarang.id_detailbarang).toLowerCase().includes(searchQuery)) ||
-    (detailBarang.nama_detailbarang && String(detailBarang.nama_detailbarang).toLowerCase().includes(searchQuery)) ||
+    (detailBarang.id_kategori && String(detailBarang.id_kategori).toLowerCase().includes(searchQuery)) ||
+    (detailBarang.nama && String(detailBarang.nama).toLowerCase().includes(searchQuery)) ||
     (detailBarang.satuan && (detailBarang.satuan).toLowerCase().includes(searchQuery)) ||
-    (detailBarang.harga_barang && (detailBarang.harga_barang).includes(searchQuery))
+    (detailBarang.harga_barang && (detailBarang.harga_barang).includes(searchQuery)) ||
+    (detailBarang.jenis_barang && String(detailBarang.jenis_barang).toLowerCase().includes(searchQuery)) || 
+    (detailBarang.tanggal_penetapan && String(detailBarang.tanggal_penetapan).includes(searchQuery)) ||
+    (detailBarang.updatedAt && String(detailBarang.updatedAt).includes(searchQuery))  
+
   );
 
   const handlePageChange = (pageNumber) => {
@@ -63,16 +69,53 @@ function MasterBarang() {
     }
   }
 
+  const parseCurrency = (currencyString) => {
+    if (!currencyString && currencyString !== 0) return 0;
+    if (typeof currencyString === "number") return currencyString;
+    const numericString = String(currencyString).replace(/[^0-9.-]+/g, "");
+    return parseFloat(numericString) || 0;
+  }
+
+  const sortingCurrency = (key = "harga_barang") => {
+    const newOrder = sortBy === key && sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortBy(key);
+    setSortOrder(newOrder);
+
+    const sorted = [...detailBarang].sort((a, b) => {
+      const hargaA = parseCurrency(a[key]);
+      const hargaB = parseCurrency(b[key]);
+      return newOrder === "asc" ? hargaA - hargaB : hargaB - hargaA;
+    });
+    setDetailBarang(sorted);
+    setCurrentPage(1);
+  };
+
   
   const sortedBarang = filteredBarang.sort((a, b) => {
-    const aValue = a[sortBy];
-    const bValue = b[sortBy];
+    let aValue = a[sortBy];
+    let bValue = b[sortBy];
 
-    if (sortOrder === "asc") {
-      return aValue < bValue ? -1 : aValue > bValue ? 1 : 0; 
+    // if (sortOrder === "asc") {
+    //   return aValue < bValue ? -1 : aValue > bValue ? 1 : 0; 
+    // } else {
+    //   return bValue < aValue ? -1 : bValue > aValue ? 1 : 0; 
+    // }
+
+    if (sortBy === "harga_barang") {
+      aValue = parseCurrency(aValue);
+      bValue = parseCurrency(bValue);
     } else {
-      return bValue < aValue ? -1 : bValue > aValue ? 1 : 0; 
+      aValue = aValue === null || aValue === "undefined" ? "" : String (aValue).toLowerCase();
+      bValue = bValue === null || aValue === "undefined" ? "" : String (bValue).toLowerCase();
     }
+
+    if (sortBy === "harga_barang") {
+      return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
+    }
+
+    if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
+    if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
+    return 0;
 
   });
 
@@ -90,7 +133,7 @@ function MasterBarang() {
   const getDataBarang = async () =>{
     try {
       // setLoading(true);
-      const response = await axios.get("http://localhost:5000/detail-barang", {
+      const response = await axios.get("http://localhost:5000/kategori-barang", {
         headers: {
           Authorization: `Bearer ${token}`,
       },
@@ -124,7 +167,7 @@ function MasterBarang() {
 
   const handleAddSuccess = () => {
     getDataBarang();
-    toast.success("Data master barang berhasil ditambahkan!", {
+    toast.success("Kategori barang berhasil ditambahkan!", {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: true,
@@ -133,7 +176,7 @@ function MasterBarang() {
 
 const handleEditSuccess = () => {
   getDataBarang();
-  toast.success("Data master barang berhasil diperbarui!", {
+  toast.success("Kategori barang berhasil diperbarui!", {
       position: "top-right",
       autoClose: 5000,
       hideProgressBar: true,
@@ -153,14 +196,14 @@ const handleImportSuccess = () => {
   // });
 };
 
-const deleteDetailBarang = async(id_detailbarang) => {
+const deleteDetailBarang = async(id_kategori) => {
   try {
-    await axios.delete(`http://localhost:5000/detail-barang/${id_detailbarang}`, {
+    await axios.delete(`http://localhost:5000/kategori-barang/${id_kategori}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       }
     });
-    toast.success("Data master barang berhasil dihapus.", {
+    toast.success("Kategori barang berhasil dihapus.", {
       position: "top-right",
       autoClose: 5000,
       hideProgressBar: true,
@@ -175,7 +218,7 @@ const deleteDetailBarang = async(id_detailbarang) => {
 
 
 const downloadCSV = (data) => {
-  const header = ["id_plafond", "tanggal_penetapan", "jumlah_plafond", "keterangan", "createdAt", "updatedAt"];
+  const header = ["id_plafond", "tanggal_penetapan", "jumlah_plafond", "keterangan", "tanggal_penetapan", "updatedAt"];
   const rows = data.map((item) => [
     item.id_plafond,
     item.tanggal_penetapan,
@@ -204,7 +247,7 @@ const downloadPDF = (data) => {
   const doc = new jsPDF({ orientation: 'landscape' });
 
   doc.setFontSize(12); 
-  doc.text("Master Plafond", 12, 20);
+  doc.text("Kategori Barang", 12, 20);
 
   const currentDate = new Date();
     const formattedDate = currentDate.toLocaleString('id-ID', {
@@ -220,15 +263,19 @@ const downloadPDF = (data) => {
     doc.setFontSize(12); 
     doc.text(`Tanggal cetak: ${formattedDate}`, 12, 30);
 
-  const headers = [["ID Plafond", "Tanggal Penetapan", "Jumlah Plafond", "Keterangan", "Created At", "Updated At"]];
+  const headers = [["ID Kategori", "Nama Barang", "Satuan", "Harga Barang", "Jenis Barang", "Tanggal Penetapan", "Terakhir Diubah"]];
 
   const rows = data.map((item) => [
-    item.id_plafond,
+    item.id_kategori,
+    item.nama,
+    item.satuan,
+    // item.harga_barang,
+    (formatRupiah(item.harga_barang)),
+    item.jenis_barang,
     item.tanggal_penetapan,
-    formatRupiah(item.jumlah_plafond),
-    item.keterangan,
-    item.createdAt,
-    item.updatedAt,
+    // item.updatedAt,
+    (new Date(item.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', ''))
+    // (item.updatedAt).tz('+0700').format('YYYY-MM-DD HH:mm'),
   ]);
 
   const marginTop = 15; 
@@ -241,7 +288,7 @@ const downloadPDF = (data) => {
     headStyles: { fillColor: [3, 177, 252] }, // Warna header tabel
   });
 
-  doc.save("master_plafond.pdf");
+  doc.save("master_barang.pdf");
 };
 
   return (
@@ -257,17 +304,17 @@ const downloadPDF = (data) => {
                 variant="success"
                 onClick={() => setShowAddModal(true)}>
                 <FaPlusCircle style={{ marginRight: '8px' }} />
-                Tambah Detail Barang
+                Kategori Baru
               </Button>
 
               <AddDetailBarang showAddModal={showAddModal} setShowAddModal={setShowAddModal} onSuccess={handleAddSuccess} />
 
-              <EditDetailBarang
-                          showEditModal={showEditModal}
-                          setShowEditModal={setShowEditModal}
-                          detailBarang={selectedBarang}
-                          onSuccess={handleEditSuccess}
-                        />
+              <EditKategori
+                  showEditModal={showEditModal}
+                  setShowEditModal={setShowEditModal}
+                  detailBarang={selectedBarang}
+                  onSuccess={handleEditSuccess}
+                />
             </div>
 
             <Button
@@ -282,20 +329,20 @@ const downloadPDF = (data) => {
 
             <ImportMasterBarang showImportModal={showImportModal} setShowImportModal={setShowImportModal} onSuccess={handleImportSuccess} />
 
-            <Button
+            {/* <Button
               className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
               type="button"
               variant="primary"
               onClick={() => downloadCSV(plafond)}>
               <FaFileCsv style={{ marginRight: '8px' }} />
               Unduh CSV
-            </Button>
+            </Button> */}
 
             <Button
               className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
               type="button"
               variant="primary"
-              onClick={() => downloadPDF(plafond)}>
+              onClick={() => downloadPDF(detailBarang)}>
               <FaFilePdf style={{ marginRight: '8px' }} />
               Unduh PDF
             </Button>
@@ -303,9 +350,9 @@ const downloadPDF = (data) => {
             <SearchBar searchQuery={searchQuery} handleSearchChange={handleSearchChange}/>
             
             <Col md="12">
-              <Card className="striped-tabled-with-hover mt-2">
+              <Card className="p-3 striped-tabled-with-hover mt-2">
                 <Card.Header>
-                  <Card.Title as="h4">Detail Barang</Card.Title>
+                  <Card.Title as="h4" className="mb-4"><strong>Kategori Barang</strong></Card.Title>
                 </Card.Header>
                 <Card.Body className="table-responsive px-0" style={{ overflowX: 'auto' }}>
                 {/* {loading ? (
@@ -319,32 +366,32 @@ const downloadPDF = (data) => {
                         <table className="flex-table table table-striped table-hover">
                           <thead>
                         <tr>
-                          <th onClick={() => handleSort("id_detailbarang")}>ID Detail Barang {sortBy==="id_detailbarang" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
-                          <th className="border-0" onClick={() => handleSort("nama_detailbarang")}>Nama Barang {sortBy==="nama_detailbarang" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                          <th onClick={() => handleSort("id_kategori")}>ID Kategori {sortBy==="id_kategori" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                          <th className="border-0" onClick={() => handleSort("nama")}>Nama Barang {sortBy==="nama" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                           <th className="border-0" onClick={() => handleSort("satuan")}>Satuan {sortBy==="satuan" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
-                          <th className="border-0">Harga Barang</th>
-                          <th className="border-0">Jenis Barang</th>
-                          <th className="border-0">Dibuat</th>
-                          <th className="border-0">Terakhir Diubah</th>
+                          <th className="border-0" onClick={() => sortingCurrency("harga_barang")}>Harga Barang {sortBy==="harga_barang" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                          <th className="border-0" onClick={() => handleSort("jenis_barang")}>Jenis Barang {sortBy==="jenis_barang" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                          <th className="border-0" onClick={() => handleSort("tanggal_penetapan")}>Tanggal Penetapan {sortBy==="tanggal_penetapan" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                          <th className="border-0" onClick={() => handleSort("updatedAt")}>Terakhir Diubah {sortBy==="terakhir_diubah" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                           <th className="border-0">Aksi</th>
                         </tr>
                           </thead>
                           <tbody className="scroll scroller-tbody">
                             {currentItems.map((detailBarang) => (
-                              <tr key={detailBarang.id_detailbarang}>
-                                <td className="text-center">{detailBarang.id_detailbarang}</td>
-                                <td className="text-center">{detailBarang.nama_detailbarang}</td>
+                              <tr key={detailBarang.id_kategori}>
+                                <td className="text-center">{detailBarang.id_kategori}</td>
+                                <td className="text-center">{detailBarang.nama}</td>
                                 <td className="text-center">{detailBarang.satuan}</td>
-                                <td className="text-right">{formatRupiah(detailBarang.harga_barang)}</td>
+                                <td className="text-center">{formatRupiah(detailBarang.harga_barang)}</td>
                                 <td className="text-center">{detailBarang.jenis_barang}</td>
-                                <td className="text-center">{detailBarang.tanggal_penetapan}</td>
+                                <td className="text-center">{new Date(detailBarang.tanggal_penetapan).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
                                 <td className="text-center">{new Date(detailBarang.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
                                 <td className="text-center">
                                   <Button className="btn-fill pull-right warning" variant="warning" onClick={() => { setShowEditModal(true); setSelectedBarang(detailBarang); }} style={{ width: 96, fontSize: 14 }}>
                                     <FaRegEdit style={{ marginRight: '8px' }} />
                                     Ubah
                                   </Button>
-                                  <Button className="btn-fill pull-right danger mt-2" variant="danger"  onClick={() => deleteDetailBarang(detailBarang.id_detailbarang)} style={{ width: 96, fontSize: 13 }}>
+                                  <Button className="btn-fill pull-right danger mt-2" variant="danger"  onClick={() => deleteDetailBarang(detailBarang.id_kategori)} style={{ width: 96, fontSize: 13 }}>
                                     <FaTrashAlt style={{ marginRight: '8px' }} />
                                     Hapus
                                   </Button>
@@ -385,4 +432,4 @@ const downloadPDF = (data) => {
   );
 }
 
-export default MasterBarang;
+export default KategoriBarang;

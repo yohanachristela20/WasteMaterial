@@ -43,7 +43,13 @@ const AddUser = ({showAddModal, setShowAddModal, onSuccess}) => {
                 },
             });
             setShowAddModal(false);
-            onSuccess();
+            // onSuccess();
+            window.location.reload();
+            toast.success('Data user baru berhasil dibuat.', {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: true,
+            });
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message;
             console.log(error.message);
@@ -51,7 +57,7 @@ const AddUser = ({showAddModal, setShowAddModal, onSuccess}) => {
                 position: "top-right",
                 autoClose: 5000,
                 hideProgressBar: true,
-              });
+            });
         }
     
     };
@@ -60,6 +66,10 @@ const AddUser = ({showAddModal, setShowAddModal, onSuccess}) => {
     //     const numericValue = value.replace(/\D/g, "");
     //     setIdUser(numericValue);
     // };
+
+    const handleIDKaryawan = (value) => {
+        setIdKaryawan(value);
+    };
 
 
     return (
@@ -72,23 +82,18 @@ const AddUser = ({showAddModal, setShowAddModal, onSuccess}) => {
             >
             <Modal.Header className="text-center">
                 <h3 className="mt-2 mb-0">Form Master User</h3>
-                
             </Modal.Header>
-            <Modal.Body className="text-left pt-0">
-                <hr />
+            <Modal.Body className="text-left pt-0 mt-3">
                 <Form onSubmit={saveUser}>
-
                 <span className="text-danger required-select">(*) Wajib diisi.</span>
-
                 <Row>
                 </Row>
                 <Row>
-                    <Col md="12">
+                    <Col md="12" className="mb-2">
                     <Form.Group>
                     <span className="text-danger">*</span>
                         <label>Username</label>
                         <Form.Control
-                            placeholder="Username"
                             type="text"
                             required
                             value={username}
@@ -101,9 +106,9 @@ const AddUser = ({showAddModal, setShowAddModal, onSuccess}) => {
                 </Row>
 
                 <Row>
-                <Col md="12">
+                <Col md="12" className="mb-2">
                 <Form.Group>
-                <span className="text-danger">*</span>
+                    <span className="text-danger">*</span>
                     <label>Role</label>
                     <Form.Select
                         placeholder="Role"
@@ -116,35 +121,34 @@ const AddUser = ({showAddModal, setShowAddModal, onSuccess}) => {
                         }}
                         >
                             <option className="placeholder-form" key='blankChoice' hidden value>Pilih Role</option>
-                            <option value="Karyawan">Karyawan</option>
+                            <option value="User">User</option>
                             <option value="Admin">Admin</option>
                             <option value="Super Admin">Super Admin</option>
                     </Form.Select>
-                    </Form.Group>
+                </Form.Group>
                 </Col>
                 </Row>
 
                 <Row>
-                    <Col md="12">
+                    <Col md="12" className="mb-2">
                     <Form.Group>
                     <span className="text-danger">*</span>
                         <label>ID Karyawan</label>
                         <Form.Control
-                            placeholder="Id Karyawan"
                             type="text"
                             required
                             value={id_karyawan}
-                            onChange={(e) => {
-                                setIdKaryawan(e.target.value);
-                            }}
+                            uppercase
+                            onChange={(e) => handleIDKaryawan(e.target.value.toUpperCase())}
+
                         ></Form.Control>
                         </Form.Group>
                     </Col>
                 </Row>
 
                 <Row>
-                <Col md="12">
-                    <div className="modal-footer d-flex flex-column">
+                <Col md="12" className="mb-3">
+                    <div className="d-flex flex-column">
                         <Button
                             className="btn-fill w-100 mt-3"
                             type="submit"
