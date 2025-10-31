@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaFileCsv, FaFileImport, FaFilePdf, FaPlusCircle, FaRegEdit, FaTrashAlt, FaSortUp, FaSortDown} from 'react-icons/fa'; 
+import {FaFileImport, FaFilePdf, FaPlusCircle, FaRegEdit, FaTrashAlt, FaSortUp, FaSortDown} from 'react-icons/fa'; 
 import SearchBar from "components/Search/SearchBar.js";
 import axios from "axios";
 import AddVendor from "components/ModalForm/AddVendor.js";
@@ -32,7 +32,6 @@ function MasterVendor() {
 
   const [sortBy, setSortBy] = useState("id_vendor");
   const [sortOrder, setSortOrder] = useState("asc");
-  const [sortOrderDibayar, setSortOrderDibayar] = useState("asc");
 
   const filteredVendor = vendor.filter((vendor) =>
     (vendor.id_vendor && String(vendor.id_vendor).toLowerCase().includes(searchQuery)) ||
@@ -78,10 +77,8 @@ function MasterVendor() {
 
   const getVendor = async () =>{
     const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
 
     try {
-      // setLoading(true);
       const response = await axios.get("http://localhost:5000/vendor", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -91,9 +88,6 @@ function MasterVendor() {
     } catch (error) {
       console.error("Error fetching data:", error.message); 
     }
-    // } finally {
-    //   setLoading(false);
-    // }
   };
 
   const deleteVendor = async(id_vendor) =>{
@@ -164,34 +158,6 @@ function MasterVendor() {
     });
   };
 
-  const downloadCSV = (data) => {
-    const header = ["id_karyawan", "nama", "jenis_kelamin", "departemen", "divisi", "tanggal_lahir", "tanggal_masuk", "gaji_pokok"];
-    const rows = data.map((item) => [
-      item.id_karyawan,
-      item.nama,
-      item.jenis_kelamin,
-      item.departemen,
-      item.divisi,
-      item.tanggal_lahir,
-      item.tanggal_masuk,
-      item.gaji_pokok,
-    ]);
-  
-    const csvContent = [header, ...rows]
-      .map((e) => e.join(","))
-      .join("\n");
-  
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "master_karyawan.csv");
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   const downloadPDF = (data) => {
     const doc = new jsPDF({ orientation: 'landscape' });
   
@@ -214,23 +180,39 @@ function MasterVendor() {
   
     const headers = [["ID Vendor", "Nama", "Alamat", "No. Telepon", "No. Kendaraan", "Sopir", "Dibuat", "Terakhir Diubah"]];
   
-    const rows = data.map((item) => [
-      item.id_vendor,
-      item.nama,
-      item.alamat,
-      item.no_telepon,
-      item.no_kendaraan,
-      item.sopir,
-      (new Date(item.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')),
-      (new Date(item.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', ''))
-    ]);
+    // const rows = data.map((item) => [
+    //   item.id_vendor,
+    //   item.nama,
+    //   item.alamat,
+    //   item.no_telepon,
+    //   item.no_kendaraan,
+    //   item.sopir,
+    //   (new Date(item.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')),
+    //   (new Date(item.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', ''))
+    // ]);
+
+    const allRows = data.map((p) => {
+      const id = p.id_vendor || "";
+      const nama = p.nama || "";
+      const alamat = p.alamat || "";
+      const no_telepon = p.no_telepon || "";
+      const no_kendaraan = p.no_kendaraan || "";
+      const sopir = p.sopir || "";
+      const tanggal_dibuat = p.createdAt
+        ? new Date(p.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
+        : "";
+      const tanggal_diubah = p.updatedAt
+        ? new Date(p.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
+        : "";
+      return [id, nama, alamat, no_telepon, no_kendaraan, sopir, tanggal_dibuat, tanggal_diubah];
+    });
 
     const marginTop = 15; 
   
     doc.autoTable({
       startY: 20 + marginTop, 
       head: headers,
-      body: rows,
+      body: allRows,
       styles: { fontSize: 12 },
       headStyles: { fillColor: [3, 177, 252] }, 
     });
@@ -281,15 +263,6 @@ function MasterVendor() {
 
           <ImportVendor showImportModal={showImportModal} setShowImportModal={setShowImportModal} onSuccess={handleImportSuccess} />
 
-          {/* <Button
-            className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
-            type="button"
-            variant="primary"
-            onClick={() => downloadCSV(karyawan)}>
-            <FaFileCsv style={{ marginRight: '8px' }} />
-            Unduh CSV
-          </Button> */}
-
           <Button
             className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
             type="button"
@@ -299,7 +272,6 @@ function MasterVendor() {
             Unduh PDF
           </Button>
 
-
           <SearchBar searchQuery={searchQuery} handleSearchChange={handleSearchChange} />
           
           <Col md="12">
@@ -308,12 +280,6 @@ function MasterVendor() {
                 <Card.Title as="h4" className="mb-4"><strong>Master Vendor</strong></Card.Title>
               </Card.Header>
               <Card.Body className="table-responsive px-0" style={{ overflowX: 'auto' }}>
-                {/* {loading ? (
-                  <div className="text-center">
-                    <Spinner animation="border" variant="primary" />
-                    <p>Loading...</p>
-                  </div>
-                ) : ( */}
                   <Table className="table-striped table-hover">
                   <div className="table-scroll" style={{ height: 'auto' }}>
                      <table className="flex-table table table-striped table-hover">
@@ -342,11 +308,11 @@ function MasterVendor() {
                        <td className="text-center">{new Date(vendor.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
                        <td className="text-center">{new Date(vendor.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
                         <td className="text-center">
-                          <Button className="btn-fill pull-right warning" variant="warning" onClick={() => { setShowEditModal(true); setSelectedVendor(vendor); }} style={{ width: 96, fontSize: 14 }}>
+                          <Button className="btn-fill pull-right warning mt-2 btn-reset" variant="warning" onClick={() => { setShowEditModal(true); setSelectedVendor(vendor); }} style={{ width: 96, fontSize: 14 }}>
                             <FaRegEdit style={{ marginRight: '8px' }} />
                             Ubah
                           </Button>
-                          <Button className="btn-fill pull-right danger mt-2" variant="danger"  onClick={() => deleteVendor(vendor.id_vendor)} style={{ width: 96, fontSize: 13 }}>
+                          <Button className="btn-fill pull-right danger mt-2 btn-reset" variant="danger"  onClick={() => deleteVendor(vendor.id_vendor)} style={{ width: 96, fontSize: 13 }}>
                             <FaTrashAlt style={{ marginRight: '8px' }} />
                             Hapus
                           </Button>
@@ -357,7 +323,6 @@ function MasterVendor() {
                      </table>
                   </div>
                  </Table>
-                {/* )} */}
               </Card.Body>
             </Card>
             <div className="pagination-container">

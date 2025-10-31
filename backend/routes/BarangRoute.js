@@ -74,7 +74,7 @@ router.post('/data-barang/import-csv', upload.single("csvfile"), async(req,res) 
   const data_barang = [];
   
   if (!fs.existsSync('./uploads/data-barang')) {
-          fs.mkdirSync('./uploads/data-barang');
+    fs.mkdirSync('./uploads/data-barang');
   }    
   
   fs.createReadStream(filePath)

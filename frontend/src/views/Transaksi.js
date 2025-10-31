@@ -1,55 +1,31 @@
 import React, { useState, useEffect, useMemo } from "react";
-import AcceptedAlert from "components/Alert/AcceptedAlert.js";
-import DeclineAlert from "components/Alert/DeclineAlert.js";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
-import {FaPlusCircle, FaTrashAlt} from 'react-icons/fa'; 
 import { useHistory } from "react-router-dom";
 import {toast } from 'react-toastify';
 
 
 import {
-  Badge,
   Button,
   Card,
   Form,
-  Navbar,
-  Nav,
   Container,
   Row,
   Col, 
   Table,
-  FormControl
 } from "react-bootstrap";
 
 function Transaksi() {
   const location = useLocation();
   const history = useHistory();
-
   const [selectedPengajuan, setSelectedPengajuan] = useState(location?.state?.selectedPengajuan || null);
   const [detailPengajuan, setDetailPengajuan] = useState([]);
-
-  const [id_pengajuan, setIDPengajuan] = useState("");
   const [id_transaksi, setIDPenjualan] = useState("");
-
-  const [nama, setNama] = useState("");
   const [nama_kategori, setNamaKategori] = useState([]);
-  const [jenis_barang, setJenisBarang] = useState("");
   const [harga, setHarga] = useState(0);
-  const [satuan, setSatuan] = useState("");
-  const [id_kategori, setIdKategori] = useState("");
-  const [kategori_barang, setKategoriBarang] = useState("");
   const [jumlah_barang, setJumlahBarang] = useState("");
-  const [kondisi, setKondisi] = useState("");
   const [namaBarang, setNamaBarang] = useState([]);
-  const [id_barang, setIdBarang] = useState("");
-  const [kategori, setKategori] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedBarang, setSelectedBarang] = useState(null);
-  const [kondisi_lainnya, setKondisiLainnya] = useState("");
-  const [divisi, setDivisi] = useState("");
   const [userData, setUserData] = useState({id_karyawan: "", nama: "", divisi: ""}); 
-  const [jenis_pengajuan, setJenisPengajuan] = useState("");
   const [total, setTotal] = useState(0);
   const [items, setItems] = useState([]);
   const [id_karyawan, setIdKaryawan] = useState("");
@@ -59,18 +35,13 @@ function Transaksi() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [loading, setLoading] = useState(true);
-  const [tujuan, setTujuan] = useState("");
-  const [sub_total, setSubTotal] = useState("");
   const [id_vendor, setIDVendor] = useState("");
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [cara_bayar, setCaraBayar] = useState("");
   const [caraBayarError, setCaraBayarError] = useState(false);
-  const [scrapping, setScrapping] = useState("");
-
   const [keterangan, setKeterangan] = useState("");
   const [sopir, setSopir] = useState("");
   const [namaVendor, setNamaVendor] = useState([]);
-  
   
   const token = localStorage.getItem("token");
 
@@ -132,12 +103,6 @@ function Transaksi() {
       }
   };
 
-  const parseNumberString = (v) => {
-    if (v === null || v === undefined || v === "") return 0;
-    if (typeof v === "number") return v;
-    return Number(String(v).replace(/\./g, "").replace(/,/g, ".")) || 0;
-  }
-
   const getDetailVendor = async(idVendor, idx) => {
       if (!idVendor) return;
       try {
@@ -188,57 +153,6 @@ function Transaksi() {
     } 
   }, [selectedPengajuan, token]);
 
-  // console.log("detailPengajuan:", detailPengajuan);
-
-
-  const filteredPengajuan = detailPengajuan.filter((dataPengajuan) => 
-    (dataPengajuan.id_pengajuan && String(dataPengajuan.id_pengajuan).toLowerCase().includes(searchQuery)) ||
-    (dataPengajuan.Pemohon?.divisi && String(dataPengajuan.Pemohon?.divisi).toLowerCase().includes(searchQuery)) ||
-    (dataPengajuan.BarangDiajukan?.nama && String(dataPengajuan.BarangDiajukan?.nama).toLowerCase().includes(searchQuery)) ||
-    (dataPengajuan.BarangDiajukan?.id_kategori && String(dataPengajuan.BarangDiajukan?.id_kategori).toLowerCase().includes(searchQuery)) ||
-    (dataPengajuan.jumlah_barang && String(dataPengajuan.jumlah_barang).toLowerCase().includes(searchQuery)) ||
-    (dataPengajuan.total && String(dataPengajuan.total).toLowerCase().includes(searchQuery)) ||
-    (dataPengajuan.kondisi && String(dataPengajuan.kondisi).toLowerCase().includes(searchQuery)) ||
-    (dataPengajuan.jenis_pengajuan && String(dataPengajuan.jenis_pengajuan).toLowerCase().includes(searchQuery))
-  );
-
-  const handleSort = (key) => {
-    if (sortBy === key) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortBy(key);
-      setSortOrder("asc");
-    }
-  }
-
-  const getNestedValue = (obj, path) => {
-    if (!obj || !path) return undefined;
-    return path.split('.').reduce((o, k) => (o ? o[k] : undefined), obj);
-  };
-
-  const sortedPengajuan = [...filteredPengajuan].sort((a, b) => {
-    const aRaw = getNestedValue(a, sortBy) ?? "";
-    const bRaw = getNestedValue(b, sortBy) ?? "";
-
-    const aNum = (aRaw);
-    const bNum = (bRaw);
-
-    if (!isNaN(aNum) && !isNaN(bNum)) {
-      return sortOrder === "asc" ? aNum - bNum : bNum - aNum;
-    }
-
-    const aStr = String(aRaw).toLowerCase();
-    const bStr = String(bRaw).toLowerCase();
-    if (aStr < bStr) return sortOrder === "asc" ? -1 : 1;
-    if (aStr > bStr) return sortOrder === "asc" ? 1 : -1;
-    return 0;
-  });
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = sortedPengajuan.slice(indexOfFirstItem, indexOfLastItem);
-
-
   const formatRupiah = (angka) => {
     let pinjamanString = angka.toString().replace(".00");
     let sisa = pinjamanString.length % 3;
@@ -251,11 +165,6 @@ function Transaksi() {
     }
     
     return rupiah;
-  };
-
-  const handleJumlahBarang = (value) => {
-    const numericValue = value.replace(/\D/g, "");
-    setJumlahBarang(numericValue);
   };
 
   useEffect(() => {
@@ -312,14 +221,6 @@ function Transaksi() {
     if (items.length === 0) setItems([blankItem()]);
   }, []);
 
-  const handleAddCard = () => {
-    setItems(prev => [...prev, blankItem()]);
-  };
-
-  const handleRemoveItem = (key) => {
-    setItems(prev => prev.filter(i => i.key !== key));
-  };
-
 
   const handleSubmit = async(e) => {
     e.preventDefault();
@@ -371,7 +272,6 @@ const updateSopirVendor = async (id_vendor, sopir) => {
         },
       }
     );
-    // toast.success("Nama sopir berhasil diperbarui!");
   } catch (error) {
     console.error("Gagal update sopir:", error);
     toast.error("Gagal memperbarui nama sopir di database.");
@@ -399,7 +299,6 @@ const updateSopirVendor = async (id_vendor, sopir) => {
 
   const jumlahTotal = detailPengajuan.reduce((acc, item) => {
     const total = Number(item?.total);
-    // console.log("total:", total);
     return acc + total;
   }, 0);
 
@@ -444,15 +343,8 @@ const updateSopirVendor = async (id_vendor, sopir) => {
   }, []);
 
   const handleKeterangan = (value) => {
-      // const alphabetValue = value.replace(/[^a-zA-Z\s]/g, "");
       setKeterangan(value);
   };
-
-  const handleNamaSopir = (value) => {
-        const alphabetValue = value.replace(/[^a-zA-Z\s]/g, "");
-        setSopir(alphabetValue);
-  };
-
 
 
   return (
@@ -550,13 +442,11 @@ const updateSopirVendor = async (id_vendor, sopir) => {
                         )}
                       </Form.Group>
                       <Form.Group>
-                        {/* <span className="text-danger">*</span> */}
                             <label>Keterangan</label>
                             <Form.Control
                                 type="text"
                                 value={keterangan}
                                 uppercase
-                                // required
                                 onChange={(e) => handleKeterangan(e.target.value.toUpperCase())}
                             />
                       </Form.Group>
@@ -595,8 +485,6 @@ const updateSopirVendor = async (id_vendor, sopir) => {
                               <table className="flex-table table table-striped table-hover">
                                   <thead>
                                   <tr>
-                                      {/* <th className="border-0">ID Pengajuan</th>
-                                      <th className="border-0">Divisi</th> */}
                                       <th className="border-0">No.</th>
                                       <th className="border-0">Nama Barang</th>
                                       <th className="border-0">Kategori</th>
@@ -614,8 +502,6 @@ const updateSopirVendor = async (id_vendor, sopir) => {
                                     ) : (
                                       detailPengajuan.map((d, index) => (
                                         <tr key={d.id_parent_pengajuan || d.id_pengajuan || Math.random()}>
-                                          {/* <td className="text_center">{d?.id_pengajuan}</td>
-                                          <td className="text_center">{d?.Pemohon?.divisi}</td> */}
                                           <td className="text_center p-0 pt-2">{index + 1}</td>
                                           <td className="text_center">{d?.BarangDiajukan?.nama}</td>
                                           <td className="text_center">{d?.BarangDiajukan?.KategoriBarang?.nama}</td>
@@ -645,7 +531,6 @@ const updateSopirVendor = async (id_vendor, sopir) => {
                       )}
                     </Col>
                   </Row>
-
 
                 </Card.Body>
               </Card>

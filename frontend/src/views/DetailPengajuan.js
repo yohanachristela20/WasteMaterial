@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import AcceptedAlert from "components/Alert/AcceptedAlert.js";
-import DeclineAlert from "components/Alert/DeclineAlert.js";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import {FaFilePdf, FaPlusCircle, FaTrashAlt} from 'react-icons/fa'; 
-import { useHistory } from "react-router-dom";
-import {toast } from 'react-toastify';
 import "../assets/scss/lbd/_text.scss";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -14,55 +10,19 @@ import {
   Badge,
   Button,
   Card,
-  Form,
-  Navbar,
-  Nav,
   Container,
   Row,
   Col, 
   Table,
-  FormControl
 } from "react-bootstrap";
 
 function DetailPengajuan() {
   const location = useLocation();
-  const history = useHistory();
   const contentRef = useRef(null);
 
   const [selectedPengajuan, setSelectedPengajuan] = useState(location?.state?.selectedPengajuan || null);
   const [detailPengajuan, setDetailPengajuan] = useState([]);
   const [detailTransaksi, setDetailTransaksi] = useState([]);
-
-  const [id_pengajuan, setIDPengajuan] = useState("");
-  const [nama, setNama] = useState("");
-  const [nama_kategori, setNamaKategori] = useState([]);
-  const [jenis_barang, setJenisBarang] = useState("");
-  const [harga, setHarga] = useState(0);
-  const [satuan, setSatuan] = useState("");
-  const [id_kategori, setIdKategori] = useState("");
-  const [kategori_barang, setKategoriBarang] = useState("");
-  const [jumlah_barang, setJumlahBarang] = useState("");
-  const [kondisi, setKondisi] = useState("");
-  const [namaBarang, setNamaBarang] = useState([]);
-  const [id_barang, setIdBarang] = useState("");
-  const [kategori, setKategori] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedBarang, setSelectedBarang] = useState(null);
-  const [kondisi_lainnya, setKondisiLainnya] = useState("");
-  const [divisi, setDivisi] = useState("");
-  const [userData, setUserData] = useState({id_karyawan: "", nama: "", divisi: ""}); 
-  const [jenis_pengajuan, setJenisPengajuan] = useState("");
-  const [total, setTotal] = useState(0);
-  const [items, setItems] = useState([]);
-  const [id_karyawan, setIdKaryawan] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("id_pengajuan");
-  const [sortOrder, setSortOrder] = useState("asc");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
-  const [loading, setLoading] = useState(true);
-  const [tujuan, setTujuan] = useState("");
-  
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -108,60 +68,6 @@ function DetailPengajuan() {
     } 
   }, [selectedPengajuan, token]);
 
-  console.log("detailTransaksi:", detailTransaksi);
-  // console.log("id vendor:", detailTransaksi?.id_vendor);
-
-  // const filteredDetailPengajuan = detailPengajuan.filter((detail) => 
-  //   (detail.id_pengajuan && String(detail.id_pengajuan).toLowerCase().includes(searchQuery)) ||
-  //   (detail.Pemohon?.divisi && String(detail.Pemohon?.divisi).toLowerCase().includes(searchQuery)) ||
-  //   (detail.BarangDiajukan?.nama && String(detail.BarangDiajukan?.nama).toLowerCase().includes(searchQuery)) ||
-  //   (detail.BarangDiajukan?.id_kategori && String(detail.BarangDiajukan?.id_kategori).toLowerCase().includes(searchQuery)) ||
-  //   (detail.jumlah_barang && String(detail.jumlah_barang).toLowerCase().includes(searchQuery)) ||
-  //   (detail.total && String(detail.total).toLowerCase().includes(searchQuery)) ||
-  //   (detail.kondisi && String(detail.kondisi).toLowerCase().includes(searchQuery)) ||
-  //   (detail.jenis_pengajuan && String(detail.jenis_pengajuan).toLowerCase().includes(searchQuery))
-  // );
-
-  const handleSort = (key) => {
-    if (sortBy === key) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortBy(key);
-      setSortOrder("asc");
-    }
-  }
-
-  const getNestedValue = (obj, path) => {
-    if (!obj || !path) return undefined;
-    return path.split('.').reduce((o, k) => (o ? o[k] : undefined), obj);
-  };
-
-  // const sortedPengajuan = [...filteredDetailPengajuan].sort((a, b) => {
-  //   const aRaw = getNestedValue(a, sortBy) ?? "";
-  //   const bRaw = getNestedValue(b, sortBy) ?? "";
-
-  //   const aNum = (aRaw);
-  //   const bNum = (bRaw);
-
-  //   if (!isNaN(aNum) && !isNaN(bNum)) {
-  //     return sortOrder === "asc" ? aNum - bNum : bNum - aNum;
-  //   }
-
-  //   const aStr = String(aRaw).toLowerCase();
-  //   const bStr = String(bRaw).toLowerCase();
-  //   if (aStr < bStr) return sortOrder === "asc" ? -1 : 1;
-  //   if (aStr > bStr) return sortOrder === "asc" ? 1 : -1;
-  //   return 0;
-  // });
-
-  // const indexOfLastItem = currentPage * itemsPerPage;
-  // const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  // const currentItems = sortedPengajuan.slice(indexOfFirstItem, indexOfLastItem);
-
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  }
-
   const uniquePemohon = [
     ...new Map(
       detailPengajuan.map((d) => [d?.Pemohon?.id_karyawan, d?.Pemohon])
@@ -183,7 +89,6 @@ function DetailPengajuan() {
 
   const jumlahTotal = detailPengajuan.reduce((acc, item) => {
     const total = Number(item?.total);
-    // console.log("total:", total);
     return acc + total;
   }, 0);
 
@@ -320,8 +225,6 @@ function DetailPengajuan() {
                               <table className="flex-table table table-striped table-hover">
                                   <thead>
                                   <tr>
-                                      {/* <th className="border-0">ID Pengajuan</th>
-                                      <th className="border-0">Divisi</th> */}
                                       <th className="border-0">No.</th>
                                       <th className="border-0">Nama Barang</th>
                                       <th className="border-0">Kategori</th>
@@ -339,8 +242,6 @@ function DetailPengajuan() {
                                     ) : (
                                       detailPengajuan.map((d, index) => (
                                         <tr key={d.id_parent_pengajuan || d.id_pengajuan || Math.random()}>
-                                          {/* <td className="text-center">{d?.id_pengajuan}</td>
-                                          <td className="text-center">{d?.Pemohon?.divisi}</td> */}
                                           <td className="text-center p-0 pt-2">{index + 1}</td>
                                           <td className="text-center">{d?.BarangDiajukan?.nama}</td>
                                           <td className="text-center">{d?.BarangDiajukan?.KategoriBarang?.nama}</td>

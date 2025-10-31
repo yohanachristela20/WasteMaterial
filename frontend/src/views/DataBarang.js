@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {FaFileCsv, FaFileImport, FaFilePdf, FaPlusCircle, FaSortDown, FaSortUp, FaRegEdit, FaTrashAlt} from 'react-icons/fa'; 
+import {FaFileImport, FaFilePdf, FaPlusCircle, FaSortDown, FaSortUp, FaRegEdit, FaTrashAlt} from 'react-icons/fa'; 
 import SearchBar from "components/Search/SearchBar.js";
 import axios from "axios";
 import AddDataBarang from "components/ModalForm/AddDataBarang.js";
@@ -22,7 +22,6 @@ import {
   Row,
   Col,
   Table, 
-  Spinner  
 } from "react-bootstrap";
 
 function Barang() {
@@ -39,11 +38,6 @@ function Barang() {
 
   const [sortBy, setSortBy] = useState("id_barang");
   const [sortOrder, setSortOrder] = useState("asc");
-  const [sortOrderDibayar, setSortOrderDibayar] = useState("asc");
-
-  const [jenis_barang, setJenisBarang] = useState("");
-  const [harga, setHarga] = useState("");
-  const [satuan, setSatuan] = useState("");
   const [detailBarang, setDetailBarang] = useState([]);
   
 
@@ -76,14 +70,6 @@ function Barang() {
   const getNestedValue = (obj, path) => {
     if (!obj || !path) return undefined;
     return path.split('.').reduce((o, k) => (o ? o[k] : undefined), obj);
-  };
-
-  const tryParseNumber = (val) => {
-    if (val === null || val === undefined) return NaN;
-    if (typeof val === 'number') return val;
-    const s = String(val).replace(/[^\d\-,.]/g, '').replace(/,/g, '');
-    const n = parseFloat(s);
-    return Number.isFinite(n)? n : NaN;
   };
 
   const sortedBarang = [...filteredBarang].sort((a, b) => {
@@ -215,32 +201,6 @@ const deleteBarang = async(id_barang) => {
   }
 }
 
-// const downloadCSV = (data) => {
-//   const header = ["id_plafond", "tanggal_penetapan", "jumlah_plafond", "keterangan", "tanggal_penetapan", "updatedAt"];
-//   const rows = data.map((item) => [
-//     item.id_plafond,
-//     item.tanggal_penetapan,
-//     item.jumlah_plafond,
-//     item.keterangan,
-//     item.createdAt,
-//     item.updatedAt
-//   ]);
-
-//   const csvContent = [header, ...rows]
-//     .map((e) => e.join(","))
-//     .join("\n");
-
-//   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-//   const url = URL.createObjectURL(blob);
-//   const link = document.createElement("a");
-//   link.setAttribute("href", url);
-//   link.setAttribute("download", "master_plafond.csv");
-//   link.style.visibility = "hidden";
-//   document.body.appendChild(link);
-//   link.click();
-//   document.body.removeChild(link);
-// };
-
 const downloadPDF = (detailBarang) => {
   const doc = new jsPDF({ orientation: 'landscape' });
 
@@ -263,26 +223,44 @@ const downloadPDF = (detailBarang) => {
 
   const headers = [["ID Barang", "Nama Barang", "Kategori", "Harga", "Jenis Barang", "Satuan", "ID SAP", "Dibuat", "Terakhir Diubah"]];
 
-  const rows = currentItems.map((item) => [
-    item.id_barang,
-    item.nama,
-    item.KategoriBarang?.nama,
-    item.KategoriBarang?.harga_barang,
-    item.KategoriBarang?.jenis_barang,
-    item.KategoriBarang?.satuan,
-    item.id_sap, 
-    (new Date(item.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')),
-    (new Date(item.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', ''))
-  ]);
+  // const rows = currentItems.map((item) => [
+  //   item.id_barang,
+  //   item.nama,
+  //   item.KategoriBarang?.nama,
+  //   item.KategoriBarang?.harga_barang,
+  //   item.KategoriBarang?.jenis_barang,
+  //   item.KategoriBarang?.satuan,
+  //   item.id_sap, 
+  //   (new Date(item.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')),
+  //   (new Date(item.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', ''))
+  // ]);
+
+  const allRows = currentItems.map((p) => {
+    const id = p.id_barang || "";
+    const nama = p.nama || "";
+    const kategori = p.KategoriBarang?.nama || "";
+    const harga = p.KategoriBarang?.harga_barang || "";
+    const jenis = p.KategoriBarang?.jenis_barang || "";
+    const satuan = p.KategoriBarang?.satuan || "";
+    const id_sap = p.id_sap || "";
+    const tanggal_dibuat = p.createdAt
+      ? new Date(p.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
+      : "";
+    const tanggal_diubah = p.updatedAt
+      ? new Date(p.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
+      : "";
+    return [id, nama,kategori, harga, jenis, satuan, id_sap, tanggal_dibuat, tanggal_diubah];
+  });
+
 
   const marginTop = 15; 
 
   doc.autoTable({
     startY: 20 + marginTop, // Posisi Y awal
     head: headers,
-    body: rows,
-    styles: { fontSize: 12 }, // fontsize tabel
-    headStyles: { fillColor: [3, 177, 252] }, // Warna header tabel
+    body: allRows,
+    styles: { fontSize: 12 }, 
+    headStyles: { fillColor: [3, 177, 252] },
   });
 
   doc.save("data_barang.pdf");
@@ -371,11 +349,11 @@ const downloadPDF = (detailBarang) => {
                               <td className="text-center">{new Date(dataBarang.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
                               <td className="text-center">{new Date(dataBarang.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
                               <td className="text-center">
-                                <Button className="btn-fill pull-right warning" variant="warning" onClick={() => { setShowEditModal(true); setSelectedBarang(dataBarang); }} style={{ width: 96, fontSize: 14 }}>
+                                <Button className="btn-fill pull-right warning mt-2 btn-reset" variant="warning" onClick={() => { setShowEditModal(true); setSelectedBarang(dataBarang); }} style={{ width: 96, fontSize: 14 }}>
                                   <FaRegEdit style={{ marginRight: '8px' }} />
                                   Ubah
                                 </Button>
-                                <Button className="btn-fill pull-right danger mt-2" variant="danger"  onClick={() => deleteBarang(dataBarang.id_barang)} style={{ width: 96, fontSize: 13 }}>
+                                <Button className="btn-fill pull-right danger mt-2 btn-reset" variant="danger"  onClick={() => deleteBarang(dataBarang.id_barang)} style={{ width: 96, fontSize: 13 }}>
                                   <FaTrashAlt style={{ marginRight: '8px' }} />
                                   Hapus
                                 </Button>

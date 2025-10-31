@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {FaFileCsv, FaFileImport, FaFilePdf, FaPlusCircle, FaRegEdit, FaTrashAlt, FaTrashRestore, FaUserLock, FaSortUp, FaSortDown} from 'react-icons/fa'; 
+import {FaFileCsv, FaFileImport, FaFilePdf, FaPlusCircle, FaRegEdit, FaTrashAlt, FaUserLock, FaSortUp, FaSortDown} from 'react-icons/fa'; 
 import SearchBar from "components/Search/SearchBar.js";
 import axios from "axios";
 import AddUser from "components/ModalForm/AddUser.js";
@@ -11,9 +11,7 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import Pagination from "react-js-pagination";
 import "../assets/scss/lbd/_pagination.scss";
-import cardBeranda from "../assets/img/dashboard3.png";
 import "../assets/scss/lbd/_table-header.scss";
-import { stopInactivityTimer } from "views/Heartbeat";
 import { useLocation, useHistory } from "react-router-dom";
 
 import {Button, Container, Row, Col, Card, Table, Spinner, Badge} from "react-bootstrap";
@@ -23,15 +21,12 @@ function MasterUser() {
   const [showEditModal, setShowEditModal] = React.useState(false);
   const [showImportModal, setShowImportModal] = useState(false); 
   const [user, setUser] = useState([]); 
-  const [user_active, setUserActive] = useState();
   const [selectedUser, setSelectedUser] = useState(null); 
   const [searchQuery, setSearchQuery] = useState("");
   const [userData, setUserData] = useState({id_karyawan: "", nama: "", divisi: ""}); 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [loading, setLoading] = useState(true);
-  const location = useLocation();
-  const history = useHistory();
   const [detailUser, setDetailUser] = useState([]);
 
   const [sortBy, setSortBy] = useState("id_user");
@@ -42,7 +37,7 @@ function MasterUser() {
     (user.id_user && String(user.id_user).toLowerCase().includes(searchQuery)) ||
     (user.username && String(user.username).toLowerCase().includes(searchQuery)) ||
     (user.role && String(user.role).toLowerCase().includes(searchQuery)) ||
-    (user.user_active && String(user.user_active).toLowerCase().includes(searchQuery)) || 
+    (user.user_active && String(user.user_active).toLowerCase().includes(searchQuery)) ||  //Cari dengan true/false 
     (user.KaryawanPengguna?.nama && String(user.KaryawanPengguna?.nama).toLowerCase().includes(searchQuery)) ||
     (user.KaryawanPengguna?.divisi && String(user.KaryawanPengguna?.divisi).toLowerCase().includes(searchQuery)) ||
     (user.createdAt && String(user.createdAt).toLowerCase().includes(searchQuery)) ||
@@ -168,7 +163,6 @@ function MasterUser() {
           nama: response.data.nama,
           divisi: response.data.divisi,
         });
-        // console.log("User data fetched:", response.data);
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -258,22 +252,37 @@ function MasterUser() {
   
     const headers = [["ID User", "Nama Karyawan", "Divisi", "Username", "Role", "Dibuat", "Terakhir Diubah"]];
   
-    const rows = currentItems.map((item) => [
-      item.id_user,
-      item.KaryawanPengguna?.nama,
-      item.KaryawanPengguna?.divisi,
-      item.username,
-      item.role,
-      (new Date(item.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')),
-      (new Date(item.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', ''))
-    ]);
+    // const rows = currentItems.map((item) => [
+    //   item.id_user,
+    //   item.KaryawanPengguna?.nama,
+    //   item.KaryawanPengguna?.divisi,
+    //   item.username,
+    //   item.role,
+    //   (new Date(item.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')),
+    //   (new Date(item.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', ''))
+    // ]);
+
+    const allRows = currentItems.map((u) => {
+      const id = u.id_user || "";
+      const nama = u.KaryawanPengguna?.nama || "";
+      const divisi = u.KaryawanPengguna?.divisi || "";
+      const username = u.username || "";
+      const role = u.role || "";
+      const tanggal_dibuat = u.createdAt
+        ? new Date(u.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
+        : "";
+      const tanggal_diubah = u.updatedAt
+        ? new Date(u.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
+        : "";
+        return [id, nama, divisi, username, role, tanggal_dibuat, tanggal_diubah];
+    });
 
     const marginTop = 15; 
   
     doc.autoTable({
       startY: 20 + marginTop, 
       head: headers,
-      body: rows,
+      body: allRows,
       styles: { fontSize: 12 },
       headStyles: { fillColor: [3, 177, 252] }, 
     });
@@ -298,7 +307,6 @@ function MasterUser() {
         getUser();    
     } catch (error) {
         const errorMessage = error.response?.data?.message || error.message;
-        // console.log(error.message);
         toast.error('Gagal menyimpan data user baru.', {
             position: "top-right",
             autoClose: 5000,
@@ -307,52 +315,11 @@ function MasterUser() {
     }
 
   };
-
-  const deleteSession = async (id_user, user_active) => {
-    try {
-        await axios.post(`http://localhost:5000/logout-user/${id_user}`, {
-            id_user,
-            user_active
-        }, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        toast.success("Session user berhasil dihapus.", {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: true,
-        });
-        getUser();
-
-    } catch (error) {
-        console.log(error.message);
-        toast.error('Gagal menghapus session user.', {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: true,
-          });
-    }
-  };
-  
   
   return (
     <>
-      {/* <div className="home-card">
-      <div className="card-content">
-        <h2 className="card-title">Hai, {userData.nama}!</h2>
-        <h4 className="card-subtitle">Kelola user role dengan mudah disini.</h4><hr/>
-      </div>
-      <div className="card-opening">
-        <img 
-          src={cardBeranda}
-          alt="Beranda Illustration"
-        /> 
-      </div>
-      </div> */}
-
       <Container fluid>
-      <Row>
+        <Row>
           <div>
             <Button
               className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
@@ -401,8 +368,6 @@ function MasterUser() {
             <FaFilePdf style={{ marginRight: '8px' }} />
             Unduh PDF
           </Button>
-
-
           <SearchBar searchQuery={searchQuery} handleSearchChange={handleSearchChange} />
           
           <Col md="12">
@@ -457,7 +422,7 @@ function MasterUser() {
                          
                           <td className="text-center">
                           <Button
-                            className="btn-fill pull-right info mb-md-2"
+                            className="btn-fill info btn-reset mt-2"
                             variant="info"
                             onClick={() => {
                               setShowEditModal(true);
@@ -467,13 +432,12 @@ function MasterUser() {
                               width: 110,
                               //96
                               fontSize: 13,
-                              float: "left",
                             }}>
                             <FaRegEdit style={{ marginRight: '8px' }} />
                             Ubah
                           </Button>
                           <Button
-                            className="btn-fill pull-right primary mt-xl-0 mb-md-2"
+                            className="btn-fill primary btn-reset mt-2"
                             variant="primary"
                             onClick={() => {
                               setPassword(user.id_user)
@@ -481,39 +445,22 @@ function MasterUser() {
                             style={{
                               width: 138,
                               fontSize: 13,
-                              float: "left",
                             }}>
                             <FaUserLock style={{ marginRight: '8px' }} />
                             Set Password
                           </Button>
-                          {/* <Button
-                            className="btn-fill pull-right warning mt-2"
-                            variant="warning"
-                            onClick={() => deleteSession(user.id_user)}
-                            style={{
-                              width: 150,
-                              //103
-                              fontSize: 13,
-                              float: "left",
-                            }}>
-                            <FaTrashRestore style={{ marginRight: '8px' }} />
-                            Hapus Session
-                          </Button> */}
                           <Button
-                            className="btn-fill pull-right warning mt-2"
+                            className="btn-fill pull-right warning mt-2 btn-reset"
                             variant="danger"
                             onClick={() => deleteUser(user.id_user)}
                             style={{
                               width: 110,
                               //103
                               fontSize: 13,
-                              float: "left",
                             }}>
                             <FaTrashAlt style={{ marginRight: '8px' }} />
                             Hapus
                           </Button>
-                          
-                          
                           </td>
                         </tr>
                         ))}

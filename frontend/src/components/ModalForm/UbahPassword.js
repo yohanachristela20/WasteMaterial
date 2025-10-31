@@ -143,15 +143,16 @@ function UbahPassword({ show, onHide }) {
                         />
                         <PasswordChecklist 
                             className="mt-3"
-                            rules={["minLength", "specialChar", "number", "capital", "match"]}
-                            minLength={8}
+                            rules={["match"]}
+                            // "minLength", "specialChar", "number", "capital", 
+                            // minLength={8}
                             value={newPassword}
                             valueAgain={newRePassword}
                             messages={{
-                                minLength: "Password harus lebih dari 8 karakter.",
-                                specialChar: "Password harus terdiri dari spesial karakter (simbol).",
-                                number: "Password harus terdiri dari angka.",
-                                capital: "Password setidaknya terdiri dari 1 huruf kapital.",
+                                // minLength: "Password harus lebih dari 8 karakter.",
+                                // specialChar: "Password harus terdiri dari spesial karakter (simbol).",
+                                // number: "Password harus terdiri dari angka.",
+                                // capital: "Password setidaknya terdiri dari 1 huruf kapital.",
                                 match: "Password Baru dan Konfirmasi Password harus sesuai."
                             }}
                         />
@@ -163,6 +164,7 @@ function UbahPassword({ show, onHide }) {
                                 type="submit"
                                 className="btn-fill w-100 mb-4 mt-2"
                                 variant="primary"
+                                disabled={newPassword !== newRePassword || !newPassword || !oldPassword}
                             >
                                 Ubah Password
                             </Button>

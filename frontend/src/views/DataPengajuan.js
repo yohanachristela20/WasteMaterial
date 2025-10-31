@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {FaFileCsv, FaFilePdf, FaFileImport, FaLandmark, FaCoins, FaRegEdit, FaDownload, FaTrashAlt, FaHandHoldingUsd, FaUserFriends, FaUserCheck, FaFileContract, FaPlusCircle, FaRecycle, FaPaperclip, FaRegAddressBook, FaRegClone, FaRegClipboard, FaComment, FaArchive, FaRegFileAlt, FaFolder } from 'react-icons/fa'; 
+import {FaFilePdf, FaFileImport, FaTrashAlt, FaHandHoldingUsd, FaRecycle, FaRegFileAlt, FaFolder, FaSortUp, FaSortDown, FaMoneyBillWave, FaHourglassStart, FaClipboardCheck } from 'react-icons/fa'; 
 import SearchBar from "components/Search/SearchBar.js";
 import axios from "axios";
 import { useHistory } from "react-router-dom"; 
@@ -8,12 +8,10 @@ import "jspdf-autotable";
 import Pagination from "react-js-pagination";
 import "../assets/scss/lbd/_pagination.scss";
 import "../assets/scss/lbd/_table-header.scss";
-import ImportAntreanPengajuan from "components/ModalForm/ImportAntreanPengajuan.js";
 import {toast } from 'react-toastify';
 import ReactLoading from "react-loading";
 import "../assets/scss/lbd/_loading.scss";
-import AddDataBarang from "components/ModalForm/AddDataBarang.js";
-import { useLocation } from "react-router-dom";
+import ImportPengajuan from "components/ModalForm/ImportPengajuan.js";
 
 import {
   Badge,
@@ -23,9 +21,6 @@ import {
   Row,
   Col,
   Table, 
-  Spinner, 
-  Modal, 
-  Form,
   DropdownButton,
   ButtonGroup, 
   Dropdown
@@ -33,57 +28,18 @@ import {
 
  function DataPengajuan() {
   const history = useHistory();
-  const location = useLocation();
-
-  const [id_pengajuan, setIDPengajuan] = useState("");
-  const [nama, setNama] = useState("");
-  const [nama_kategori, setNamaKategori] = useState([]);
-  const [jenis_barang, setJenisBarang] = useState("");
-  const [harga, setHarga] = useState(0);
-  const [satuan, setSatuan] = useState("");
-  const [id_kategori, setIdKategori] = useState("");
-  const [kategori_barang, setKategoriBarang] = useState("");
-  const [jumlah_barang, setJumlahBarang] = useState("");
-  const [kondisi, setKondisi] = useState("");
-  const [namaBarang, setNamaBarang] = useState([]);
-  const [id_barang, setIdBarang] = useState("");
-  const [kategori, setKategori] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedBarang, setSelectedBarang] = useState(null);
-  const [kondisi_lainnya, setKondisiLainnya] = useState("");
-  const [divisi, setDivisi] = useState("");
-  const [userData, setUserData] = useState({id_karyawan: "", nama: "", divisi: ""}); 
-  const [jenis_pengajuan, setJenisPengajuan] = useState("");
-  const [total, setTotal] = useState(0);
-  const [items, setItems] = useState([]);
-  const [id_karyawan, setIdKaryawan] = useState("");
   const [pengajuan, setPengajuan] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("id_pengajuan");
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortOrder, setSortOrder] = useState("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [loading, setLoading] = useState(true);
-  const [showEditModal, setShowEditModal] = React.useState(false);
-  const [selectedPengajuan, setSelectedPengajuan] = useState(null);
-  
-  // const getDetailPengajuan = async() => {
-  //     try {
-  //         const resp = await axios.get(`http://localhost:5000/detail-pengajuan`, {
-  //             headers: {
-  //                 Authorization: `Bearer ${token}`,
-  //             }
-  //         });
-          
-  //         setPengajuan(resp.data);
-  //     } catch (error) {
-  //       if (error.response?.status === 401) {
-  //         console.error("Unauthorized: Token is invalid or expired.");
-  //       } else {
-  //         console.error("Error fetching data:", error.message);
-  //       }
-  //     }
-  // };
+  const [totalPenjualan, setTotalPenjualan] = useState(0);
+  const [totalScrapping, setTotalScrapping] = useState(0);
+  const [jumlahBelumDiproses, setJumlahBelumDiproses] = useState(0);
+  const [jumlahPengajuanSelesai, setJumlahPengajuanSelesai] = useState(0);
+  const [showImportModal, setShowImportModal] = useState(false); 
 
   const getPengajuan = async() => {
       try {
@@ -103,14 +59,11 @@ import {
       }
   };
 
-
   useEffect(() => {
     getPengajuan();
-
     setTimeout(() => setLoading(false), 1000);
   }, []);
 
-  
   const filteredPengajuan = pengajuan.filter((dataPengajuan) => 
     (dataPengajuan.id_pengajuan && String(dataPengajuan.id_pengajuan).toLowerCase().includes(searchQuery)) ||
     (dataPengajuan.Pemohon?.divisi && String(dataPengajuan.Pemohon?.divisi).toLowerCase().includes(searchQuery)) ||
@@ -166,9 +119,6 @@ import {
   }
 
   const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
-
-
   const formatRupiah = (angka) => {
     let pinjamanString = angka.toString().replace(".00");
     let sisa = pinjamanString.length % 3;
@@ -185,97 +135,6 @@ import {
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value.toLowerCase());
-  };
-
-  const handleImportButtonClick = () => {
-    setShowImportModal(true);
-  }
-  
-  const handleImportSuccess = () => {
-    window.location.reload();
-  };
-
-
-  const downloadCSV = (data) => {
-  const header = ["id_pengajuan", "tanggal_pengajuan", "tanggal_penerimaan", "jumlah_pinjaman", "jumlah_angsuran", "pinjaman_setelah_pembulatan", "rasio_angsuran", "keperluan", "id_peminjam", "id_asesor", "sudah_dibayar", "belum_dibayar", "bulan_angsuran", "status", "filepath_pernyataan"];
-
-  if (!Array.isArray(data) || data.length === 0) {
-    console.error("Data untuk CSV tidak valid atau kosong.");
-    return;
-  }
-
-  const filteredData = data.filter(
-    (item) =>
-      item.status_pengajuan === "Diterima" &&
-      item.status_transfer === "Selesai"
-  );
-
-  const rows = filteredData.map((item) => {
-    // console.log("Pinjaman SudahDibayar:", item.SudahDibayar);
-    
-    const totalSudahDibayar = item.SudahDibayar
-    ? item.SudahDibayar.reduce((total, angsuran) => {
-        const sudahDibayar = angsuran.sudah_dibayar ? parseFloat(angsuran.sudah_dibayar) : 0;
-        return total + sudahDibayar;
-      }, 0)
-    : 0;
-
-    const belumDibayar = item.AngsuranPinjaman?.[0]?.belum_dibayar ?? item.pinjaman_setelah_pembulatan;
-    const bulanAngsuran = item.AngsuranPinjaman?.[0]?.bulan_angsuran ?? 0;
-    const status =
-      item.AngsuranPinjaman &&
-      item.AngsuranPinjaman[0] &&
-      parseFloat(belumDibayar) === 0
-        ? "Lunas"
-        : "Belum Lunas";
-
-    return [
-      item.id_pinjaman ?? "N/A",
-      item.tanggal_pengajuan ?? "N/A",
-      item.tanggal_penerimaan ?? "N/A",
-      item.jumlah_pinjaman ?? "N/A",
-      item.jumlah_angsuran ?? "N/A",
-      item.pinjaman_setelah_pembulatan ?? "N/A",
-      item.rasio_angsuran ?? "N/A",
-      item.keperluan ?? "N/A",
-      item.id_peminjam ?? "N/A",
-      item.id_asesor ?? "N/A",
-      totalSudahDibayar,
-      belumDibayar,
-      bulanAngsuran,
-      status, 
-      item.filepath_pernyataan ?? "N/A",
-    ];
-
-
-  });
-
-  // console.log("Baris CSV:", rows);
-
-  const csvContent = [header, ...rows]
-    .map((row) => row.join(","))
-    .join("\n");
-
-    try {
-      const csvContent = [header, ...rows]
-        .map((row) => (Array.isArray(row) ? row.join(",") : "")) // Validasi array sebelum join
-        .join("\n");
-  
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", "laporan_piutang.csv");
-      link.style.visibility = "hidden";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error("Kesalahan saat membuat CSV:", error);
-    }
-
-  // console.log("Data untuk CSV:", data);
-
   };
 
   const downloadPDF = (data) => {
@@ -306,20 +165,31 @@ import {
       "Status", 
       "Diajukan"
     ];  
-    // Format Data untuk Tabel
-    const rows = Array.from(document.querySelectorAll("tbody tr")).map((tr) => {
-      return Array.from(tr.querySelectorAll("td")).map((td) => td.innerText.trim());
+    // const rows = Array.from(document.querySelectorAll("tbody tr")).map((tr) => {
+    //   return Array.from(tr.querySelectorAll("td")).map((td) => td.innerText.trim());
+    // });
+
+    const allRows = sortedPengajuan.map((p) => {
+      const id = p.id_pengajuan || "";
+      const nama = p.Pemohon?.nama || "";
+      const divisi = p.Pemohon?.divisi || "";
+      const jenis = p.jenis_pengajuan || "";
+      const status = p.GeneratePengajuan?.status || "";
+      const tanggal = p.createdAt
+        ? new Date(p.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
+        : "";
+      return [id, nama, divisi, jenis, status, tanggal];
     });
+
 
     const marginTop = 15; 
   
     doc.autoTable({
       startY: 20 + marginTop, 
       head: [headers],
-      body: rows,
+      body: allRows,
       styles: { fontSize: 12 },
       headStyles: { fillColor: [3, 177, 252] }, 
-
       columnStyles: {
         0: { cellWidth: 'auto' },  
         1: { cellWidth: 'auto' }, 
@@ -335,17 +205,6 @@ import {
     doc.save("data_pengajuan.pdf");
   };
 
-  // console.log("Id pinjaman: ", pinjaman.id_pinjaman);
-
-  const handleFileChange = (event) => {
-    setFile(event.target.files[0]);
-  };
-
-
-  const handlePengajuan = () => {
-    history.push("/admin/pengajuan");
-  }
-
   const deletePengajuan = async(id_pengajuan) =>{
       try {
         await axios.delete(`http://localhost:5000/delete-pengajuan/${id_pengajuan}`,
@@ -358,7 +217,6 @@ import {
           autoClose: 5000,
           hideProgressBar: true,
         });
-        // window.location.reload();
         getPengajuan(); 
       } catch (error) {
         console.log(error.message); 
@@ -407,6 +265,44 @@ import {
     });
   }
 
+  useEffect(() => {
+    const fetchSummaryData = async () => {
+      try {
+        const [resTotalPenjualan, resTotalScrapping, resJumlahBelumDiproses, resPengajuanSelesai] = await Promise.all([
+          axios.get("http://localhost:5000/total-penjualan", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get("http://localhost:5000/total-scrapping", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get("http://localhost:5000/jumlah-belum-diproses", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get("http://localhost:5000/jumlah-pengajuan-selesai", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        setTotalPenjualan(resTotalPenjualan.data.totalPenjualan || 0);
+        setTotalScrapping(resTotalScrapping.data.totalScrapping || 0);
+        setJumlahBelumDiproses(resJumlahBelumDiproses.data.jumlahBelumDiproses || 0);
+        setJumlahPengajuanSelesai(resPengajuanSelesai.data.jumlahPengajuanSelesai || 0);
+      } catch (error) {
+        console.error("Error fetching summary data:", error);
+      }
+    };
+
+    fetchSummaryData();
+  });
+
+  const handleImportButtonClick = () => {
+    setShowImportModal(true);
+  }
+
+  const handleImportSuccess = () => {
+    getPengajuan();
+  };
+
 
   return (
     <>
@@ -420,17 +316,17 @@ import {
                   <Row>
                     <Col xs="5">
                       <div className="icon-big icon-warning">
-                        <FaLandmark className="text-warning" />
+                        <FaMoneyBillWave className="text-warning" />
                       </div>
                     </Col>
                     <Col xs="7">
                       <div className="numbers">
-                        <p className="card-category">Jumlah Plafond</p>
+                        <p className="card-category">Uang Masuk</p>
                       </div>
                     </Col>
                     <Col>
                     <div className="text-right">
-                      {/* <Card.Title className="card-plafond" as="h4">Rp {formatRupiah(plafond || 0)}</Card.Title> */}
+                      <Card.Title className="card-plafond"><h3 style={{fontWeight: 600}} className="mt-0">Rp {formatRupiah(totalPenjualan || 0)}</h3></Card.Title>
                     </div>
                     </Col>
                   </Row>
@@ -438,7 +334,7 @@ import {
                 <Card.Footer>
                   <hr></hr>
                   <div className="stats">
-                    Jumlah Plafond
+                    Hasil Penjualan Barang Bekas
                   </div>
                 </Card.Footer>
               </Card>
@@ -449,29 +345,24 @@ import {
                   <Row>
                     <Col xs="5">
                       <div className="icon-big icon-warning">
-                        <FaCoins className="text-success" />
+                        <FaHandHoldingUsd className="text-success" />
                       </div>
                     </Col>
                     <Col xs="7">
                       <div className="numbers">
-                        <p className="card-category">Plafond Tersedia</p>
+                        <p className="card-category">Uang Keluar</p>
                       </div>
                     </Col>
                     <Col>
                     <div className="text-right">
-                      {/* <Card.Title as="h4" className="card-plafond"> Rp
-                        {(() => {
-                          return formatRupiah(plafondTersedia); 
-                        })()}
-                      </Card.Title> */}
+                      <Card.Title className="card-plafond"><h3 style={{fontWeight: 600}} className="mt-0">Rp {formatRupiah(totalScrapping || 0)}</h3></Card.Title>
                     </div>
                     </Col>
                   </Row>
-                  {/* )} */}
                 </Card.Body>
                 <Card.Footer>
                   <hr />
-                  <div className="stats">Plafond Tersedia</div>
+                  <div className="stats">Scrapping</div>
                 </Card.Footer>
               </Card>
             </Col>
@@ -482,18 +373,18 @@ import {
                   <Row>
                     <Col xs="5">
                       <div className="icon-big icon-warning">
-                        <FaHandHoldingUsd className="text-danger" />
+                        <FaHourglassStart className="text-danger" />
                       </div>
                     </Col>
                     <Col xs="7">
                       <div className="numbers">
-                        <p className="card-category">Jumlah Pinjaman</p>
+                        <p className="card-category">Pengajuan Belum Diproses</p>
 
                       </div>
                     </Col>
                     <Col>
                       <div className="text-right">
-                      {/* <Card.Title as="h4" className="card-plafond">Rp {formatRupiah(totalPinjamanKeseluruhan)}</Card.Title> */}
+                        <Card.Title className="card-plafond"><h3 style={{fontWeight: 600}} className="mt-0">{jumlahBelumDiproses}</h3></Card.Title>
                       </div>
                     </Col>
                   </Row>
@@ -501,7 +392,7 @@ import {
                 <Card.Footer>
                   <hr></hr>
                   <div className="stats">
-                    Jumlah Pinjaman
+                    Pengajuan Belum Diproses
                   </div>
                 </Card.Footer>
               </Card>
@@ -512,81 +403,55 @@ import {
                   <Row>
                     <Col xs="5">
                       <div className="icon-big icon-warning">
-                        <FaUserFriends className="text-primary"/>
+                        <FaClipboardCheck className="text-primary"/>
                       </div>
                     </Col>
                     <Col xs="7">
                       <div className="numbers">
-                        <p className="card-category">Jumlah Peminjam</p>
+                        <p className="card-category">Pengajuan Selesai</p>
                       </div>
                     </Col>
                     <Col>
                       <div className="text-right">
-                      {/* <Card.Title as="h4" className="card-plafond">{totalPeminjam}</Card.Title> */}
+                        <Card.Title className="card-plafond"><h3 style={{fontWeight: 600}} className="mt-0">{jumlahPengajuanSelesai}</h3></Card.Title>
                       </div>
                     </Col>
                   </Row>
-                  {/* )} */}
                 </Card.Body>
                 <Card.Footer>
                   <hr></hr>
                   <div className="stats">
-                    Jumlah Peminjam
+                    Pengajuan Selesai
                   </div>
                 </Card.Footer>
               </Card>
             </Col>
           </Row>
 
-
           
-          <Row className="mt-1">
-          {/* <div>
+          <Row>
             <Button
               className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
               type="button"
-              variant="success"
-              onClick={handlePengajuan}>
-              <FaPlusCircle style={{ marginRight: '8px' }} />
-              Pengajuan Barang Bekas
-            </Button>
-          </div> */}
-
-          {/* <Button
-              className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
-              type="button"
               variant="info"
-              onClick={handleImportButtonClick}
-              hidden={role === "Finance"}
-              >
+              onClick={handleImportButtonClick}>
               <FaFileImport style={{ marginRight: '8px' }} />
               Import Data
-          </Button> */}
-          
-          {/* <ImportAntreanPengajuan showImportModal={showImportModal} setShowImportModal={setShowImportModal} onSuccess={handleImportSuccess} /> */}
+            </Button>
+            <ImportPengajuan showImportModal={showImportModal} setShowImportModal={setShowImportModal} onSuccess={handleImportSuccess} />
+            
+            <Button
+              className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
+              type="button"
+              variant="primary"
+              onClick={downloadPDF}>
+              <FaFilePdf style={{ marginRight: '8px' }} />
+              Unduh PDF
+            </Button>
+            
+            <SearchBar searchQuery={searchQuery} handleSearchChange={handleSearchChange} />
 
-          {/* <Button
-            className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
-            type="button"
-            variant="primary"
-            onClick={() => downloadCSV(pinjaman)}>
-            <FaFileCsv style={{ marginRight: '8px' }} />
-            Unduh CSV
-          </Button> */}
-          <Button
-            className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
-            type="button"
-            variant="primary"
-            onClick={downloadPDF}>
-            <FaFilePdf style={{ marginRight: '8px' }} />
-            Unduh PDF
-          </Button>
-          <SearchBar searchQuery={searchQuery} handleSearchChange={handleSearchChange} />
-          </Row>
-          
-
-          <Row>
-            <Col md="12" className="mt-2">
+            <Col md="12">
               <Card className="p-3 striped-tabled-with-hover mt-2">
                 <Card.Header>
                   <Card.Title as="h4" className="mb-4"><strong>Data Pengajuan Barang Bekas</strong></Card.Title>
@@ -598,12 +463,12 @@ import {
                         <table className="flex-table table table-striped table-hover">
                           <thead>
                             <tr>
-                              <th className="border-0">ID Pengajuan</th>
-                              <th className="border-0">Pemohon</th>
-                              <th className="border-0">Divisi</th>
-                              <th className="border-0">Jenis Pengajuan</th>
-                              <th className="border-0">Status</th>
-                              <th className="border-0">Diajukan</th>
+                              <th className="border-0" onClick={() => handleSort("id_pengajuan")}>ID Pengajuan {sortBy === "id_pengajuan" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                              <th className="border-0"onClick={() => handleSort("Pemohon.nama")}>Pemohon {sortBy === "Pemohon.nama" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                              <th className="border-0" onClick={() => handleSort("Pemohon.divisi")}>Divisi {sortBy === "Pemohon.divisi" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                              <th className="border-0" onClick={() => handleSort("jenis_pengajuan")}>Jenis Pengajuan {sortBy === "jenis_pengajuan" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                              <th className="border-0" onClick={() => handleSort("GeneratePengajuan.status")}>Status {sortBy === "GeneratePengajuan.status" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                              <th className="border-0" onClick={() => handleSort("createdAt")}>Diajukan {sortBy === "createdAt" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                               <th className="border-0">Aksi</th>   
                             </tr>
                           </thead>
@@ -623,16 +488,16 @@ import {
                                 </td>
                                 <td className="text_center">{new Date(pengajuan.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
                                 <td className="text-center">
-                                  <Button className="btn-fill pull-right warning" variant="warning" onClick={() => handleProses(pengajuan)} style={{ width: 103, fontSize: 14 }} hidden={pengajuan.GeneratePengajuan?.status === "Selesai"}>
+                                  <Button className="btn-fill pull-right warning mt-2 btn-reset" variant="warning" onClick={() => handleProses(pengajuan)} style={{ width: 103, fontSize: 14 }} hidden={pengajuan.GeneratePengajuan?.status === "Selesai"}>
                                     <FaRecycle style={{ marginRight: '8px' }} />
                                     Proses
                                   </Button>
-                                  <Button className="btn-fill pull-right info mt-2" variant="info" onClick={() => handleDetail(pengajuan)} style={{ width: 103, fontSize: 14 }}>
+                                  <Button className="btn-fill pull-right info mt-2 btn-reset" variant="info" onClick={() => handleDetail(pengajuan)} style={{ width: 103, fontSize: 14 }}>
                                     <FaRegFileAlt style={{ marginRight: '8px' }} />
                                     Detail
                                   </Button>
                                   <ButtonGroup vertical>
-                                    <DropdownButton className="pull-right primary mt-2" as={ButtonGroup} variant="primary btn-fill"  title={<span style={{fontSize: 14}}><FaFolder style={{ marginRight: '8px', marginBottom: '2px' }}/>Dokumen</span>} id="bg-vertical-dropdown-1">
+                                    <DropdownButton className="pull-right primary mt-2 btn-reset w-75" as={ButtonGroup} variant="primary btn-fill"  title={<span style={{fontSize: 14}}><FaFolder style={{ marginRight: '8px', marginBottom: '2px' }}/>Dokumen</span>} id="bg-vertical-dropdown-1">
                                     {pengajuan.jenis_pengajuan === "Penjualan" || pengajuan.jenis_pengajuan === "PENJUALAN"? 
                                       (
                                         <>
@@ -651,7 +516,7 @@ import {
                                     }
                                     </DropdownButton>
                                   </ButtonGroup>
-                                  <Button className="btn-fill pull-right danger mt-2" variant="danger" onClick={() => deletePengajuan(pengajuan.id_pengajuan)} style={{ width: 100, fontSize: 13 }}>
+                                  <Button className="btn-fill pull-right danger mt-2 btn-reset" variant="danger" onClick={() => deletePengajuan(pengajuan.id_pengajuan)} style={{ width: 100, fontSize: 13 }}>
                                     <FaTrashAlt style={{ marginRight: '8px' }} />
                                     Hapus
                                   </Button>

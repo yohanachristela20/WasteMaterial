@@ -16,7 +16,6 @@ import ReactLoading from "react-loading";
 import "../assets/scss/lbd/_loading.scss";
 
 
-// react-bootstrap components
 import {Button, Container, Row, Col, Card, Table, Spinner } from "react-bootstrap";
 
 function MasterKaryawan() {
@@ -78,9 +77,7 @@ function MasterKaryawan() {
 
   const getKaryawan = async () =>{
     const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
 
-    // console.log("User token: ", token, "User role:", role);
     try {
 
       setLoading(true);
@@ -130,23 +127,6 @@ function MasterKaryawan() {
       console.error("Error fetching data", error.message); 
     }
   }, [token]); 
-
-
-  
-  const formatRupiah = (angka) => {
-    let pinjamanString = angka.toString().replace(".00");
-    let sisa = pinjamanString.length % 3;
-    let rupiah = pinjamanString.substr(0, sisa);
-    let ribuan = pinjamanString.substr(sisa).match(/\d{3}/g);
-
-    if (ribuan) {
-        let separator = sisa ? "." : "";
-        rupiah += separator + ribuan.join(".");
-    }
-    
-    return rupiah;
-  };
-
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value.toLowerCase());
@@ -228,18 +208,25 @@ function MasterKaryawan() {
   
     const headers = [["ID Karyawan", "Nama Lengkap", "Divisi"]];
   
-    const rows = data.map((item) => [
-      item.id_karyawan,
-      item.nama,
-      item.divisi
-    ]);
+    // const rows = data.map((item) => [
+    //   item.id_karyawan,
+    //   item.nama,
+    //   item.divisi
+    // ]);
+
+    const allRows = data.map((k) => {
+      const id = k.id_karyawan;
+      const nama = k.nama;
+      const divisi = k.divisi;
+      return [id, nama, divisi];
+    });
 
     const marginTop = 15; 
   
     doc.autoTable({
       startY: 20 + marginTop, 
       head: headers,
-      body: rows,
+      body: allRows,
       styles: { fontSize: 12 },
       headStyles: { fillColor: [3, 177, 252] }, 
     });
@@ -345,13 +332,12 @@ function MasterKaryawan() {
                        <td className="text-center">{new Date(karyawan.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
                        <td className="text-center">
                        <Button
-                         className="btn-fill pull-right warning"
+                         className="btn-fill pull-right warning btn-reset mt-2"
                          type="button"
                          variant="warning"
                          onClick={() => {
                            setShowEditModal(true);
                            setSelectedKaryawan(karyawan);
-                           // console.log("Berhasil");
                          }}
                          style={{
                            width: 103,
@@ -361,7 +347,7 @@ function MasterKaryawan() {
                          Ubah
                        </Button>
                        <Button
-                         className="btn-fill pull-right ml-2"
+                         className="btn-fill pull-right btn-reset mt-2"
                          type="button"
                          variant="danger"
                          onClick={() => deleteKaryawan(karyawan.id_karyawan)}

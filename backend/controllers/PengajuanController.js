@@ -9,6 +9,7 @@ import Pengajuan from "../models/PengajuanModel.js";
 import GenPengajuan from "../models/GenPengajuan.js";
 import Karyawan from "../models/KaryawanModel.js";
 import Kategori from "../models/KategoriModel.js";
+import { Sequelize, Op } from "sequelize";
 
 const router = express.Router(); 
 
@@ -24,7 +25,7 @@ export const getLastPengajuanID = async (req, res) => {
         const year = twoDigitYear.padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
 
-        console.log("now DATE:", date, "MONTH:", month, "YEAR:", year);
+        // console.log("now DATE:", date, "MONTH:", month, "YEAR:", year);
 
         let newId = `${year}${month}0001PG`;
 
@@ -33,7 +34,7 @@ export const getLastPengajuanID = async (req, res) => {
             const incremented = (lastNumeric + 2).toString().padStart(4, '0');
             newId = `${year}${month}${incremented}PG`;
         }
-        console.log("getLastPengajuanID: ", newId);
+        // console.log("getLastPengajuanID: ", newId);
         return res.status(200).json({newId});
 
 
@@ -112,7 +113,7 @@ export const detailPengajuan = async(req, res) => {
         return res.status(200).json(pengajuan);
 
     } catch (error) {
-        console.log(error.message);
+        // console.log(error.message);
         res.status(500).json({ message: "Failed to fetch Detail Barang" });
     }
 }
@@ -139,7 +140,7 @@ export const getPengajuan = async(req, res) => {
         return res.status(200).json(pengajuan);
 
     } catch (error) {
-        console.log(error.message);
+        // console.log(error.message);
         res.status(500).json({ message: "Failed to fetch Detail Barang" });
     }
 }
@@ -170,7 +171,7 @@ export const getPengajuanById = async(req, res) => {
         return res.status(200).json(pengajuanById);
 
     } catch (error) {
-        console.log(error.message);
+        // console.log(error.message);
         res.status(500).json({ message: "Failed to fetch Detail Barang" });
     }
 }
@@ -198,5 +199,314 @@ export const deletePengajuan = async(req, res) => {
     res.status(500).json({ message: "Gagal menghapus Data Pengajuan." });
   }
 }
+
+
+export const getPenjualan = async (req, res) => {
+  try {
+    const { year } = req.query; 
+
+    const whereCondition = {
+      jenis_pengajuan: {[Op.like]: "PENJUALAN"},
+    }
+
+   if (year) {
+      whereCondition["createdAt"] = {
+        [Op.between] : [`${year}-01-01`, `${year}-12-31`],
+      }
+   }
+
+    const dataPenjualan = await Pengajuan.findAll({
+      where: whereCondition,
+      include: [
+        {
+          model: GenPengajuan,
+          as: "GeneratePengajuan",
+          where: { status: { [Op.like]: "Selesai" } },
+        },
+        {
+          model: Karyawan,
+          as: "Pemohon",
+          attributes: ["divisi"],
+        },
+      ],
+      attributes: [
+        [Sequelize.col("Pemohon.divisi"), "divisi"],
+        [Sequelize.fn("SUM", Sequelize.col("total")), "total"],
+      ],
+      group: ["Pemohon.divisi"],
+      raw: true,
+    });
+    
+
+    const formattedData = dataPenjualan.map((item) => ({
+      ...item,
+      total: parseFloat(item.total),
+    }));
+
+    // console.log("Formatted Data:", formattedData);
+
+    // if (formattedData.length > 0) {
+    //   res.status(200).json(formattedData);
+    // } else {
+    //   res.status(404).json({ message: "Data tidak ditemukan" });
+    // }
+    res.status(200).json(formattedData.length ? formattedData : []);
+  } catch (error) {
+    console.error("Error fetching data:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
+export const filterPenjualanTahunan = async (req, res) => {
+  try {
+    const dataPenjualan = await Pengajuan.findAll({
+      where: {
+        jenis_pengajuan: "PENJUALAN",
+      },
+      include: [
+        {
+          model: Karyawan,
+          as: "Pemohon",
+          attributes: ["divisi"],
+        },
+      ],
+
+      attributes: ["createdAt",],
+      raw: true,
+    });
+
+    // console.log("Raw Data: ", dataPenjualan); 
+
+    if (dataPenjualan.length > 0) {
+      res.status(200).json(dataPenjualan); 
+    } else {
+      res.status(404).json({ message: "Data tidak ditemukan" });
+    }
+    
+  } catch (error) {
+    console.error("Error fetching data:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
+export const getDataPerDivisi = async (req, res) => {
+  try {
+      const { divisi, bulan, tahun } = req.query;
+
+      // console.log("Received Query Params:", { divisi, bulan, tahun });
+
+      const whereCondition = {
+        jenis_pengajuan: {[Op.like]: "PENJUALAN"},
+      }
+
+      if (divisi && divisi !== "") {
+        whereCondition["$Pemohon.divisi$"] = divisi;
+      }
+
+      if ((!bulan || bulan === "") && (!divisi || divisi === "")) {
+        whereCondition["createdAt"] = {
+          [Op.between] : [`${tahun}-01-01`, `${tahun}-12-31`],
+        }; 
+      } else if (tahun && (!bulan || bulan === "")) {
+        whereCondition["createdAt"] = {
+          [Op.between] : [`${tahun}-01-01`, `${tahun}-12-31`],
+        }; 
+      } else if (bulan && tahun) {
+        const startDate = `${tahun}-${bulan.padStart(2, '0')}-01`;
+        const endDate = new Date(tahun, bulan, 0); 
+        const endDateString = endDate.toISOString().split('T')[0];
+
+        whereCondition["createdAt"] = {
+            [Op.gte]: startDate,
+            [Op.lte]: endDateString,
+        };
+      }
+
+      const dataPemohon = await Pengajuan.findAll({
+          where: whereCondition,
+          include: [
+              {
+                model: GenPengajuan,
+                as: "GeneratePengajuan",
+                where: { status: { [Op.like]: "Selesai" } },
+              },
+              {
+                model: Karyawan,
+                as: "Pemohon",
+                attributes: ["divisi"],
+              },
+          ],
+          attributes: [
+              [Sequelize.col("Pemohon.divisi"), "divisi"],
+              [Sequelize.fn("SUM", Sequelize.col("total")), "total"],
+          ],
+          group: ["Pemohon.divisi"],
+          raw: true,
+      });
+
+      const formattedData = dataPemohon.map((item) => ({
+          ...item,
+          total: parseFloat(item.total),
+      }));
+
+      // console.log("Formatted Data:", formattedData);
+
+      res.status(200).json(formattedData.length ? formattedData : []);
+  } catch (error) {
+      console.error("Error fetching data:", error.message);
+      res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getScrappingPerDivisi = async (req, res) => {
+  try {
+      const { divisi, bulan, tahun } = req.query;
+
+      // console.log("Received Query Params:", { divisi, bulan, tahun });
+
+      const whereCondition = {
+        jenis_pengajuan: {[Op.like]: "SCRAPPING"},
+      }
+
+      if (divisi && divisi !== "") {
+        whereCondition["$Pemohon.divisi$"] = divisi;
+      }
+
+      if ((!bulan || bulan === "") && (!divisi || divisi === "")) {
+        whereCondition["createdAt"] = {
+          [Op.between] : [`${tahun}-01-01`, `${tahun}-12-31`],
+        }; 
+      } else if (tahun && (!bulan || bulan === "")) {
+        whereCondition["createdAt"] = {
+          [Op.between] : [`${tahun}-01-01`, `${tahun}-12-31`],
+        }; 
+      } else if (bulan && tahun) {
+        const startDate = `${tahun}-${bulan.padStart(2, '0')}-01`;
+        const endDate = new Date(tahun, bulan, 0); 
+        const endDateString = endDate.toISOString().split('T')[0];
+
+        whereCondition["createdAt"] = {
+            [Op.gte]: startDate,
+            [Op.lte]: endDateString,
+        };
+      }
+
+      const dataPemohon = await Pengajuan.findAll({
+          where: whereCondition,
+          include: [
+              {
+                model: GenPengajuan,
+                as: "GeneratePengajuan",
+                where: { status: { [Op.like]: "Selesai" } },
+              },
+              {
+                model: Karyawan,
+                as: "Pemohon",
+                attributes: ["divisi"],
+              },
+          ],
+          attributes: [
+              [Sequelize.col("Pemohon.divisi"), "divisi"],
+              [Sequelize.fn("SUM", Sequelize.col("total")), "total"],
+          ],
+          group: ["Pemohon.divisi"],
+          raw: true,
+      });
+
+      const formattedData = dataPemohon.map((item) => ({
+          ...item,
+          total: parseFloat(item.total),
+      }));
+
+      // console.log("Formatted Data:", formattedData);
+
+      res.status(200).json(formattedData.length ? formattedData : []);
+  } catch (error) {
+      console.error("Error fetching data:", error.message);
+      res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getDataPemohonPerDivisi = async (req, res) => {
+  try {
+    const { divisi, bulan, tahun } = req.query;
+
+    // console.log("Received Query Params:", { divisi, bulan, tahun });
+
+    const whereCondition = (
+      await Pengajuan.findAll({
+      where: {
+        jenis_pengajuan: "PENJUALAN", 
+      },
+      include: [
+        { 
+          model: GenPengajuan,
+          as: "GeneratePengajuan",
+          where: {  
+            status: "Selesai",
+          },
+        }
+      ]
+    }));
+
+    if (divisi) {
+        whereCondition["$Pemohon.divisi$"] = divisi;
+    }
+
+    if (bulan && tahun) {
+      const startDate = `${tahun}-${bulan.padStart(2, '0')}-01`;
+      const endDate = new Date(tahun, bulan, 0); // Mendapatkan tanggal terakhir di bulan tersebut
+      const endDateString = endDate.toISOString().split('T')[0]; // Format 'YYYY-MM-DD'
+  
+      whereCondition["createdAt"] = {
+          [Sequelize.Op.gte]: startDate,
+          [Sequelize.Op.lte]: endDateString,
+      };
+    } 
+    else if (tahun) {
+      // console.log(`Filtering data for entire year: ${tahun}`);
+      whereCondition["createdAt"] = {
+          [Sequelize.Op.gte]: `${tahun}-01-01`,
+          [Sequelize.Op.lte]: `${tahun}-12-31`,
+      };
+    }
+
+    const dataPemohon = await Pengajuan.findAll({
+        where: whereCondition,
+        include: [
+            {
+                model: Karyawan,
+                as: "Pemohon",
+                attributes: ["divisi", "id_karyawan"],
+            },
+        ],
+        attributes: [
+            [Sequelize.col("Pemohon.divisi"), "divisi"],
+            [Sequelize.fn("COUNT", Sequelize.fn("DISTINCT", Sequelize.col("Pemohon.id_karyawan"))), "jumlah_pemohon"],
+        ],
+        group: ["Pemohon.divisi"],
+        raw: true,
+    });
+
+    const dataPemohonPerDivisi = dataPemohon.map((item) => ({
+        ...item,
+        jumlah_pemohon: parseInt(item.jumlah_pemohon, 10),
+    }));
+
+    // console.log("dataPemohonPerDivisi:", dataPemohonPerDivisi);
+
+    if (dataPemohonPerDivisi.length > 0) {
+        res.status(200).json(dataPemohonPerDivisi);
+    } else {
+        res.status(200).json({ message: "Data tidak ditemukan", data: [] });
+    }
+} catch (error) {
+    console.error("Error fetching data:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+}
+};
+
 
 export default router;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
-import {FaFilePdf, FaPlusCircle, FaTrashAlt} from 'react-icons/fa'; 
+import {FaFilePdf} from 'react-icons/fa'; 
 import { useHistory } from "react-router-dom";
 import "../assets/scss/lbd/_text.scss";
 import html2canvas from "html2canvas";
@@ -18,18 +18,11 @@ import {
 
 function DokumenPengajuan() {
   const location = useLocation();
-  const history = useHistory();
   const contentRef = useRef(null);
 
   const [selectedPengajuan, setSelectedPengajuan] = useState(location?.state?.selectedPengajuan || null);
   const [detailPengajuan, setDetailPengajuan] = useState([]);
   const [detailTransaksi, setDetailTransaksi] = useState([]);
-
-
-  const [sortBy, setSortBy] = useState("id_pengajuan");
-  const [sortOrder, setSortOrder] = useState("asc");
-  const [currentPage, setCurrentPage] = useState(1);
-  
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -38,7 +31,6 @@ function DokumenPengajuan() {
             console.error("Token tidak tersedia");
             return;
         }
-
         try {
             const resp = await axios.get(`http://localhost:5000/detail-pengajuan/${selectedPengajuan?.id_pengajuan}`, {
                 headers: {

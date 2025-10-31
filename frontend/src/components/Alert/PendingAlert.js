@@ -19,7 +19,7 @@ import {
 } from "react-bootstrap";
 
 
-function PendingAlert({plafondTersedia, hidden}) {
+function PendingAlert({hidden}) {
     const [show, setShow] = useState(true);
 
     if (!show) return null;
@@ -32,10 +32,8 @@ function PendingAlert({plafondTersedia, hidden}) {
               <FaExclamationCircle className="info-icon"/>
             </Col>
             <Col md="11">
-              <Alert.Heading className="mt-2 mb-0" style={{fontWeight: "500"}}><strong>Pengajuan Ditunda</strong></Alert.Heading>
-              <p className="mt-2">Maaf, anda tidak dapat mengajukan pinjaman untuk saat ini karena telah mengajukan pinjaman sebelumnya.</p>
-              <p>Mohon lakukan <strong>Pelunasan</strong> atau <strong>Pembatalan</strong> di halaman <strong><a href="/karyawan/riwayat-pengajuan" className="link-pengajuan">Riwayat Pengajuan</a></strong> terlebih dahulu.
-              </p>
+              <Alert.Heading className="mt-2 mb-0" style={{fontWeight: "500"}}><strong>Pengajuan Ditunda</strong><hr/></Alert.Heading>
+              <p>Mohon tunggu hingga pengajuan sebelumnya selesai diproses oleh Admin.</p>
               <Button
                   variant="link"
                   onClick={() => setShow(false)}

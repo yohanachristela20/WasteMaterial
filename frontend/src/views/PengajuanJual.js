@@ -1,62 +1,40 @@
-import React, { useState, useEffect, useMemo } from "react";
-import AcceptedAlert from "components/Alert/AcceptedAlert.js";
-import DeclineAlert from "components/Alert/DeclineAlert.js";
-import { useLocation } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import {FaPlusCircle, FaTrashAlt} from 'react-icons/fa'; 
+import { FaPlusCircle, FaTrashAlt} from 'react-icons/fa'; 
 import { useHistory } from "react-router-dom";
 import {toast } from 'react-toastify';
+import PendingAlert from "components/Alert/PendingAlert.js";
 
 
 import {
-  Badge,
   Button,
   Card,
   Form,
-  Navbar,
-  Nav,
   Container,
   Row,
   Col, 
-  Table,
-  FormControl
 } from "react-bootstrap";
 
 function PengajuanJual() {
-  const location = useLocation();
    const history = useHistory();
 
   const [id_pengajuan, setIDPengajuan] = useState("");
-  const [nama, setNama] = useState("");
   const [nama_kategori, setNamaKategori] = useState([]);
-  const [jenis_barang, setJenisBarang] = useState("");
   const [harga, setHarga] = useState(0);
-  const [satuan, setSatuan] = useState("");
-  const [id_kategori, setIdKategori] = useState("");
-  const [kategori_barang, setKategoriBarang] = useState("");
   const [jumlah_barang, setJumlahBarang] = useState("");
-  const [kondisi, setKondisi] = useState("");
   const [namaBarang, setNamaBarang] = useState([]);
   const [id_barang, setIdBarang] = useState("");
-  const [kategori, setKategori] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedBarang, setSelectedBarang] = useState(null);
-  const [kondisi_lainnya, setKondisiLainnya] = useState("");
-  const [divisi, setDivisi] = useState("");
   const [userData, setUserData] = useState({id_karyawan: "", nama: "", divisi: ""}); 
   const [jenis_pengajuan, setJenisPengajuan] = useState("");
   const [total, setTotal] = useState(0);
   const [items, setItems] = useState([]);
   const [id_karyawan, setIdKaryawan] = useState("");
   const [detailPengajuan, setDetailPengajuan] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("id_pengajuan");
-  const [sortOrder, setSortOrder] = useState("asc");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
   const [loading, setLoading] = useState(true);
-  const [tujuan, setTujuan] = useState("");
   const [role, setRole] = useState("");
+  const [prevId, setPrevId] = useState(null);
+  const previousId = useRef();  
+  const [statusPrevPengajuan, setStatusPrevPengajuan] = useState([]);
   
   const token = localStorage.getItem("token");
 
@@ -79,7 +57,48 @@ function PengajuanJual() {
       tujuanPengajuan();
   }, []);
 
-  // console.log("id_pengajuan:", id_pengajuan);
+  useEffect(() => {
+    if (id_pengajuan && typeof id_pengajuan === "string" && id_pengajuan.length >= 8) {
+      previousId.current = id_pengajuan;
+      
+      const prefix = id_pengajuan.substring(0, 4); // Tahun - bulan
+      const numericPart = id_pengajuan.substring(4, 8); // 4 digit nomor urut
+      const suffix = id_pengajuan.slice(-2); //PG
+
+      const numericValue = parseInt(numericPart, 10);
+      if (!isNaN(numericValue) && numericValue > 1) {
+        const decremented = (numericValue - 2).toString().padStart(4, '0');
+        const calculatedPrevId = `${prefix}${decremented}${suffix}`;
+        setPrevId(calculatedPrevId);
+      }
+    } else {
+      setPrevId(null);
+    }
+  }, [id_pengajuan]);
+
+  useEffect(() => {
+    const getStatusPrevPengajuan = async() => {
+      try {
+        const res = await axios.get(`http://localhost:5000/prev-status/${prevId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        });
+        setStatusPrevPengajuan(Array.isArray(res.data) ? res.data : []);
+      } catch (error) {
+        console.error("Error fetching previous pengajuan status:", error.message);
+      }
+    };
+    if (prevId) {
+      getStatusPrevPengajuan();
+    }
+  }, [prevId, token]);
+
+  const uniqueStatus = [
+    ...new Map(
+      statusPrevPengajuan.map((s) => [s?.prevId, s])
+    ).values(),
+  ];
 
   const getNamaKategori = async() => {
       try {
@@ -95,15 +114,10 @@ function PengajuanJual() {
           }));
 
           setNamaKategori(options);
-          
-          // console.log("nama options:", options);
-
       } catch (error) {
           console.error("Error fetching data: ", error.message);
       }
   };
-
-  // console.log("namaKategori:", nama_kategori);
 
   const getNamaBarang = async() => {
       try {
@@ -120,18 +134,10 @@ function PengajuanJual() {
 
           setNamaBarang(options);
           
-          // console.log("nama brg:", options);
-
       } catch (error) {
           console.error("Error fetching data: ", error.message);
       }
   };
-
-  const parseNumberString = (v) => {
-    if (v === null || v === undefined || v === "") return 0;
-    if (typeof v === "number") return v;
-    return Number(String(v).replace(/\./g, "").replace(/,/g, ".")) || 0;
-  }
 
   const getDetailKategori = async(idBarang, idx) => {
       if (!idBarang) return;
@@ -156,16 +162,11 @@ function PengajuanJual() {
               harga: hargaNum,
               satuan: data.satuan || "",
               total: hargaNum * jumlahNum,
-              // tujuan: "Penjualan",
             };
-            // const h = parseNumberString(copy[idx].harga);
-            // const j = parseNumberString(copy[idx].jumlah_barang);
-            // copy[idx].total = h * j;
             return copy;
           });
       } catch (error) {
           console.error("Error fetching barang details:", error.message);
-          // setIdKategori("");
           toast.error("Gagal mengambil detail barang.")
       }
   };
@@ -197,59 +198,7 @@ function PengajuanJual() {
       setTimeout(() => setLoading(false), 1000);
   }, []);
 
-  // console.log("detailPengajuan:", detailPengajuan);
-
-  const filteredPengajuan = detailPengajuan.filter((dataPengajuan) => 
-    (dataPengajuan.id_pengajuan && String(dataPengajuan.id_pengajuan).toLowerCase().includes(searchQuery)) ||
-    (dataPengajuan.Pemohon?.divisi && String(dataPengajuan.Pemohon?.divisi).toLowerCase().includes(searchQuery)) ||
-    (dataPengajuan.BarangDiajukan?.nama && String(dataPengajuan.BarangDiajukan?.nama).toLowerCase().includes(searchQuery)) ||
-    (dataPengajuan.BarangDiajukan?.id_kategori && String(dataPengajuan.BarangDiajukan?.id_kategori).toLowerCase().includes(searchQuery)) ||
-    (dataPengajuan.jumlah_barang && String(dataPengajuan.jumlah_barang).toLowerCase().includes(searchQuery)) ||
-    (dataPengajuan.total && String(dataPengajuan.total).toLowerCase().includes(searchQuery)) ||
-    (dataPengajuan.kondisi && String(dataPengajuan.kondisi).toLowerCase().includes(searchQuery)) ||
-    (dataPengajuan.jenis_pengajuan && String(dataPengajuan.jenis_pengajuan).toLowerCase().includes(searchQuery))
-  );
-
-  // console.log("detailPengajuan:", detailPengajuan);
-  // console.log("filteredPengajuan:", filteredPengajuan);
-
-  const handleSort = (key) => {
-    if (sortBy === key) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortBy(key);
-      setSortOrder("asc");
-    }
-  }
-
-  const getNestedValue = (obj, path) => {
-    if (!obj || !path) return undefined;
-    return path.split('.').reduce((o, k) => (o ? o[k] : undefined), obj);
-  };
-
-  const sortedPengajuan = [...filteredPengajuan].sort((a, b) => {
-    const aRaw = getNestedValue(a, sortBy) ?? "";
-    const bRaw = getNestedValue(b, sortBy) ?? "";
-
-    const aNum = (aRaw);
-    const bNum = (bRaw);
-
-    if (!isNaN(aNum) && !isNaN(bNum)) {
-      return sortOrder === "asc" ? aNum - bNum : bNum - aNum;
-    }
-
-    const aStr = String(aRaw).toLowerCase();
-    const bStr = String(bRaw).toLowerCase();
-    if (aStr < bStr) return sortOrder === "asc" ? -1 : 1;
-    if (aStr > bStr) return sortOrder === "asc" ? 1 : -1;
-    return 0;
-  });
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = sortedPengajuan.slice(indexOfFirstItem, indexOfLastItem);
-
-
+ 
   const formatRupiah = (angka) => {
     let pinjamanString = angka.toString().replace(".00");
     let sisa = pinjamanString.length % 3;
@@ -264,10 +213,6 @@ function PengajuanJual() {
     return rupiah;
   };
 
-  const handleJumlahBarang = (value) => {
-    const numericValue = value.replace(/\D/g, "");
-    setJumlahBarang(numericValue);
-  };
 
   useEffect(() => {
     const totalNum = parseFloat(harga) * parseFloat(jumlah_barang) || 0;
@@ -295,7 +240,6 @@ function PengajuanJual() {
           }
           setUserData(usr);
           setIdKaryawan(usr.id_karyawan || "");
-          // setItems(prev => prev.map(it => ({ ...it, id_karyawan: it.id_karyawan || usr.id_karyawan || "" })));
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -306,7 +250,6 @@ function PengajuanJual() {
 
   });
 
-  // console.log("role:", role);
 
   const blankItem = () => ({
     key: Date.now() + Math.random(),
@@ -365,7 +308,7 @@ function PengajuanJual() {
         id_pengajuan,
         jumlah_barang: it.jumlah_barang,
         total: it.total,
-        kondisi: it.kondisi !== "Lainnya" ? it.kondisi : it.kondisi_lainnya,
+        kondisi: it.kondisi_lainnya !== "" ? it.kondisi_lainnya : it.kondisi,
         jenis_pengajuan,
         id_karyawan: it.id_karyawan || userData.id_karyawan || id_karyawan || "",
         id_barang: it.id_barang,
@@ -385,12 +328,12 @@ function PengajuanJual() {
       if (role === "Admin") {
         history.push("/admin/data-pengajuan");
       } else if (role === "User") {
-        history.push("/user/data-pengajuan-user");
+        history.push("/user/dashboard-user");
       }
 
 
       toast.success("Pengajuan berhasil dikirim.");
-      setItems([blankItem()]); //clear item
+      setItems([blankItem()]); 
       IDPengajuan();
     } catch (error) {
       console.error(error);
@@ -418,12 +361,19 @@ function PengajuanJual() {
   };
 
 
-
-
   return (
     <>
       <Container fluid>
         <Form onSubmit={handleSubmit}>
+          <Row>
+            <Col md="12">
+              {uniqueStatus.map((s) => (
+                <div key={s?.prevId} >
+                  <PendingAlert hidden={s?.status !== "Belum Diproses"} />
+                </div>
+              ))}
+            </Col>
+          </Row>
           <Row>
             <Col className="card-screening">
               <Card className="card-screening p-4">
@@ -549,6 +499,7 @@ function PengajuanJual() {
                               <label>Tujuan</label>
                               <Form.Control type="text" value={jenis_pengajuan} disabled />
                             </Form.Group>
+
                           </Col>
                         </Row>
                       </Card.Body>
@@ -557,10 +508,10 @@ function PengajuanJual() {
                   
                   <Row>
                     <Col md="12" className="mt-2 d-flex gap-2">
-                      <Button variant="success" type="button" className="mr-3 btn-fill" onClick={handleAddCard}>
+                      <Button variant="success" type="button" className="mr-3 btn-fill" onClick={handleAddCard} disabled={uniqueStatus.some((s) => s?.status === "Belum Diproses")}>
                         <FaPlusCircle className="mb-1" /> Tambah Pengajuan
                       </Button>
-                      <Button variant="primary" type="submit" className="btn-fill">Simpan</Button>
+                      <Button variant="primary" type="submit" className="btn-fill" disabled={uniqueStatus.some((s) => s?.status === "Belum Diproses")}>Simpan</Button>
                     </Col>
                   </Row>
 

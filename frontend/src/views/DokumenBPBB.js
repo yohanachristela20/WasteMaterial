@@ -1,41 +1,26 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import AcceptedAlert from "components/Alert/AcceptedAlert.js";
-import DeclineAlert from "components/Alert/DeclineAlert.js";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
-import {FaFilePdf, FaPlusCircle, FaTrashAlt} from 'react-icons/fa'; 
-import { useHistory } from "react-router-dom";
-import {toast } from 'react-toastify';
+import {FaFilePdf} from 'react-icons/fa'; 
 import "../assets/scss/lbd/_text.scss";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 import {
-  Badge,
   Button,
   Card,
-  Form,
-  Navbar,
-  Nav,
   Container,
   Row,
   Col, 
   Table,
-  FormControl
 } from "react-bootstrap";
 
 function DokumenBPBB() {
   const location = useLocation();
-  const history = useHistory();
   const contentRef = useRef(null);
-
   const [selectedPengajuan, setSelectedPengajuan] = useState(location?.state?.selectedPengajuan || null);
   const [detailPengajuan, setDetailPengajuan] = useState([]);
   const [detailTransaksi, setDetailTransaksi] = useState([]);
-
-  const [sortBy, setSortBy] = useState("id_pengajuan");
-  const [sortOrder, setSortOrder] = useState("asc");
-  const [currentPage, setCurrentPage] = useState(1);
   const token = localStorage.getItem("token");
 
   useEffect(() => {

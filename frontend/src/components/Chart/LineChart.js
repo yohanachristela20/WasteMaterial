@@ -2,7 +2,20 @@ import React from "react";
 import { Line } from "react-chartjs-2";
 
 const LineComponent = ({ chartData }) => {
-  // Konfigurasi data untuk Bar Chart
+  const formatRupiah = (angka) => {
+    let pinjamanString = angka.toString().replace(".00");
+    let sisa = pinjamanString.length % 3;
+    let rupiah = pinjamanString.substr(0, sisa);
+    let ribuan = pinjamanString.substr(sisa).match(/\d{3}/g);
+
+    if (ribuan) {
+        let separator = sisa ? "." : "";
+        rupiah += separator + ribuan.join(".");
+    }
+    
+    return rupiah;
+  };
+
   const data = {
     labels: chartData.labels, // Labels untuk sumbu X
     datasets: [
@@ -20,27 +33,26 @@ const LineComponent = ({ chartData }) => {
     ],
   };
 
-  // Konfigurasi opsi untuk Bar Chart
   const options = {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
       x: {
         grid: {
-          display: false, // Sembunyikan grid di sumbu X
+          display: false, 
         },
       },
       y: {
         beginAtZero: true, 
         ticks: {
-          stepSize: 10, // Langkah nilai pada sumbu Y
+          stepSize: 10,
         },
         grid: {
           drawBorder: true, 
         },
             title: {
             display: true,
-            text: "Jumlah Pinjaman (Juta)", // Label sumbu X
+            text: "Jumlah Penjualan (Rp)", 
         },
       },
     },
@@ -48,7 +60,7 @@ const LineComponent = ({ chartData }) => {
       tooltip: {
         callbacks: {
           label: function (tooltipItem) {
-            return tooltipItem.raw;
+            return 'Rp '+ formatRupiah(tooltipItem.raw); 
           },
         },
       },

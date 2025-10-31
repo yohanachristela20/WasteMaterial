@@ -1,8 +1,7 @@
 import React from "react";
-import { Bar } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 
-const ChartComponent = ({ chartData }) => {
-
+const LineComponent2 = ({ chartData }) => {
   const formatRupiah = (angka) => {
     let pinjamanString = angka.toString().replace(".00");
     let sisa = pinjamanString.length % 3;
@@ -16,16 +15,20 @@ const ChartComponent = ({ chartData }) => {
     
     return rupiah;
   };
-  
+
   const data = {
     labels: chartData.labels, // Labels untuk sumbu X
     datasets: [
       {
         label: "Divisi", 
         data: chartData.series[0], // Data pada sumbu Y
-        backgroundColor: "rgba(250,124,114, 0.6)",
-        borderColor: "rgba(250,124,114, 1)",
+        backgroundColor: "rgba(68, 132, 143, 1)", 
+        borderColor: "rgba(68, 132, 143, 1)",            
         borderWidth: 1,
+        fill: {
+          target: "origin",
+          above: "rgba(191,251,255,0.5)",
+        }
       },
     ],
   };
@@ -42,14 +45,14 @@ const ChartComponent = ({ chartData }) => {
       y: {
         beginAtZero: true, 
         ticks: {
-          stepSize: 10, 
+          stepSize: 10,
         },
         grid: {
           drawBorder: true, 
         },
             title: {
             display: true,
-            text: "Jumlah Penjualan (Rp)", 
+            text: "Pengeluaran-Scrapping (Rp)", 
         },
       },
     },
@@ -62,17 +65,17 @@ const ChartComponent = ({ chartData }) => {
         },
       },
       legend: {
-        display: true,
+        display: true, 
         position: "top", 
       },
     },
   };
 
   return (
-    <div className="chart-container" style={{ height: "245px" }}>
-      <Bar data={data} options={options} />
+    <div className="chart-container" style={{ height: "242px" }}>
+      <Line data={data} options={options} />
     </div>
   );
 };
 
-export default ChartComponent;
+export default LineComponent2;

@@ -1,20 +1,9 @@
 import Beranda from "views/Beranda.js";
-import ScreeningKaryawan from "views/ScreeningKaryawan.js";
-import Angsuran from "views/Angsuran.js";
 import DataPengajuan from "views/DataPengajuan.js";
 import MasterKaryawan from "views/MasterKaryawan.js";
 import PengajuanJual from "views/PengajuanJual";
-import BerandaFinance from "views/BerandaFinance.js";
-import BerandaKaryawan from "views/BerandaKaryawan.js";
-import ScreeningPinjamanKaryawan from "views/ScreeningPinjamanKaryawan.js";
-import ScreeningPinjamanKaryawan2 from "views/ScreeningPinjamanKaryawan2.js";
-import RiwayatPengajuanKaryawan from "views/RiwayatPengajuanKaryawan.js";
-import AngsuranKaryawan from "views/AngsuranKaryawan.js";
 import MasterUser from "views/MasterUser.js";
 import DashboardKaryawan from "views/DashboardKaryawan.js";
-import RiwayatPinjamanKaryawan from "views/RiwayatPinjamanKaryawan";
-import AngsuranFinance from "views/AngsuranFinance";
-import SuratPernyataan from "views/SuratPernyataan";
 import DataBarang from "views/DataBarang.js";
 
 import KategoriBarang from "views/KategoriBarang";
@@ -24,7 +13,6 @@ import DetailPengajuan from "views/DetailPengajuan.js";
 import Transaksi from "views/Transaksi.js";
 
 import Login from "views/Login.js";
-import DataPengajuanUser from "views/DataPengajuanUser.js";
 import DetailPengajuanUser from "views/DetailPengajuanUser";
 import DokumenPengajuan from "views/DokumenPengajuan";
 import DokumenTransaksi from "views/DokumenTransaksi";
@@ -173,13 +161,13 @@ const dashboardRoutes = [
     component: DetailPengajuanUser,
     layout: "/user"
   },
-  {
-    path: "/data-pengajuan-user",
-    name: "Data Pengajuan",
-    icon: "nc-icon nc-notes",
-    component: DataPengajuanUser,
-    layout: "/user"
-  },
+  // {
+  //   path: "/data-pengajuan-user",
+  //   name: "Data Pengajuan",
+  //   icon: "nc-icon nc-notes",
+  //   component: DataPengajuanUser,
+  //   layout: "/user"
+  // },
 
   // {
   //   path: "/beranda-user",

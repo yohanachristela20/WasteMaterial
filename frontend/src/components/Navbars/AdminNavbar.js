@@ -159,76 +159,76 @@ function Header() {
         </Navbar.Toggle> */}
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ml-auto" navbar>
-          <Dropdown as={Nav.Item} show={showNotifDropdown} onToggle={setShowNotifDropdown} hidden={role === "Karyawan" || role === "Super Admin"}>
-                <Dropdown.Toggle as={Nav.Link} className="position-relative">
-                  <FaBell style={{ marginTop: '9px' }} size={20} />
-                  {notifications.length > 0 && (
-                    <span className="badge badge-danger position-absolute">
-                      {notifications.length}
-                    </span>
-                  )}
-                </Dropdown.Toggle>
-                <Dropdown.Menu style={{ width: '300px' }}>
-                  {notifications.length > 0 ? (
-                    notifications.map((notif, index) => (
-                      <Dropdown.Item key={index} className="text-wrap">
-                      <FaInfoCircle style={{ marginRight: '8px' }} />
-                        {notif.message}
-                        <div className="divider"></div>
-                      </Dropdown.Item>
-                    ))
-                  ) : (
-                    <Dropdown.Item>
-                      <FaInfoCircle style={{ marginRight: '8px' }} />
-                      Tidak ada notifikasi
-                      </Dropdown.Item>
-                  )}
-                </Dropdown.Menu>
-              </Dropdown>
+          {/* <Dropdown as={Nav.Item} show={showNotifDropdown} onToggle={setShowNotifDropdown} hidden={role === "Karyawan" || role === "Super Admin"}>
+            <Dropdown.Toggle as={Nav.Link} className="position-relative">
+              <FaBell style={{ marginTop: '9px' }} size={20} />
+              {notifications.length > 0 && (
+                <span className="badge badge-danger position-absolute">
+                  {notifications.length}
+                </span>
+              )}
+            </Dropdown.Toggle>
+            <Dropdown.Menu style={{ width: '300px' }}>
+              {notifications.length > 0 ? (
+                notifications.map((notif, index) => (
+                  <Dropdown.Item key={index} className="text-wrap">
+                  <FaInfoCircle style={{ marginRight: '8px' }} />
+                    {notif.message}
+                    <div className="divider"></div>
+                  </Dropdown.Item>
+                ))
+              ) : (
+                <Dropdown.Item>
+                  <FaInfoCircle style={{ marginRight: '8px' }} />
+                  Tidak ada notifikasi
+                  </Dropdown.Item>
+              )}
+            </Dropdown.Menu>
+          </Dropdown> */}
 
-            <Dropdown as={Nav.Item}>
-              <Dropdown.Toggle
-                aria-expanded={false}
-                as={Nav.Link}
-                id="navbarDropdownMenuLink"
-                variant="default"
-                className="mr-5 mt-2"
+          <Dropdown as={Nav.Item}>
+            <Dropdown.Toggle
+              aria-expanded={false}
+              as={Nav.Link}
+              id="navbarDropdownMenuLink"
+              variant="default"
+              className="mr-5 mt-2"
+            >
+              <span><FaUser style={{ marginRight: '8px' }} /> {userData.nama || "Loading..."}</span>
+            </Dropdown.Toggle>
+            <Dropdown.Menu aria-labelledby="navbarDropdownMenuLink">
+              <Dropdown.Item
+                onClick={(e) => e.preventDefault()}
               >
-                <span><FaUser style={{ marginRight: '8px' }} /> {userData.nama || "Loading..."}</span>
-              </Dropdown.Toggle>
-              <Dropdown.Menu aria-labelledby="navbarDropdownMenuLink">
-                <Dropdown.Item
-                  onClick={(e) => e.preventDefault()}
-                >
-                  {userData.id_karyawan
-                      ? `${userData.id_karyawan} - ${userData.nama}`
-                      : "Loading..."}
-                  <p className="font-position">{userData.divisi || "Loading..."}</p>
-                </Dropdown.Item>
-                <div className="divider"></div>
-                <Dropdown.Item
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    
-                    setShowUbahPassword(true); 
-                  }}
-                ><FaKey style={{ marginRight: '8px' }} />
-                  Ubah Password
-                </Dropdown.Item>
-                <div className="divider"></div>
-                
-                <Dropdown.Item
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowModal(true); 
-                  }}
-                ><FaDoorOpen style={{ marginRight: '8px' }} />
-                  Keluar
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
+                {userData.id_karyawan
+                    ? `${userData.id_karyawan} - ${userData.nama}`
+                    : "Loading..."}
+                <p className="font-position">{userData.divisi || "Loading..."}</p>
+              </Dropdown.Item>
+              <div className="divider"></div>
+              <Dropdown.Item
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  
+                  setShowUbahPassword(true); 
+                }}
+              ><FaKey style={{ marginRight: '8px' }} />
+                Ubah Password
+              </Dropdown.Item>
+              <div className="divider"></div>
+              
+              <Dropdown.Item
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowModal(true); 
+                }}
+              ><FaDoorOpen style={{ marginRight: '8px' }} />
+                Keluar
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
           </Nav>
         </Navbar.Collapse>
       </Container>

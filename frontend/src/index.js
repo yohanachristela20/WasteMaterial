@@ -15,10 +15,8 @@ import SuperAdminLayout from "layouts/SuperAdmin.js";
 import Login from "views/Login.js";
 import PrivateRoute from "components/PrivateRoute/PrivateRoute.js";
 
-import ScreeningKaryawan from "views/ScreeningKaryawan";
 import { PlafondProvider } from "components/Provider/PlafondContext.js";
 import DataPengajuan from "views/DataPengajuan.js";
-import PageScreeningKaryawan from "views/ScreeningKaryawan.js"; 
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -84,9 +82,9 @@ root.render(
         </>
       )} />
 
-      <Route path="/admin/screening-karyawan" component={ScreeningKaryawan} />
-      <Route path="/laporan-piutang" element={<DataPengajuan />} />
-      <Route path="/screening-karyawan" element={<PageScreeningKaryawan />} />
+      {/* <Route path="/admin/screening-karyawan" component={ScreeningKaryawan} /> */}
+      {/* <Route path="/laporan-piutang" element={<DataPengajuan />} /> */}
+      {/* <Route path="/screening-karyawan" element={<PageScreeningKaryawan />} /> */}
       <Redirect from="/" to="/login" />
     </Switch>
   </BrowserRouter>
