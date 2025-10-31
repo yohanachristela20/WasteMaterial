@@ -15,9 +15,6 @@ import SuperAdminLayout from "layouts/SuperAdmin.js";
 import Login from "views/Login.js";
 import PrivateRoute from "components/PrivateRoute/PrivateRoute.js";
 
-import { PlafondProvider } from "components/Provider/PlafondContext.js";
-import DataPengajuan from "views/DataPengajuan.js";
-
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -41,52 +38,52 @@ const DisableBackButton = () => {
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
-  <PlafondProvider>
-  <DisableBackButton />
-  <BrowserRouter>
-  <DisableBackButton />
-  <ToastContainer />
-    <Switch>
-      <Route path="/login"  
-      exact
-          render={(props) => (
-            <Login
-              {...props}
-              onLoginSuccess={() => {
-                const lastRoute = localStorage.getItem("lastRoute"); 
-                localStorage.removeItem("lastRoute");
-                console.log("Last route: ", lastRoute);
-                props.history.push(lastRoute);
-              }}
-            />
-          )} /> 
+  <>
+    <DisableBackButton />
+    <BrowserRouter>
+    <DisableBackButton />
+    <ToastContainer />
+      <Switch>
+        <Route path="/login"  
+        exact
+            render={(props) => (
+              <Login
+                {...props}
+                onLoginSuccess={() => {
+                  const lastRoute = localStorage.getItem("lastRoute"); 
+                  localStorage.removeItem("lastRoute");
+                  console.log("Last route: ", lastRoute);
+                  props.history.push(lastRoute);
+                }}
+              />
+            )} /> 
 
-      <PrivateRoute path="/user" roles={["User"]} render={(props) =>
-        (
+        <PrivateRoute path="/user" roles={["User"]} render={(props) =>
+          (
+            <>
+            <UserLayout {...props} />
+            <Heartbeat />
+            </>
+          )} />
+          
+        <PrivateRoute path="/admin" roles={["Admin"]} render={(props) => (
           <>
-           <UserLayout {...props} />
-           <Heartbeat />
+            <AdminLayout {...props} />
+            <Heartbeat />
+          </>
+        ) } />
+        <PrivateRoute path="/super-admin" roles={["Super Admin"]} render={(props) => (
+          <>
+            <SuperAdminLayout {...props} />
+            <Heartbeat />
           </>
         )} />
-        
-      <PrivateRoute path="/admin" roles={["Admin"]} render={(props) => (
-        <>
-          <AdminLayout {...props} />
-          <Heartbeat />
-        </>
-      ) } />
-      <PrivateRoute path="/super-admin" roles={["Super Admin"]} render={(props) => (
-        <>
-          <SuperAdminLayout {...props} />
-          <Heartbeat />
-        </>
-      )} />
 
-      {/* <Route path="/admin/screening-karyawan" component={ScreeningKaryawan} /> */}
-      {/* <Route path="/laporan-piutang" element={<DataPengajuan />} /> */}
-      {/* <Route path="/screening-karyawan" element={<PageScreeningKaryawan />} /> */}
-      <Redirect from="/" to="/login" />
-    </Switch>
-  </BrowserRouter>
-  </PlafondProvider>
+        {/* <Route path="/admin/screening-karyawan" component={ScreeningKaryawan} /> */}
+        {/* <Route path="/laporan-piutang" element={<DataPengajuan />} /> */}
+        {/* <Route path="/screening-karyawan" element={<PageScreeningKaryawan />} /> */}
+        <Redirect from="/" to="/login" />
+      </Switch>
+    </BrowserRouter>
+  </>
 );
