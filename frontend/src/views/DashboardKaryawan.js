@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {FaFilePdf, FaTrashAlt, FaRegFileAlt, FaMoneyBillWave, FaHandHoldingUsd, FaHourglassStart, FaClipboardCheck } from 'react-icons/fa'; 
+import {FaFilePdf, FaTrashAlt, FaRegFileAlt, FaMoneyBillWave, FaHandHoldingUsd, FaHourglassStart, FaClipboardCheck, FaExclamationTriangle } from 'react-icons/fa'; 
 import SearchBar from "components/Search/SearchBar.js";
 import axios from "axios";
 import { useHistory } from "react-router-dom"; 
@@ -20,7 +20,8 @@ import {
   Container,
   Row,
   Col,
-  Table, 
+  Table,
+  Modal, 
 } from "react-bootstrap";
 
  function DashboardKaryawan() {
@@ -39,6 +40,8 @@ import {
   const [totalScrapping, setTotalScrapping] = useState(0);
   const [jumlahBelumDiproses, setJumlahBelumDiproses] = useState(0);
   const [jumlahPengajuanSelesai, setJumlahPengajuanSelesai] = useState(0);
+  const [showModal, setShowModal] = useState(false); 
+  const [deletedPengajuan, setDeletedPengajuan] = useState(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -197,22 +200,23 @@ import {
     doc.save("data_pengajuan.pdf");
   };
 
-  const deletePengajuan = async(id_pengajuan) =>{
-      try {
-        await axios.delete(`http://localhost:5000/delete-pengajuan/${id_pengajuan}`,
-        {
-          headers: {Authorization: `Bearer ${token}`}
-        }
-        ); 
-        toast.success("Data Pengajuan berhasil dihapus.", {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: true,
-        });
-        getPengajuan(); 
-      } catch (error) {
-        console.log(error.message); 
+  const deletePengajuan = async() =>{
+    try {
+      await axios.delete(`http://localhost:5000/delete-pengajuan/${deletedPengajuan}`,
+      {
+        headers: {Authorization: `Bearer ${token}`}
       }
+      ); 
+      setShowModal(false);
+      toast.success("Data Pengajuan berhasil dihapus.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: true,
+      });
+      getPengajuan(); 
+    } catch (error) {
+      console.log(error.message); 
+    }
   };
 
   const handleDetail = (pengajuan) => {
@@ -236,35 +240,40 @@ import {
     return rupiah;
   };
 
-    useEffect(() => {
-      const fetchSummaryData = async () => {
-        try {
-          const [resTotalPenjualan, resTotalScrapping, resJumlahBelumDiproses, resPengajuanSelesai] = await Promise.all([
-            axios.get(`http://localhost:5000/total-penjualan/${id_karyawan}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-            axios.get(`http://localhost:5000/total-scrapping/${id_karyawan}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-            axios.get(`http://localhost:5000/jumlah-belum-diproses/${id_karyawan}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-            axios.get(`http://localhost:5000/jumlah-pengajuan-selesai/${id_karyawan}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-          ]);
-  
-          setTotalPenjualan(resTotalPenjualan.data.totalPenjualan || 0);
-          setTotalScrapping(resTotalScrapping.data.totalScrapping || 0);
-          setJumlahBelumDiproses(resJumlahBelumDiproses.data.jumlahBelumDiproses || 0);
-          setJumlahPengajuanSelesai(resPengajuanSelesai.data.jumlahPengajuanSelesai || 0);
-        } catch (error) {
-          console.error("Error fetching summary data:", error);
-        }
-      };
-  
-      fetchSummaryData();
-    });
+  useEffect(() => {
+    const fetchSummaryData = async () => {
+      try {
+        const [resTotalPenjualan, resTotalScrapping, resJumlahBelumDiproses, resPengajuanSelesai] = await Promise.all([
+          axios.get(`http://localhost:5000/total-penjualan/${id_karyawan}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`http://localhost:5000/total-scrapping/${id_karyawan}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`http://localhost:5000/jumlah-belum-diproses/${id_karyawan}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`http://localhost:5000/jumlah-pengajuan-selesai/${id_karyawan}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        setTotalPenjualan(resTotalPenjualan.data.totalPenjualan || 0);
+        setTotalScrapping(resTotalScrapping.data.totalScrapping || 0);
+        setJumlahBelumDiproses(resJumlahBelumDiproses.data.jumlahBelumDiproses || 0);
+        setJumlahPengajuanSelesai(resPengajuanSelesai.data.jumlahPengajuanSelesai || 0);
+      } catch (error) {
+        console.error("Error fetching summary data:", error);
+      }
+    };
+
+    fetchSummaryData();
+  });
+
+  const handleDeletePengajuan = (id_pengajuan) => {
+    setDeletedPengajuan(id_pengajuan);
+    setShowModal(true);
+  };
 
   return (
     <>
@@ -463,7 +472,7 @@ import {
                                     <FaRegFileAlt style={{ marginRight: '8px' }} />
                                     Detail
                                   </Button>
-                                  <Button className="btn-fill pull-right danger mt-2 btn-reset" variant="danger"  onClick={() => deletePengajuan(pengajuan.id_pengajuan)} style={{ width: 100, fontSize: 13 }}>
+                                  <Button className="btn-fill pull-right danger mt-2 btn-reset" variant="danger" onClick={() => handleDeletePengajuan(pengajuan.id_pengajuan)} style={{ width: 100, fontSize: 13 }}>
                                     <FaTrashAlt style={{ marginRight: '8px' }} />
                                     Hapus
                                   </Button>
@@ -491,6 +500,40 @@ import {
             </Col>
           </Row>
         </Container>
+
+        <Modal show={showModal} onHide={() => setShowModal(false)} dialogClassName="modal-warning">
+          <Modal.Header style={{borderBottom: "none"}}>
+            <FaExclamationTriangle style={{ width:"100%", height:"60px", position: "relative", textAlign:"center", marginTop:"20px"}} color="#ffca57ff"/>
+              <button
+                type="button"
+                className="close"
+                aria-label="Close"
+                onClick={() => setShowModal(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: "1.5rem",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+              >
+                &times; {/* Simbol 'x' */}
+              </button>
+          </Modal.Header>
+          <Modal.Body style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}} >Yakin ingin menghapus data pengajuan?</Modal.Body>
+          <Row className="mb-3">
+            <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
+              <Button variant="danger" onClick={() => setShowModal(false)}>
+                Tidak
+              </Button>
+            </Col>
+            <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
+              <Button variant="success" onClick={() => deletePengajuan(pengajuan.id_pengajuan)}>
+                Ya
+              </Button> 
+            </Col>
+          </Row>
+        </Modal>
        
       </div>
       ):

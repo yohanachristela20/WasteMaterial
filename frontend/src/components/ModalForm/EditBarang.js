@@ -79,7 +79,6 @@ const EditBarang = ({showEditModal, setShowEditModal, dataBarang, onSuccess}) =>
     
 
     const handleNamaChange = (value) => {
-        // const alphabetValue = value.replace(/[^a-zA-Z\s]/g, "");
         setNamaBarang(value);
     };
 
@@ -98,7 +97,7 @@ const EditBarang = ({showEditModal, setShowEditModal, dataBarang, onSuccess}) =>
 
             const options = (response.data || []).map(item => ({
                 value: item.id_kategori, 
-                label: item.nama,
+                label: item.id_kategori + " " + item.nama,
             }));
 
             setNamaKategori(options);

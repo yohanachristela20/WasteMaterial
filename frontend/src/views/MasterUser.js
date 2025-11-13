@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {FaFileCsv, FaFileImport, FaFilePdf, FaPlusCircle, FaRegEdit, FaTrashAlt, FaUserLock, FaSortUp, FaSortDown} from 'react-icons/fa'; 
+import {FaFileCsv, FaFileImport, FaFilePdf, FaPlusCircle, FaRegEdit, FaTrashAlt, FaUserLock, FaSortUp, FaSortDown, FaExclamationTriangle} from 'react-icons/fa'; 
 import SearchBar from "components/Search/SearchBar.js";
 import axios from "axios";
 import AddUser from "components/ModalForm/AddUser.js";
@@ -12,9 +12,8 @@ import "jspdf-autotable";
 import Pagination from "react-js-pagination";
 import "../assets/scss/lbd/_pagination.scss";
 import "../assets/scss/lbd/_table-header.scss";
-import { useLocation, useHistory } from "react-router-dom";
 
-import {Button, Container, Row, Col, Card, Table, Spinner, Badge} from "react-bootstrap";
+import {Button, Container, Row, Col, Card, Table, Spinner, Badge, Modal} from "react-bootstrap";
 
 function MasterUser() {
   const [showAddModal, setShowAddModal] = React.useState(false);
@@ -32,6 +31,8 @@ function MasterUser() {
   const [sortBy, setSortBy] = useState("id_user");
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortOrderDibayar, setSortOrderDibayar] = useState("asc");
+  const [showModal, setShowModal] = useState(false); 
+  const [deletedUser, setDeletedUser] = useState(null);
 
   const filteredUser = detailUser.filter((user) =>
     (user.id_user && String(user.id_user).toLowerCase().includes(searchQuery)) ||
@@ -125,13 +126,14 @@ function MasterUser() {
   };
   
 
-  const deleteUser = async(id_user) =>{
+  const deleteUser = async() =>{
     try {
-      await axios.delete(`http://localhost:5000/user/${id_user}` , {
+      await axios.delete(`http://localhost:5000/user/${deletedUser}` , {
         headers: {
           Authorization: `Bearer ${token}`,
       },
       }); 
+      setShowModal(false);
       toast.success("User berhasil dihapus!", {
         position: "top-right",
         autoClose: 5000,
@@ -292,28 +294,31 @@ function MasterUser() {
 
   const setPassword = async(id_user) => {
     try {
-
-        await axios.put(`http://localhost:5000/user/${id_user}`, {
-        }, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        toast.success("Password berhasil diubah!", {
+      await axios.put(`http://localhost:5000/user/${id_user}`, {
+      }, {
+          headers: {
+              Authorization: `Bearer ${token}`,
+          },
+      });
+      toast.success("Password berhasil diubah!", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: true,
+      });
+      getUser();    
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message;
+      toast.error('Gagal menyimpan data user baru.', {
           position: "top-right",
           autoClose: 5000,
           hideProgressBar: true,
         });
-        getUser();    
-    } catch (error) {
-        const errorMessage = error.response?.data?.message || error.message;
-        toast.error('Gagal menyimpan data user baru.', {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: true,
-          });
     }
+  };
 
+  const handleDeleteUser = (id_user) => {
+    setDeletedUser(id_user);
+    setShowModal(true);
   };
   
   return (
@@ -452,7 +457,7 @@ function MasterUser() {
                           <Button
                             className="btn-fill pull-right warning mt-2 btn-reset"
                             variant="danger"
-                            onClick={() => deleteUser(user.id_user)}
+                            onClick={() => handleDeleteUser(user.id_user)}
                             style={{
                               width: 110,
                               //103
@@ -486,6 +491,39 @@ function MasterUser() {
         </Row>
         
       </Container>
+      <Modal show={showModal} onHide={() => setShowModal(false)} dialogClassName="modal-warning">
+        <Modal.Header style={{borderBottom: "none"}}>
+          <FaExclamationTriangle style={{ width:"100%", height:"60px", position: "relative", textAlign:"center", marginTop:"20px"}} color="#ffca57ff"/>
+            <button
+              type="button"
+              className="close"
+              aria-label="Close"
+              onClick={() => setShowModal(false)}
+              style={{
+                background: "none",
+                border: "none",
+                fontSize: "1.5rem",
+                fontWeight: "bold",
+                cursor: "pointer",
+              }}
+            >
+              &times; {/* Simbol 'x' */}
+            </button>
+        </Modal.Header>
+        <Modal.Body style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}} >Yakin ingin menghapus data user?</Modal.Body>
+        <Row className="mb-3">
+          <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
+            <Button variant="danger" onClick={() => setShowModal(false)}>
+              Tidak
+            </Button>
+          </Col>
+          <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
+            <Button variant="success" onClick={() => deleteUser(user.id_user)}>
+              Ya
+            </Button> 
+          </Col>
+        </Row>
+      </Modal>
     </>
   );
 }

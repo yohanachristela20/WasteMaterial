@@ -83,25 +83,39 @@ export const getLastVendorId = async (req, res) => {
     }
 };
 
-export const detailVendor = async(req, res) => {
-    try {
-        const {id_vendor} = req.params;
-         const vendor = await Vendor.findOne({
-            where:{
-                id_vendor: id_vendor 
-            }
-        });
+// export const detailVendor = async(req, res) => {
+//     try {
+//         const {id_vendor} = req.params;
+//          const vendor = await Vendor.findOne({
+//             where:{
+//                 id_vendor: id_vendor 
+//             }
+//         });
 
-        if (!vendor) return res.status(404).json({message: "Vendor tidak ditemukan"});
+//         if (!vendor) return res.status(404).json({message: "Vendor tidak ditemukan"});
 
-        const result = {
-            id_vendor: vendor.id_vendor,
-            sopir: vendor.sopir,
-        };
+//         const result = {
+//             id_vendor: vendor.id_vendor,
+//             sopir: vendor.sopir,
+//         };
 
-        res.status(200).json(result);
-    } catch (error) {
-        console.error("Error fetching detail vendor:", error);
-        res.status(500).json({message: "Gagal mengambil detail vendor."});
-    }
-}
+//         res.status(200).json(result);
+//     } catch (error) {
+//         console.error("Error fetching detail vendor:", error);
+//         res.status(500).json({message: "Gagal mengambil detail vendor."});
+//     }
+// }
+
+
+export const detailVendor = async(req,res) => {
+  try {
+		const response = await Vendor.findOne({
+			where: {
+				id_vendor: req.params.id_vendor
+			}
+		});
+		res.status(200).json(response);
+	} catch (error) {
+		console.log(error.message); 
+	}
+};

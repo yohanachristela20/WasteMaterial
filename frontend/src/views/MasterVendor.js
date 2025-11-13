@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {FaFileImport, FaFilePdf, FaPlusCircle, FaRegEdit, FaTrashAlt, FaSortUp, FaSortDown} from 'react-icons/fa'; 
+import {FaFileImport, FaFilePdf, FaPlusCircle, FaRegEdit, FaTrashAlt, FaSortUp, FaSortDown, FaExclamationTriangle} from 'react-icons/fa'; 
 import SearchBar from "components/Search/SearchBar.js";
 import axios from "axios";
 import AddVendor from "components/ModalForm/AddVendor.js";
@@ -16,7 +16,7 @@ import ReactLoading from "react-loading";
 import "../assets/scss/lbd/_loading.scss";
 
 
-import {Button, Container, Row, Col, Card, Table, Spinner } from "react-bootstrap";
+import {Button, Container, Row, Col, Card, Table, Spinner, Modal } from "react-bootstrap";
 
 function MasterVendor() {
   const [showAddModal, setShowAddModal] = React.useState(false);
@@ -32,6 +32,8 @@ function MasterVendor() {
 
   const [sortBy, setSortBy] = useState("id_vendor");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [showModal, setShowModal] = useState(false); 
+  const [deletedVendor, setDeletedVendor] = useState(null);
 
   const filteredVendor = vendor.filter((vendor) =>
     (vendor.id_vendor && String(vendor.id_vendor).toLowerCase().includes(searchQuery)) ||
@@ -90,18 +92,19 @@ function MasterVendor() {
     }
   };
 
-  const deleteVendor = async(id_vendor) =>{
+  const deleteVendor = async() =>{
     try {
-      await axios.delete(`http://localhost:5000/vendor/${id_vendor}` , {
+      await axios.delete(`http://localhost:5000/vendor/${deletedVendor}` , {
         headers: {
           Authorization: `Bearer ${token}`,
-      },
+        },
       }); 
+      setShowModal(false);
       toast.success("Data vendor berhasil dihapus.", {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: true,
-    });
+      });
       getVendor(); 
       window.location.reload();
     } catch (error) {
@@ -226,6 +229,11 @@ function MasterVendor() {
     setTimeout(() => setLoading(false), 1000)
   }, []); 
 
+  const handleDeleteVendor = (id_vendor) => {
+    setDeletedVendor(id_vendor);
+    setShowModal(true);
+  };
+
   return (
     <>
     {loading === false ? 
@@ -312,7 +320,7 @@ function MasterVendor() {
                             <FaRegEdit style={{ marginRight: '8px' }} />
                             Ubah
                           </Button>
-                          <Button className="btn-fill pull-right danger mt-2 btn-reset" variant="danger"  onClick={() => deleteVendor(vendor.id_vendor)} style={{ width: 96, fontSize: 13 }}>
+                          <Button className="btn-fill pull-right danger mt-2 btn-reset" variant="danger" onClick={() => handleDeleteVendor(vendor.id_vendor)} style={{ width: 96, fontSize: 13 }}>
                             <FaTrashAlt style={{ marginRight: '8px' }} />
                             Hapus
                           </Button>
@@ -340,6 +348,41 @@ function MasterVendor() {
         </Row>
         
       </Container>
+
+      <Modal show={showModal} onHide={() => setShowModal(false)} dialogClassName="modal-warning">
+        <Modal.Header style={{borderBottom: "none"}}>
+          <FaExclamationTriangle style={{ width:"100%", height:"60px", position: "relative", textAlign:"center", marginTop:"20px"}} color="#ffca57ff"/>
+            <button
+              type="button"
+              className="close"
+              aria-label="Close"
+              onClick={() => setShowModal(false)}
+              style={{
+                background: "none",
+                border: "none",
+                fontSize: "1.5rem",
+                fontWeight: "bold",
+                cursor: "pointer",
+              }}
+            >
+              &times; {/* Simbol 'x' */}
+            </button>
+        </Modal.Header>
+        <Modal.Body style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}} >Yakin ingin menghapus data vendor?</Modal.Body>
+        <Row className="mb-3">
+          <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
+            <Button variant="danger" onClick={() => setShowModal(false)}>
+              Tidak
+            </Button>
+          </Col>
+          <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
+            <Button variant="success" onClick={() => deleteVendor(vendor.id_vendor)}>
+              Ya
+            </Button> 
+          </Col>
+        </Row>
+      </Modal>     
+
       </div>
       ):
       ( <>

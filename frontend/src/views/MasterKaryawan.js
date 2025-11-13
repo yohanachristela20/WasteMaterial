@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaFileCsv, FaFileImport, FaFilePdf, FaPlusCircle, FaRegEdit, FaTrashAlt, FaSortUp, FaSortDown} from 'react-icons/fa'; 
+import { FaFileCsv, FaFileImport, FaFilePdf, FaPlusCircle, FaRegEdit, FaTrashAlt, FaSortUp, FaSortDown, FaExclamationTriangle} from 'react-icons/fa'; 
 import SearchBar from "components/Search/SearchBar.js";
 import axios from "axios";
 import AddKaryawan from "components/ModalForm/AddKaryawan.js";
@@ -16,7 +16,7 @@ import ReactLoading from "react-loading";
 import "../assets/scss/lbd/_loading.scss";
 
 
-import {Button, Container, Row, Col, Card, Table, Spinner } from "react-bootstrap";
+import {Button, Container, Row, Col, Card, Table, Spinner, Modal } from "react-bootstrap";
 
 function MasterKaryawan() {
   const [showAddModal, setShowAddModal] = React.useState(false);
@@ -33,6 +33,8 @@ function MasterKaryawan() {
   const [sortBy, setSortBy] = useState("id_karyawan");
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortOrderDibayar, setSortOrderDibayar] = useState("asc");
+  const [showModal, setShowModal] = useState(false); 
+  const [deletedKaryawan, setDeletedKaryawan] = useState(null);
 
   const filteredKaryawan = karyawan.filter((karyawan) =>
     (karyawan.id_karyawan && String(karyawan.id_karyawan).toLowerCase().includes(searchQuery)) ||
@@ -95,13 +97,14 @@ function MasterKaryawan() {
     }
   };
 
-  const deleteKaryawan = async(id_karyawan) =>{
+  const deleteKaryawan = async() =>{
     try {
-      await axios.delete(`http://localhost:5000/karyawan/${id_karyawan}` , {
+      await axios.delete(`http://localhost:5000/karyawan/${deletedKaryawan}` , {
         headers: {
           Authorization: `Bearer ${token}`,
       },
       }); 
+      setShowModal(false);
       toast.success("Data karyawan berhasil dihapus.", {
         position: "top-right",
         autoClose: 5000,
@@ -112,7 +115,7 @@ function MasterKaryawan() {
     } catch (error) {
       console.log(error.message); 
     }
-  }
+  };
 
   useEffect(()=> {
     try {
@@ -239,6 +242,11 @@ function MasterKaryawan() {
     setTimeout(() => setLoading(false), 1000)
   }, []); 
 
+  const handleDeleteKaryawan = (id_karyawan) => {
+    setDeletedKaryawan(id_karyawan);
+    setShowModal(true);
+  }
+
   return (
     <>
     {loading === false ? 
@@ -350,7 +358,7 @@ function MasterKaryawan() {
                          className="btn-fill pull-right btn-reset mt-2"
                          type="button"
                          variant="danger"
-                         onClick={() => deleteKaryawan(karyawan.id_karyawan)}
+                         onClick={() => handleDeleteKaryawan(karyawan.id_karyawan)}
                          style={{
                            width: 103,
                            fontSize: 14,
@@ -384,6 +392,39 @@ function MasterKaryawan() {
         </Row>
         
       </Container>
+      <Modal show={showModal} onHide={() => setShowModal(false)} dialogClassName="modal-warning">
+        <Modal.Header style={{borderBottom: "none"}}>
+          <FaExclamationTriangle style={{ width:"100%", height:"60px", position: "relative", textAlign:"center", marginTop:"20px"}} color="#ffca57ff"/>
+            <button
+              type="button"
+              className="close"
+              aria-label="Close"
+              onClick={() => setShowModal(false)}
+              style={{
+                background: "none",
+                border: "none",
+                fontSize: "1.5rem",
+                fontWeight: "bold",
+                cursor: "pointer",
+              }}
+            >
+              &times; {/* Simbol 'x' */}
+            </button>
+        </Modal.Header>
+        <Modal.Body style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}} >Yakin ingin menghapus data karyawan?</Modal.Body>
+        <Row className="mb-3">
+          <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
+            <Button variant="danger" onClick={() => setShowModal(false)}>
+              Tidak
+            </Button>
+          </Col>
+          <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
+            <Button variant="success" onClick={() => deleteKaryawan(karyawan.id_karyawan)}>
+              Ya
+            </Button> 
+          </Col>
+        </Row>
+      </Modal>
       </div>
       ):
       ( <>

@@ -12,14 +12,14 @@ export const getDetailBarang = async(req, res) => {
 
 export const getDetailBarangById = async(req, res) => {
     try {
-        const response = await Kategori.findOne({
-            where:{
-                id_kategori: req.params.id_kategori 
-            }
-        });
-        res.status(200).json(response); 
+			const response = await Kategori.findOne({
+				where:{
+						id_kategori: req.params.id_kategori 
+				}
+			});
+			res.status(200).json(response); 
     } catch (error) {
-        console.log(error.message); 
+			console.log(error.message); 
     }
 };
 
@@ -85,7 +85,7 @@ export const namaKategori = async(req, res) => {
     try {
         const response = await Kategori.findAll({
             attributes: ['id_kategori', 'nama'], 
-            order: [['nama', 'ASC']]
+            order: [['id_kategori', 'ASC']]
         }); 
         return res.status(200).json(response);
 
@@ -97,14 +97,13 @@ export const namaKategori = async(req, res) => {
 
 export const detailKategori = async(req, res) => {
     try {
-        const { id_barang } = req.params;
         const barang = await Barang.findOne({
-            where: { id_barang: id_barang }, 
+            where: { id_barang: req.params.id_barang }, 
             include: [
                 {
                     model: Kategori,
                     as: "KategoriBarang", 
-                    attributes: ["id_kategori", "nama", "satuan", "harga_barang"], 
+                    attributes: ["id_kategori", "nama", "satuan", "harga_barang", "jenis_barang"], 
                     required: false,
                 },
             ],
@@ -116,7 +115,7 @@ export const detailKategori = async(req, res) => {
             id_barang: barang.id_barang,
             id_kategori: barang.KategoriBarang?.id_kategori || null,
             kategori: barang.KategoriBarang?.nama || "-",
-            jenis_barang: barang.nama || "-",
+            jenis_barang: barang.KategoriBarang?.jenis_barang || "-",
             satuan: barang.KategoriBarang?.satuan || "-", 
             harga_barang: barang.KategoriBarang?.harga_barang || 0,
         };

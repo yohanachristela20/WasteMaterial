@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {FaFileImport, FaFilePdf, FaPlusCircle, FaSortDown, FaSortUp, FaRegEdit, FaTrashAlt} from 'react-icons/fa'; 
+import {FaFileImport, FaFilePdf, FaPlusCircle, FaSortDown, FaSortUp, FaRegEdit, FaTrashAlt, FaExclamationTriangle} from 'react-icons/fa'; 
 import SearchBar from "components/Search/SearchBar.js";
 import axios from "axios";
 import AddDataBarang from "components/ModalForm/AddDataBarang.js";
@@ -21,7 +21,8 @@ import {
   Container,
   Row,
   Col,
-  Table, 
+  Table,
+  Modal, 
 } from "react-bootstrap";
 
 function Barang() {
@@ -39,6 +40,8 @@ function Barang() {
   const [sortBy, setSortBy] = useState("id_barang");
   const [sortOrder, setSortOrder] = useState("asc");
   const [detailBarang, setDetailBarang] = useState([]);
+  const [showModal, setShowModal] = useState(false); 
+  const [deletedBarang, setDeletedBarang] = useState(null);
   
 
   const filteredBarang = detailBarang.filter((dataBarang) =>
@@ -161,110 +164,116 @@ function Barang() {
         hideProgressBar: true,
     });
     window.location.reload();
-};
+  };
 
-const handleEditSuccess = () => {
-  getDataBarang();
-  toast.success("Data barang berhasil diperbarui!", {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: true,
-  });
-  window.location.reload();
-};
-
-const handleImportButtonClick = () => {
-  setShowImportModal(true);
-}
-
-const handleImportSuccess = () => {
-  getDataBarang();
-};
-
-const deleteBarang = async(id_barang) => {
-  try {
-    await axios.delete(`http://localhost:5000/data-barang/${id_barang}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      }
-    });
-    toast.success("Data barang berhasil dihapus.", {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: true,
+  const handleEditSuccess = () => {
+    getDataBarang();
+    toast.success("Data barang berhasil diperbarui!", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: true,
     });
     window.location.reload();
+  };
 
-    getDataBarang();
-  } catch (error) {
-    console.log(error.message);
+  const handleImportButtonClick = () => {
+    setShowImportModal(true);
   }
-}
 
-const downloadPDF = (detailBarang) => {
-  const doc = new jsPDF({ orientation: 'landscape' });
+  const handleImportSuccess = () => {
+    getDataBarang();
+  };
 
-  doc.setFontSize(12); 
-  doc.text("Data Barang", 12, 20);
+  const deleteBarang = async() => {
+    try {
+      await axios.delete(`http://localhost:5000/data-barang/${deletedBarang}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
+      setShowModal(false);
+      toast.success("Data barang berhasil dihapus.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: true,
+      });
+      window.location.reload();
 
-  const currentDate = new Date();
-    const formattedDate = currentDate.toLocaleString('id-ID', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      second: 'numeric',
-      hour12: false,
-    });
-  
+      getDataBarang();
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  const downloadPDF = (detailBarang) => {
+    const doc = new jsPDF({ orientation: 'landscape' });
+
     doc.setFontSize(12); 
-    doc.text(`Tanggal cetak: ${formattedDate}`, 12, 30);
+    doc.text("Data Barang", 12, 20);
 
-  const headers = [["ID Barang", "Nama Barang", "Kategori", "Harga", "Jenis Barang", "Satuan", "ID SAP", "Dibuat", "Terakhir Diubah"]];
+    const currentDate = new Date();
+      const formattedDate = currentDate.toLocaleString('id-ID', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: false,
+      });
+    
+      doc.setFontSize(12); 
+      doc.text(`Tanggal cetak: ${formattedDate}`, 12, 30);
 
-  // const rows = currentItems.map((item) => [
-  //   item.id_barang,
-  //   item.nama,
-  //   item.KategoriBarang?.nama,
-  //   item.KategoriBarang?.harga_barang,
-  //   item.KategoriBarang?.jenis_barang,
-  //   item.KategoriBarang?.satuan,
-  //   item.id_sap, 
-  //   (new Date(item.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')),
-  //   (new Date(item.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', ''))
-  // ]);
+    const headers = [["ID Barang", "Nama Barang", "Kategori", "Harga", "Jenis Barang", "Satuan", "ID SAP", "Dibuat", "Terakhir Diubah"]];
 
-  const allRows = currentItems.map((p) => {
-    const id = p.id_barang || "";
-    const nama = p.nama || "";
-    const kategori = p.KategoriBarang?.nama || "";
-    const harga = p.KategoriBarang?.harga_barang || "";
-    const jenis = p.KategoriBarang?.jenis_barang || "";
-    const satuan = p.KategoriBarang?.satuan || "";
-    const id_sap = p.id_sap || "";
-    const tanggal_dibuat = p.createdAt
-      ? new Date(p.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
-      : "";
-    const tanggal_diubah = p.updatedAt
-      ? new Date(p.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
-      : "";
-    return [id, nama,kategori, harga, jenis, satuan, id_sap, tanggal_dibuat, tanggal_diubah];
-  });
+    // const rows = currentItems.map((item) => [
+    //   item.id_barang,
+    //   item.nama,
+    //   item.KategoriBarang?.nama,
+    //   item.KategoriBarang?.harga_barang,
+    //   item.KategoriBarang?.jenis_barang,
+    //   item.KategoriBarang?.satuan,
+    //   item.id_sap, 
+    //   (new Date(item.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')),
+    //   (new Date(item.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', ''))
+    // ]);
+
+    const allRows = currentItems.map((p) => {
+      const id = p.id_barang || "";
+      const nama = p.nama || "";
+      const kategori = p.KategoriBarang?.nama || "";
+      const harga = p.KategoriBarang?.harga_barang || "";
+      const jenis = p.KategoriBarang?.jenis_barang || "";
+      const satuan = p.KategoriBarang?.satuan || "";
+      const id_sap = p.id_sap || "";
+      const tanggal_dibuat = p.createdAt
+        ? new Date(p.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
+        : "";
+      const tanggal_diubah = p.updatedAt
+        ? new Date(p.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
+        : "";
+      return [id, nama,kategori, harga, jenis, satuan, id_sap, tanggal_dibuat, tanggal_diubah];
+    });
 
 
-  const marginTop = 15; 
+    const marginTop = 15; 
 
-  doc.autoTable({
-    startY: 20 + marginTop, // Posisi Y awal
-    head: headers,
-    body: allRows,
-    styles: { fontSize: 12 }, 
-    headStyles: { fillColor: [3, 177, 252] },
-  });
+    doc.autoTable({
+      startY: 20 + marginTop, // Posisi Y awal
+      head: headers,
+      body: allRows,
+      styles: { fontSize: 12 }, 
+      headStyles: { fillColor: [3, 177, 252] },
+    });
 
-  doc.save("data_barang.pdf");
-};
+    doc.save("data_barang.pdf");
+  };
+
+  const handleDeleteBarang = (id_barang) => {
+    setDeletedBarang(id_barang);
+    setShowModal(true);
+  }
 
   return (
     <>
@@ -353,7 +362,7 @@ const downloadPDF = (detailBarang) => {
                                   <FaRegEdit style={{ marginRight: '8px' }} />
                                   Ubah
                                 </Button>
-                                <Button className="btn-fill pull-right danger mt-2 btn-reset" variant="danger"  onClick={() => deleteBarang(dataBarang.id_barang)} style={{ width: 96, fontSize: 13 }}>
+                                <Button className="btn-fill pull-right danger mt-2 btn-reset" variant="danger" onClick={() => handleDeleteBarang(dataBarang.id_barang)} style={{ width: 96, fontSize: 13 }}>
                                   <FaTrashAlt style={{ marginRight: '8px' }} />
                                   Hapus
                                 </Button>
@@ -381,6 +390,40 @@ const downloadPDF = (detailBarang) => {
             </Col>
           </Row>
         </Container>
+
+        <Modal show={showModal} onHide={() => setShowModal(false)} dialogClassName="modal-warning">
+          <Modal.Header style={{borderBottom: "none"}}>
+            <FaExclamationTriangle style={{ width:"100%", height:"60px", position: "relative", textAlign:"center", marginTop:"20px"}} color="#ffca57ff"/>
+              <button
+                type="button"
+                className="close"
+                aria-label="Close"
+                onClick={() => setShowModal(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: "1.5rem",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+              >
+                &times; {/* Simbol 'x' */}
+              </button>
+          </Modal.Header>
+          <Modal.Body style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}} >Yakin ingin menghapus data barang?</Modal.Body>
+          <Row className="mb-3">
+            <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
+              <Button variant="danger" onClick={() => setShowModal(false)}>
+                Tidak
+              </Button>
+            </Col>
+            <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
+              <Button variant="success" onClick={() => deleteBarang(dataBarang.id_barang)}>
+                Ya
+              </Button> 
+            </Col>
+          </Row>
+        </Modal>
       </div>
       ):
       ( <>

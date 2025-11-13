@@ -10,6 +10,7 @@ import GenPengajuan from "../models/GenPengajuan.js";
 import Karyawan from "../models/KaryawanModel.js";
 import Kategori from "../models/KategoriModel.js";
 import { Sequelize, Op } from "sequelize";
+import Transaksi from "../models/TransaksiModel.js";
 
 const router = express.Router(); 
 
@@ -93,7 +94,7 @@ export const detailPengajuan = async(req, res) => {
                     {
                       model: Kategori,
                       as: "KategoriBarang", 
-                      attributes: ["nama", "satuan", "harga_barang"],
+                      attributes: ["nama", "satuan", "harga_barang", "jenis_barang"],
                       required: false,
                     }
                   ]
@@ -192,7 +193,9 @@ export const deletePengajuan = async(req, res) => {
       await Pengajuan.destroy({where: {id_pengajuan: pengajuanId}});
     }
 
-    await GenPengajuan.destroy({where: {id_pengajuan}});
+
+    await Transaksi.destroy({where: {id_pengajuan: pengajuanId}});
+    await GenPengajuan.destroy({where: {id_pengajuan: pengajuanId}});
     res.status(200).json({msg: "Data Pengajuan berhasil dihapus."});
   } catch (error) {
     console.error("Gagal menghapus Data Pengajuan:", error.message);

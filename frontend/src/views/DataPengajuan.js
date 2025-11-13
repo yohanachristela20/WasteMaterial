@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {FaFilePdf, FaFileImport, FaTrashAlt, FaHandHoldingUsd, FaRecycle, FaRegFileAlt, FaFolder, FaSortUp, FaSortDown, FaMoneyBillWave, FaHourglassStart, FaClipboardCheck } from 'react-icons/fa'; 
+import {FaFilePdf, FaFileImport, FaTrashAlt, FaHandHoldingUsd, FaRecycle, FaRegFileAlt, FaFolder, FaSortUp, FaSortDown, FaMoneyBillWave, FaHourglassStart, FaClipboardCheck, FaExclamationTriangle } from 'react-icons/fa'; 
 import SearchBar from "components/Search/SearchBar.js";
 import axios from "axios";
 import { useHistory } from "react-router-dom"; 
@@ -23,7 +23,8 @@ import {
   Table, 
   DropdownButton,
   ButtonGroup, 
-  Dropdown
+  Dropdown,
+  Modal
 } from "react-bootstrap";
 
  function DataPengajuan() {
@@ -40,6 +41,8 @@ import {
   const [jumlahBelumDiproses, setJumlahBelumDiproses] = useState(0);
   const [jumlahPengajuanSelesai, setJumlahPengajuanSelesai] = useState(0);
   const [showImportModal, setShowImportModal] = useState(false); 
+  const [showModal, setShowModal] = useState(false); 
+  const [deletedIDPengajuan, setDeletedIDPengajuan] = useState(null);
 
   const getPengajuan = async() => {
       try {
@@ -205,13 +208,14 @@ import {
     doc.save("data_pengajuan.pdf");
   };
 
-  const deletePengajuan = async(id_pengajuan) =>{
+  const deletePengajuan = async() =>{
       try {
-        await axios.delete(`http://localhost:5000/delete-pengajuan/${id_pengajuan}`,
+        await axios.delete(`http://localhost:5000/delete-pengajuan/${deletedIDPengajuan}`,
         {
           headers: {Authorization: `Bearer ${token}`}
         }
         ); 
+        setShowModal(false);
         toast.success("Data Pengajuan berhasil dihapus.", {
           position: "top-right",
           autoClose: 5000,
@@ -301,6 +305,11 @@ import {
 
   const handleImportSuccess = () => {
     getPengajuan();
+  };
+
+  const handleDeletePengajuan = (id_pengajuan) => {
+    setDeletedIDPengajuan(id_pengajuan);
+    setShowModal(true);
   };
 
 
@@ -516,7 +525,8 @@ import {
                                     }
                                     </DropdownButton>
                                   </ButtonGroup>
-                                  <Button className="btn-fill pull-right danger mt-2 btn-reset" variant="danger" onClick={() => deletePengajuan(pengajuan.id_pengajuan)} style={{ width: 100, fontSize: 13 }}>
+                                  <Button className="btn-fill pull-right danger mt-2 btn-reset" variant="danger" onClick={() => handleDeletePengajuan(pengajuan.id_pengajuan)} style={{ width: 100, fontSize: 13 }}
+                                  >
                                     <FaTrashAlt style={{ marginRight: '8px' }} />
                                     Hapus
                                   </Button>
@@ -532,19 +542,52 @@ import {
               </Card>
               <div className="pagination-container">
               <Pagination
-                    activePage={currentPage}
-                    itemsCountPerPage={itemsPerPage}
-                    totalItemsCount={filteredPengajuan.length}
-                    pageRangeDisplayed={5}
-                    onChange={handlePageChange}
-                    itemClass="page-item"
-                    linkClass="page-link"
+                activePage={currentPage}
+                itemsCountPerPage={itemsPerPage}
+                totalItemsCount={filteredPengajuan.length}
+                pageRangeDisplayed={5}
+                onChange={handlePageChange}
+                itemClass="page-item"
+                linkClass="page-link"
               />
               </div>
             </Col>
           </Row>
         </Container>
-       
+
+        <Modal show={showModal} onHide={() => setShowModal(false)} dialogClassName="modal-warning">
+          <Modal.Header style={{borderBottom: "none"}}>
+            <FaExclamationTriangle style={{ width:"100%", height:"60px", position: "relative", textAlign:"center", marginTop:"20px"}} color="#ffca57ff"/>
+              <button
+                type="button"
+                className="close"
+                aria-label="Close"
+                onClick={() => setShowModal(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: "1.5rem",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+              >
+                &times; {/* Simbol 'x' */}
+              </button>
+          </Modal.Header>
+          <Modal.Body style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}} >Yakin ingin menghapus data pengajuan?</Modal.Body>
+          <Row className="mb-3">
+            <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
+              <Button variant="danger" onClick={() => setShowModal(false)}>
+                Tidak
+              </Button>
+            </Col>
+            <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
+              <Button variant="success" onClick={() => deletePengajuan(pengajuan.id_pengajuan)}>
+                Ya
+              </Button> 
+            </Col>
+          </Row>
+        </Modal>
       </div>
       ):
       ( <>
@@ -554,8 +597,9 @@ import {
           </div>
         </>
       )}
-
     </>
+
+    
   );
 }
 

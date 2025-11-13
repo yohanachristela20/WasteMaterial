@@ -4,7 +4,6 @@ import axios from "axios";
 import { useHistory } from "react-router-dom";
 import {toast } from 'react-toastify';
 
-
 import {
   Button,
   Card,
@@ -14,6 +13,7 @@ import {
   Col, 
   Table,
 } from "react-bootstrap";
+import { FaSearch } from "react-icons/fa";
 
 function Transaksi() {
   const location = useLocation();
@@ -42,8 +42,42 @@ function Transaksi() {
   const [keterangan, setKeterangan] = useState("");
   const [sopir, setSopir] = useState("");
   const [namaVendor, setNamaVendor] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedValue, setSelectedValue] = useState("");
+  const [show, setShow] = useState(true);
+  const [vendorError, setVendorError] = useState(false);
   
   const token = localStorage.getItem("token");
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredOptions, setFilteredOptions] = useState(namaVendor);
+
+  const handleSearchChange = (e) => {
+    const term = e.target.value.toLowerCase();
+    setSearchTerm(term);
+    const filtered = namaVendor.filter(option =>
+    option.label.toLowerCase().includes(term)
+    );
+    setFilteredOptions(filtered);
+	};
+
+	const handleSelect = (option, e, idx) => {
+		setSelectedValue(option.value);
+		setSearchTerm(option.label);
+    // setNamaVendor(option.value);
+		setVendorError(false);
+		setShowDropdown(false);
+		getDetailVendor(option.value);
+
+		const selected = namaVendor.find(v => v.value === option.value);
+    setSelectedVendor(selected || null);
+    const id_v = selected ? selected.value : "";
+    setIDVendor(id_v);
+    handleItemChange(idx, "id_vendor", id_v);
+    
+    if (id_v) getDetailVendor(id_v, idx);
+
+	};
 
   const IDPenjualan = async(e) => {
       const response = await axios.get('http://localhost:5000/getLastTransaksiID', {
@@ -74,7 +108,7 @@ function Transaksi() {
 
           setNamaKategori(options);
           
-          console.log("nama options:", options);
+          // console.log("nama options:", options);
 
       } catch (error) {
           console.error("Error fetching data: ", error.message);
@@ -96,14 +130,14 @@ function Transaksi() {
 
           setNamaBarang(options);
           
-          console.log("nama brg:", options);
+          // console.log("nama brg:", options);
 
       } catch (error) {
           console.error("Error fetching data: ", error.message);
       }
   };
 
-  const getDetailVendor = async(idVendor, idx) => {
+  const getDetailVendor = async(idVendor) => {
       if (!idVendor) return;
       try {
           const resp = await axios.get(`http://localhost:5000/detail-vendor/${idVendor}`, {
@@ -112,21 +146,14 @@ function Transaksi() {
               }
           });
           const data = resp.data || {};
-          setItems(prev => {
-            const copy = [...prev];
-            copy[idx] = {
-              ...copy[idx],
-              id_vendor: idVendor,
-              sopir: data.sopir || "",
-            };
-
-            return copy;
-          });
+          setSopir(data.sopir || "");
       } catch (error) {
           console.error("Error fetching vendor details:", error.message);
           toast.error("Gagal mengambil detail vendor.");
       }
   };
+
+  console.log("Sopir:", sopir);
 
   
   useEffect(() => {
@@ -317,7 +344,7 @@ const updateSopirVendor = async (id_vendor, sopir) => {
 
           setNamaVendor(options);
           
-          console.log("nama brg:", options);
+          // console.log("nama brg:", options);
 
       } catch (error) {
           console.error("Error fetching data: ", error.message);
@@ -346,6 +373,7 @@ const updateSopirVendor = async (id_vendor, sopir) => {
       setKeterangan(value);
   };
 
+  if (!show) return null;
 
   return (
     <>
@@ -390,31 +418,93 @@ const updateSopirVendor = async (id_vendor, sopir) => {
                         <Form.Control disabled type="text" value={id_transaksi} />
                       </Form.Group>
                       <Form.Group className="mb-2">
-                          <span className="text-danger">*</span>
-                          <label>Pembeli</label>
-                          <Form.Select
-                            className="form-control"
-                            value={selectedVendor?.value || ""}
-                            required
-                            onChange={(e) => {
-                              const selected = namaVendor.find(v => v.value === e.target.value);
-                              setSelectedVendor(selected || null);
-                              const id_v = selected ? selected.value : "";
-                              setIDVendor(id_v);
-                              handleItemChange(idx, "id_vendor", id_v);
-                              
-                              if (id_v) getDetailVendor(id_v, idx);
+                        <span className="text-danger">*</span>
+                        <label>Pembeli</label>
+                        {/* <Form.Select
+                          className="form-control"
+                          value={selectedVendor?.value || ""}
+                          required
+                          onChange={(e) => {
+                            const selected = namaVendor.find(v => v.value === e.target.value);
+                            setSelectedVendor(selected || null);
+                            const id_v = selected ? selected.value : "";
+                            setIDVendor(id_v);
+                            handleItemChange(idx, "id_vendor", id_v);
+                            
+                            if (id_v) getDetailVendor(id_v, idx);
+                          }}
+                        >
+                          <option className="placeholder-form" key="blankChoice" hidden value="">
+                              Pilih Vendor
+                          </option>
+                          {namaVendor.map(option => (
+                              <option key={option.value} value={option.value} hidden={option.value === id_vendor}>
+                                  {option.label}
+                              </option>
+                          ))}
+                        </Form.Select> */}
+                        <div style={{position: "relative"}}>
+                          <FaSearch 
+                            style={{
+                                position: "absolute",
+                                left: "10px",
+                                top: "50%", 
+                                transform: "translateY(-50%)",
+                                color: "#aaa",
                             }}
-                          >
-                            <option className="placeholder-form" key="blankChoice" hidden value="">
-                                Pilih Vendor
-                            </option>
-                            {namaVendor.map(option => (
-                                <option key={option.value} value={option.value} hidden={option.value === id_vendor}>
-                                    {option.label}
-                                </option>
+                          />
+                          <Form.Control
+                            type="text"
+                            className="form-control"
+                            placeholder="Cari Vendor..."
+                            style={{paddingLeft: "35px"}}
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                            onFocus={() => setShowDropdown(true)}
+                            onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+                          />
+    
+                          {showDropdown && filteredOptions.length > 0 && (
+                            <div 
+                                style={{
+                                    position: "absolute",
+                                    zIndex: 10,
+                                    width: "100%",
+                                    background: "#fff",
+                                    border: "1px solid #ddd",
+                                    borderRadius: "6px",
+                                    marginTop: "2px",
+                                    maxHeight: "180px",
+                                    overflowY: "auto",
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                }}
+                            >
+                                
+                            {filteredOptions.map((option) => (
+                              <div
+                                  key={option.value}
+                                  onClick={() => handleSelect(option)}
+                                  style={{
+                                      padding: "8px 12px",
+                                      cursor: "pointer",
+                                      transition: "background 0.2s",
+                                  }}
+                                  onMouseEnter={(e) =>
+                                      (e.currentTarget.style.background = "#f5f5f5")
+                                  }
+                                  onMouseLeave={(e) =>
+                                      (e.currentTarget.style.background = "transparent")
+                                  }
+                              >
+                                  {option.label}
+                              </div>
                             ))}
-                          </Form.Select>
+                            </div>
+                                  
+                                  
+                          )}
+                          {vendorError && <span className="text-danger required-select">Vendor belum dipilih</span>}
+                        </div>
                       </Form.Group>
                       <Form.Group>
                         <span className="text-danger">*</span>
@@ -442,19 +532,19 @@ const updateSopirVendor = async (id_vendor, sopir) => {
                         )}
                       </Form.Group>
                       <Form.Group>
-                            <label>Keterangan</label>
-                            <Form.Control
-                                type="text"
-                                value={keterangan}
-                                uppercase
-                                onChange={(e) => handleKeterangan(e.target.value.toUpperCase())}
-                            />
+                        <label>Keterangan</label>
+                        <Form.Control
+                            type="text"
+                            value={keterangan}
+                            uppercase
+                            onChange={(e) => handleKeterangan(e.target.value.toUpperCase())}
+                        />
                       </Form.Group>
                       <Form.Group>
                         <label>Nama Sopir</label>
                         <Form.Control
                           type="text"
-                          value={item.sopir || ""} 
+                          value={sopir || ""} 
                           onChange={(e) => {
                             const newSopir = e.target.value.toUpperCase();
                             setItems((prev) => {
