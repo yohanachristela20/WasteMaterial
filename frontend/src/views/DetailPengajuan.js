@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
-import {FaFilePdf, FaPlusCircle, FaTrashAlt} from 'react-icons/fa'; 
+import {FaFilePdf, FaPlusCircle, FaRegEdit, FaTrashAlt} from 'react-icons/fa'; 
 import "../assets/scss/lbd/_text.scss";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { useHistory } from "react-router-dom";
 
 import {
   Badge,
@@ -18,11 +19,15 @@ import {
 
 function DetailPengajuan() {
   const location = useLocation();
+  console.log("location:", location.pathname);
   const contentRef = useRef(null);
+  const history = useHistory();
+  console.log("history:", history);
 
   const [selectedPengajuan, setSelectedPengajuan] = useState(location?.state?.selectedPengajuan || null);
   const [detailPengajuan, setDetailPengajuan] = useState([]);
   const [detailTransaksi, setDetailTransaksi] = useState([]);
+  const [isUpdateClicked, setIsUpdateClicked] = useState(false);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -81,6 +86,7 @@ function DetailPengajuan() {
     ).values(),
   ];
 
+
   const uniqueStatus = [
     ...new Map(
       detailPengajuan.map((d) => [d?.GeneratePengajuan?.id_pengajuan, d?.GeneratePengajuan])
@@ -107,31 +113,44 @@ function DetailPengajuan() {
   }; 
 
   const downloadPdf = async () => {
-        const element = contentRef.current;
-        if (!element) return;
+    const element = contentRef.current;
+    if (!element) return;
 
-        const canvas = await html2canvas(element, { scale: 2 }); // Scale for better quality
-        const imgData = canvas.toDataURL('image/png');
+    const canvas = await html2canvas(element, { scale: 2 }); // Scale for better quality
+    const imgData = canvas.toDataURL('image/png');
 
-        const pdf = new jsPDF('p', 'mm', 'a4'); // Portrait, millimeters, A4 size
-        const imgWidth = 210; // A4 width in mm
-        const pageHeight = 297; // A4 height in mm
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        let heightLeft = imgHeight;
-        let position = 0;
+    const pdf = new jsPDF('p', 'mm', 'a4'); // Portrait, millimeters, A4 size
+    const imgWidth = 210; // A4 width in mm
+    const pageHeight = 297; // A4 height in mm
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
 
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
 
-        while (heightLeft >= 0) {
-          position = heightLeft - imgHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
-        }
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
 
-        pdf.save('Detail Pengajuan.pdf'); 
-      };
+    pdf.save('Detail Pengajuan.pdf'); 
+  };
+
+  const ubahPengajuan = (selectedPengajuan) => {
+    console.log("selected Pengajuan:", selectedPengajuan.id_pengajuan, "status:", selectedPengajuan?.GeneratePengajuan?.status);
+    if (selectedPengajuan?.GeneratePengajuan?.status !== "Selesai" && isUpdateClicked === true) {
+      history.push({
+        pathname: "/admin/pengajuan",
+        state: {selectedPengajuan}
+      });
+    } 
+  };
+
+  // console.log("selected Pengajuan:", selectedPengajuan.id_pengajuan);
+
    
   return (
     <>
@@ -277,7 +296,22 @@ function DetailPengajuan() {
               variant="primary"
             >
               <FaFilePdf style={{ marginRight: '8px' }} />
-              Unduh PDF</Button>
+              Unduh PDF
+            </Button>
+             <Button 
+              onClick={(e) => {
+                ubahPengajuan(selectedPengajuan); 
+                setIsUpdateClicked(true)
+              }}
+              // setIsUpdateClicked={true}
+              className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
+              type="button"
+              variant="warning"
+              hidden={selectedPengajuan?.GeneratePengajuan?.status === "Selesai"}
+            >
+              <FaRegEdit style={{ marginRight: '8px' }} />
+              Ubah Data
+            </Button>
           </Col>
         </Row>
       </Container>

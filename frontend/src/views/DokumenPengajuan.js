@@ -286,13 +286,16 @@ function DokumenPengajuan() {
                                               {uniquePemohon.map((p) => (
                                                 <div key={p?.id_karyawan}>
                                                   ({p?.nama})
-                                                </div>
-                                              ))}
+                                                </div>))}
                                             </p>
                                           </Col>
                                           <Col md="6">
                                             <p style={{fontSize: 20, marginTop: 20}}>MENYETUJUI</p>
-                                            <p style={{fontSize: 20, marginTop: 70}}>(IMELDA)</p>
+                                            <p style={{fontSize: 20, marginTop: 70}}>
+                                              {uniquePemohon.map((p) => 
+                                                (<div key={p?.id_karyawan}>
+                                                  {p?.divisi === "PRODUCTION" ? "(IMELDA)" : p?.divisi === "TEKNIK & ADM. MEKANIK" ? "(ABDUL GOFUR)" : "(SRI LESTARI)" }
+                                                </div>))}</p>
                                           </Col>
                                         </Row>
                                       </th>

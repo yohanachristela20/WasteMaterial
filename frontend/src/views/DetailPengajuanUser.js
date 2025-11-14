@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import "../assets/scss/lbd/_text.scss";
-
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 import {
   Badge,
@@ -11,10 +12,13 @@ import {
   Row,
   Col, 
   Table,
+  Button,
 } from "react-bootstrap";
+import { FaFilePdf } from "react-icons/fa";
 
 function DetailPengajuanUser() {
   const location = useLocation();
+  const contentRef = useRef(null);
 
   const [selectedPengajuan, setSelectedPengajuan] = useState(location?.state?.selectedPengajuan || null);
   const [detailPengajuan, setDetailPengajuan] = useState([]);
@@ -103,13 +107,41 @@ function DetailPengajuanUser() {
     return rupiah;
   };
 
+  const downloadPdf = async () => {
+      const element = contentRef.current;
+      if (!element) return;
+  
+      const canvas = await html2canvas(element, { scale: 2 }); // Scale for better quality
+      const imgData = canvas.toDataURL('image/png');
+  
+      const pdf = new jsPDF('p', 'mm', 'a4'); // Portrait, millimeters, A4 size
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+  
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+  
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+  
+      pdf.save('Detail Pengajuan.pdf'); 
+  };
+
   return (
     <>
       <Container fluid>
           <Row>
             <Col className="card-screening">
               <Card className="card-screening p-4">
-                <Card.Header>
+                <div ref={contentRef} style={{padding: '40px'}}> 
+                  <Card.Header>
                   <Card.Title as="h4"><strong>Detail Pengajuan</strong></Card.Title>
                   <hr />
                 </Card.Header>
@@ -234,7 +266,19 @@ function DetailPengajuanUser() {
                       </Col>
                   </Row>
                 </Card.Body>
+                </div>
               </Card>
+            </Col>
+            <Col md="6">
+              <Button 
+                onClick={downloadPdf}
+                className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
+                type="button"
+                variant="primary"
+              >
+                <FaFilePdf style={{ marginRight: '8px' }} />
+                Unduh PDF
+              </Button>
             </Col>
           </Row>
 

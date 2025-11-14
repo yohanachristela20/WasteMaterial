@@ -98,6 +98,7 @@ function Barang() {
   const currentItems = sortedBarang.slice(indexOfFirstItem, indexOfLastItem);
 
   const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
 
   const getDataBarang = async () =>{
     try {
@@ -286,6 +287,7 @@ function Barang() {
                 className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
                 type="button"
                 variant="success"
+                hidden={role === "User"}
                 onClick={() => setShowAddModal(true)}>
                 <FaPlusCircle style={{ marginRight: '8px' }} />
                 Tambah Barang
@@ -305,6 +307,7 @@ function Barang() {
               className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
               type="button"
               variant="info"
+              hidden={role !== "Super Admin"}
               onClick={handleImportButtonClick}>
               <FaFileImport style={{ marginRight: '8px' }} />
               Import Data
@@ -342,7 +345,7 @@ function Barang() {
                             <th className="border-0" onClick={() => handleSort("id_sap")}>ID SAP {sortBy==="id_sap" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                             <th className="border-0" onClick={() => handleSort("createdAt")}>Dibuat {sortBy==="createdAt" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                             <th className="border-0" onClick={() => handleSort("updatedAt")}>Terakhir Diubah {sortBy==="updatedAt" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
-                            <th className="border-0">Aksi</th>
+                            <th className="border-0" hidden={role === "User"}>Aksi</th>
                           </tr>
                         </thead>
                         <tbody className="scroll scroller-tbody">
@@ -357,7 +360,7 @@ function Barang() {
                               <td className="text-center">{dataBarang.id_sap}</td>
                               <td className="text-center">{new Date(dataBarang.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
                               <td className="text-center">{new Date(dataBarang.updatedAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
-                              <td className="text-center">
+                              <td className="text-center" hidden={role === "User"}>
                                 <Button className="btn-fill pull-right warning mt-2 btn-reset" variant="warning" onClick={() => { setShowEditModal(true); setSelectedBarang(dataBarang); }} style={{ width: 96, fontSize: 14 }}>
                                   <FaRegEdit style={{ marginRight: '8px' }} />
                                   Ubah

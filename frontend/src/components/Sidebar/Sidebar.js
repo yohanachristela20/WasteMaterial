@@ -6,7 +6,7 @@ function Sidebar({ color, image, routes }) {
   const role = localStorage.getItem("role");
 
   const filteredRoutes = routes.filter(
-    (route) => !["/login", "/detail-pengajuan", "/transaksi", "/detail-pengajuan-user", "/dok-pengajuan", "/dok-transaksi", "/dok-bpbb", "/dok-surat-jalan"].includes(route.path)
+    (route) => !["/login", "/detail-pengajuan", "/transaksi", "/detail-pengajuan-user", "/dok-pengajuan", "/dok-transaksi", "/dok-bpbb", "/dok-surat-jalan", "/pengajuan"].includes(route.path)
   );
 
   const roleFilteredRoutes = filteredRoutes.filter((route) => {

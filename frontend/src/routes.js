@@ -5,6 +5,7 @@ import PengajuanJual from "views/PengajuanJual";
 import MasterUser from "views/MasterUser.js";
 import DashboardKaryawan from "views/DashboardKaryawan.js";
 import DataBarang from "views/DataBarang.js";
+import Pengajuan from "views/Pengajuan.js";
 
 import KategoriBarang from "views/KategoriBarang";
 import MasterVendor from "views/MasterVendor";
@@ -49,9 +50,6 @@ const dashboardRoutes = [
     component: MasterVendor,
     layout: "/admin"
   },
- 
-
-
   {
     path: "/pengajuan-jual",
     name: "Pengajuan Jual",
@@ -71,6 +69,13 @@ const dashboardRoutes = [
     name: "Data Pengajuan",
     icon: "nc-icon nc-notes",
     component: DataPengajuan,
+    layout: "/admin"
+  },
+  {
+    path: "/pengajuan",
+    name: "Pengajuan",
+    icon: "nc-icon nc-notes",
+    component: Pengajuan,
     layout: "/admin"
   },
 
@@ -140,7 +145,21 @@ const dashboardRoutes = [
     component: DashboardKaryawan,
     layout: "/user"
   },
-    {
+  {
+    path: "/kategori-barang",
+    name: "Kategori Barang",
+    icon: "nc-icon nc-tag-content",
+    component: KategoriBarang,
+    layout: "/user"
+  },
+  {
+    path: "/data-barang",
+    name: "Data Barang",
+    icon: "nc-icon nc-app",
+    component: DataBarang,
+    layout: "/user"
+  },
+  {
     path: "/pengajuan-jual",
     name: "Pengajuan Jual",
     icon: "nc-icon nc-money-coins",
@@ -154,13 +173,21 @@ const dashboardRoutes = [
     component: PengajuanScrapping,
     layout: "/user"
   },
-    {
+  {
     path: "/detail-pengajuan-user",
     name: "Detail Pengajuan",
     icon: "nc-icon nc-paper-2",
     component: DetailPengajuanUser,
     layout: "/user"
   },
+  {
+    path: "/dok-pengajuan",
+    name: "Dokumen Pengajuan",
+    icon: "nc-icon nc-paper-2",
+    component: DokumenPengajuan,
+    layout: "/user"
+  },
+
   // {
   //   path: "/data-pengajuan-user",
   //   name: "Data Pengajuan",
@@ -206,6 +233,27 @@ const dashboardRoutes = [
     name: "Master User",
     icon: "nc-icon nc-single-02",
     component: MasterUser,
+    layout: "/super-admin"
+  },
+  {
+    path: "/kategori-barang",
+    name: "Kategori Barang",
+    icon: "nc-icon nc-tag-content",
+    component: KategoriBarang,
+    layout: "/super-admin"
+  },
+  {
+    path: "/data-barang",
+    name: "Data Barang",
+    icon: "nc-icon nc-app",
+    component: DataBarang,
+    layout: "/super-admin"
+  },
+  {
+    path: "/master-vendor",
+    name: "Master Vendor",
+    icon: "nc-icon nc-single-02",
+    component: MasterVendor,
     layout: "/super-admin"
   },
 

@@ -511,5 +511,18 @@ export const getDataPemohonPerDivisi = async (req, res) => {
 }
 };
 
+export const updatePengajuan = async(req, res) => {
+    try {
+        await Pengajuan.update(req.body, {
+            where: {
+                id_pengajuan: req.params.id_pengajuan
+            }
+        });
+        res.status(200).json({msg: "Data pengajuan berhasil diperbarui."});
+    } catch (error) {
+        res.status(500).json({message: error.message});
+    }
+};
+
 
 export default router;

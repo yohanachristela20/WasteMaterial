@@ -319,7 +319,7 @@ import {
       (<div className="App">
         <Container fluid>
           <Row>
-            <Col lg="3" sm="6">
+            <Col lg="4" sm="6">
                 <Card className="card-stats">
                 <Card.Body>
                   <Row>
@@ -348,35 +348,7 @@ import {
                 </Card.Footer>
               </Card>
             </Col>
-            <Col lg="3" sm="6">
-              <Card className="card-stats">
-                <Card.Body>
-                  <Row>
-                    <Col xs="5">
-                      <div className="icon-big icon-warning">
-                        <FaHandHoldingUsd className="text-success" />
-                      </div>
-                    </Col>
-                    <Col xs="7">
-                      <div className="numbers">
-                        <p className="card-category">Uang Keluar</p>
-                      </div>
-                    </Col>
-                    <Col>
-                    <div className="text-right">
-                      <Card.Title className="card-plafond"><h3 style={{fontWeight: 600}} className="mt-0">Rp {formatRupiah(totalScrapping || 0)}</h3></Card.Title>
-                    </div>
-                    </Col>
-                  </Row>
-                </Card.Body>
-                <Card.Footer>
-                  <hr />
-                  <div className="stats">Scrapping</div>
-                </Card.Footer>
-              </Card>
-            </Col>
-
-            <Col lg="3" sm="6">
+            <Col lg="4" sm="6">
               <Card className="card-stats">
                 <Card.Body>
                   <Row>
@@ -406,7 +378,7 @@ import {
                 </Card.Footer>
               </Card>
             </Col>
-            <Col lg="3" sm="6">
+            <Col lg="4" sm="6">
               <Card className="card-stats">
                 <Card.Body>
                   <Row>
@@ -439,7 +411,7 @@ import {
 
           
           <Row>
-            <Button
+            {/* <Button
               className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
               type="button"
               variant="info"
@@ -447,7 +419,7 @@ import {
               <FaFileImport style={{ marginRight: '8px' }} />
               Import Data
             </Button>
-            <ImportPengajuan showImportModal={showImportModal} setShowImportModal={setShowImportModal} onSuccess={handleImportSuccess} />
+            <ImportPengajuan showImportModal={showImportModal} setShowImportModal={setShowImportModal} onSuccess={handleImportSuccess} /> */}
             
             <Button
               className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"

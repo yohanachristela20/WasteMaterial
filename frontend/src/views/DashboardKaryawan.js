@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {FaFilePdf, FaTrashAlt, FaRegFileAlt, FaMoneyBillWave, FaHandHoldingUsd, FaHourglassStart, FaClipboardCheck, FaExclamationTriangle } from 'react-icons/fa'; 
+import {FaFilePdf, FaTrashAlt, FaRegFileAlt, FaMoneyBillWave, FaHandHoldingUsd, FaHourglassStart, FaClipboardCheck, FaExclamationTriangle, FaFolder } from 'react-icons/fa'; 
 import SearchBar from "components/Search/SearchBar.js";
 import axios from "axios";
 import { useHistory } from "react-router-dom"; 
@@ -275,6 +275,13 @@ import {
     setShowModal(true);
   };
 
+  const handleDokPengajuan = (pengajuan) => {
+    history.push({
+      pathname: "/user/dok-pengajuan",
+      state: {selectedPengajuan: pengajuan}
+    });
+  }
+
   return (
     <>
     {loading === false ? 
@@ -299,7 +306,7 @@ import {
           </Row>
 
           <Row>
-            <Col lg="3" sm="6">
+            <Col lg="4" sm="6">
                 <Card className="card-stats">
                 <Card.Body>
                   <Row>
@@ -328,7 +335,7 @@ import {
                 </Card.Footer>
               </Card>
             </Col>
-            <Col lg="3" sm="6">
+            {/* <Col lg="3" sm="6">
               <Card className="card-stats">
                 <Card.Body>
                   <Row>
@@ -354,9 +361,9 @@ import {
                   <div className="stats">Scrapping</div>
                 </Card.Footer>
               </Card>
-            </Col>
+            </Col> */}
 
-            <Col lg="3" sm="6">
+            <Col lg="4" sm="6">
               <Card className="card-stats">
                 <Card.Body>
                   <Row>
@@ -386,7 +393,7 @@ import {
                 </Card.Footer>
               </Card>
             </Col>
-            <Col lg="3" sm="6">
+            <Col lg="4" sm="6">
               <Card className="card-stats">
                 <Card.Body>
                   <Row>
@@ -472,7 +479,11 @@ import {
                                     <FaRegFileAlt style={{ marginRight: '8px' }} />
                                     Detail
                                   </Button>
-                                  <Button className="btn-fill pull-right danger mt-2 btn-reset" variant="danger" onClick={() => handleDeletePengajuan(pengajuan.id_pengajuan)} style={{ width: 100, fontSize: 13 }}>
+                                  <Button className="btn-fill pull-right info mt-2 btn-reset" variant="primary" onClick={() => handleDokPengajuan(pengajuan)} style={{ width: 157, fontSize: 14 }}>
+                                    <FaFolder style={{ marginRight: '8px' }} />
+                                    Dok. Pengajuan
+                                  </Button>
+                                  <Button className="btn-fill pull-right danger mt-2 btn-reset" variant="danger" hidden={pengajuan?.GeneratePengajuan?.status === "Selesai"} onClick={() => handleDeletePengajuan(pengajuan.id_pengajuan)} style={{ width: 100, fontSize: 13 }}>
                                     <FaTrashAlt style={{ marginRight: '8px' }} />
                                     Hapus
                                   </Button>
