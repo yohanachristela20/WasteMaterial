@@ -16,9 +16,11 @@ import {
   Col, 
 } from "react-bootstrap";
 
-function Pengajuan() {
-   const history = useHistory();
+const Pengajuan = ({showUbahPengajuan, setShowUbahPengajuan, ubahPengajuan}) =>  {
 
+  console.log("showUbahPengajuan:", showUbahPengajuan, "setShowUbahPengajuan:", setShowUbahPengajuan, "ubahPengajuan:", ubahPengajuan);
+
+  const history = useHistory();
   const [id_pengajuan, setIDPengajuan] = useState("");
   const [nama_kategori, setNamaKategori] = useState([]);
   const [harga, setHarga] = useState(0);
@@ -44,44 +46,50 @@ function Pengajuan() {
   
   const token = localStorage.getItem("token");
 
-  const IDPengajuan = async(e) => {
-        const response = await axios.get('http://localhost:5000/getLastPengajuanID', {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            }
-        });
-        const newId = response.data?.newId || "";
-        setIDPengajuan(newId);
-    };
+  useEffect(() => {
+    if (ubahPengajuan) {
+      setIDPengajuan(ubahPengajuan.id_pengajuan);
+    }
+  }, [ubahPengajuan]);
+
+  // const IDPengajuan = async(e) => {
+  //       const response = await axios.get('http://localhost:5000/getLastPengajuanID', {
+  //           headers: {
+  //               Authorization: `Bearer ${token}`,
+  //           }
+  //       });
+  //       const newId = response.data?.newId || "";
+  //       setIDPengajuan(newId);
+  //   };
 
   const tujuanPengajuan = async(e) => {
     setJenisPengajuan("SCRAPPING");
   };
 
   useEffect(() => {
-      IDPengajuan();
+      // IDPengajuan();
       tujuanPengajuan();
   }, []);
 
-  useEffect(() => {
-    if (id_pengajuan && typeof id_pengajuan === "string" && id_pengajuan.length >= 8) {
-      previousId.current = id_pengajuan;
+  // useEffect(() => {
+  //   if (id_pengajuan && typeof id_pengajuan === "string" && id_pengajuan.length >= 8) {
+  //     previousId.current = id_pengajuan;
       
-      const prefix = id_pengajuan.substring(0, 4); // Tahun - bulan
-      const numericPart = id_pengajuan.substring(4, 8); // 4 digit nomor urut
-      const suffix = id_pengajuan.slice(-2); //PG
+  //     const prefix = id_pengajuan.substring(0, 4); // Tahun - bulan
+  //     const numericPart = id_pengajuan.substring(4, 8); // 4 digit nomor urut
+  //     const suffix = id_pengajuan.slice(-2); //PG
 
-      const numericValue = parseInt(numericPart, 10);
-      if (!isNaN(numericValue) && numericValue > 1) {
-        const decremented = (numericValue - 2).toString().padStart(4, '0');
-        const calculatedPrevId = `${prefix}${decremented}${suffix}`;
-        setPrevId(calculatedPrevId);
+  //     const numericValue = parseInt(numericPart, 10);
+  //     if (!isNaN(numericValue) && numericValue > 1) {
+  //       const decremented = (numericValue - 2).toString().padStart(4, '0');
+  //       const calculatedPrevId = `${prefix}${decremented}${suffix}`;
+  //       setPrevId(calculatedPrevId);
 
-      }
-    } else {
-      setPrevId(null);
-    }
-  }, [id_pengajuan]);
+  //     }
+  //   } else {
+  //     setPrevId(null);
+  //   }
+  // }, [id_pengajuan]);
 
   useEffect(() => {
     const getStatusPrevPengajuan = async() => {

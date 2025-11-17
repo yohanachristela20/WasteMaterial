@@ -91,7 +91,7 @@ export const updateBarang = async(req, res) => {
     try {
         await Barang.update(req.body, {
             where: {
-                id_barang: req.params.id_barang
+							id_barang: req.params.id_barang
             }
         });
         res.status(200).json({msg: "Data barang berhasil diperbarui."});

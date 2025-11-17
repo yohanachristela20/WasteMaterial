@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
 import axios from "axios";
 import {FaPlusCircle, FaTrashAlt} from 'react-icons/fa'; 
 import { useHistory } from "react-router-dom";
 import {toast } from 'react-toastify';
 import PendingAlert from "components/Alert/PendingAlert.js";
-
+import Select from "react-select";
 
 import {
   Button,
@@ -17,50 +16,68 @@ import {
 } from "react-bootstrap";
 
 function PengajuanScrapping() {
-   const history = useHistory();
-
+  const history = useHistory();
   const [id_pengajuan, setIDPengajuan] = useState("");
   const [nama_kategori, setNamaKategori] = useState([]);
-  const [harga, setHarga] = useState(0);
   const [jumlah_barang, setJumlahBarang] = useState("");
-  const [namaBarang, setNamaBarang] = useState([]);
   const [id_barang, setIdBarang] = useState("");
   const [userData, setUserData] = useState({id_karyawan: "", nama: "", divisi: ""}); 
   const [jenis_pengajuan, setJenisPengajuan] = useState("");
   const [total, setTotal] = useState(0);
-  const [items, setItems] = useState([]);
+  const uniqueKey = () => Date.now() + Math.random();
+  const [items, setItems] = useState([{key: uniqueKey(), namaBarang: null, id_barang: "", jumlah_barang: "", harga: 0, total: 0, kondisi_lainnya: ""}]);
   const [id_karyawan, setIdKaryawan] = useState("");
   const [detailPengajuan, setDetailPengajuan] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("id_pengajuan");
-  const [sortOrder, setSortOrder] = useState("asc");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState("");
   const [prevId, setPrevId] = useState(null);
   const previousId = useRef();  
   const [statusPrevPengajuan, setStatusPrevPengajuan] = useState([]);
+  const [harga, setHarga] = useState(0);
+  const [isSearchable, setIsSearchable] = useState(true);
+
+  const [namaBarang, setNamaBarang] = useState([]); //kunci
+  const [kategoriList, setKategoriList] = useState([]);
+  const [jenisBarangList, setJenisBarangList] = useState([]);
+  const [satuanList, setSatuanList] = useState([]);
+  const [hargaList, setHargaList] = useState([]);
+  const [kondisiList, setKondisiList] = useState([]);
+  const [lainnyaList, setLainnyaList] = useState([]);
   
   const token = localStorage.getItem("token");
 
+  const handleSelect = (idx, option) => {
+		const updatedItems = [...items];
+    updatedItems[idx].namaBarang = option;
+    updatedItems[idx].id_barang = option.value;
+    setItems(updatedItems);
+    getDetailKategori(option.value, idx);
+	};
+
+  const getFilterOptions = (idx) => {
+    const selectedValues = items
+    .map((item, i) => i !== idx ? item.id_barang: null)
+    .filter(Boolean);
+    return namaBarang.filter(opt => !selectedValues.includes(opt.value));
+  };
+
   const IDPengajuan = async(e) => {
-        const response = await axios.get('http://localhost:5000/getLastPengajuanID', {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            }
-        });
-        const newId = response.data?.newId || "";
-        setIDPengajuan(newId);
-    };
+    const response = await axios.get('http://localhost:5000/getLastPengajuanID', {
+      headers: {
+          Authorization: `Bearer ${token}`,
+      }
+    });
+    const newId = response.data?.newId || "";
+    setIDPengajuan(newId);
+  };
 
   const tujuanPengajuan = async(e) => {
     setJenisPengajuan("SCRAPPING");
   };
 
   useEffect(() => {
-      IDPengajuan();
-      tujuanPengajuan();
+    IDPengajuan();
+    tujuanPengajuan();
   }, []);
 
   useEffect(() => {
@@ -76,7 +93,6 @@ function PengajuanScrapping() {
         const decremented = (numericValue - 2).toString().padStart(4, '0');
         const calculatedPrevId = `${prefix}${decremented}${suffix}`;
         setPrevId(calculatedPrevId);
-
       }
     } else {
       setPrevId(null);
@@ -85,16 +101,16 @@ function PengajuanScrapping() {
 
   useEffect(() => {
     const getStatusPrevPengajuan = async() => {
-    try {
-      const res = await axios.get(`http://localhost:5000/prev-status/${prevId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
-      });
-      setStatusPrevPengajuan(Array.isArray(res.data) ? res.data : []);
-    } catch (error) {
-      console.error("Error fetching previous pengajuan status:", error.message);
-    }
+      try {
+        const res = await axios.get(`http://localhost:5000/prev-status/${prevId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        });
+        setStatusPrevPengajuan(Array.isArray(res.data) ? res.data : []);
+      } catch (error) {
+        console.error("Error fetching previous pengajuan status:", error.message);
+      }
     };
     if (prevId) {
       getStatusPrevPengajuan();
@@ -130,54 +146,62 @@ function PengajuanScrapping() {
   const getNamaBarang = async() => {
       try {
           const response = await axios.get('http://localhost:5000/namaBarang', {
-              headers: {
-                  Authorization: `Bearer ${token}`,
-              }
+            headers: {
+                Authorization: `Bearer ${token}`,
+            }
           });
 
           const options = (response.data || []).map(item => ({
-              value: item.id_barang, 
-              label: item.nama,
+            value: item.id_barang, 
+            label: item.id_barang + " " + item.nama,
           }));
 
           setNamaBarang(options);
         
       } catch (error) {
-          console.error("Error fetching data: ", error.message);
+        console.error("Error fetching data: ", error.message);
       }
   };
 
 
-  const getDetailKategori = async(idBarang, idx) => {
-      if (!idBarang) return;
-      try {
-          const resp = await axios.get(`http://localhost:5000/detail-kategori/${idBarang}`, {
-              headers: {
-                  Authorization: `Bearer ${token}`,
-              }
-          });
-          const data = resp.data || {};
-          setItems(prev => {
-            const copy = [...prev];
-            const hargaNum = parseFloat(data?.harga_barang || 0);
-            const jumlahNum = parseFloat(copy[idx]?.jumlah_barang || 0);
+  const getDetailKategori = async(id_barang, idx) => {
+    if (!id_barang) return;
+    try {
+      const resp = await axios.get(`http://localhost:5000/detail-kategori/${id_barang}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
+      });
 
-            copy[idx] = {
-              ...copy[idx],
-              id_barang: data.id_barang || "",
-              id_kategori: data.id_kategori || "",
-              kategori: data.kategori || "",
-              jenis_barang: data.jenis_barang || "",
-              harga: hargaNum,
-              satuan: data.satuan || "",
-              total: hargaNum * jumlahNum,
-            };
-            return copy;
-          });
-      } catch (error) {
-          console.error("Error fetching barang details:", error.message);
-          toast.error("Gagal mengambil detail barang.")
-      }
+      const updatedKategori = [...kategoriList];
+      updatedKategori[idx] = resp.data.kategori;
+
+      const updatedJenisBarang = [...jenisBarangList];
+      updatedJenisBarang[idx] = resp.data.jenis_barang;
+
+      const updatedSatuan = [...satuanList];
+      updatedSatuan[idx] = resp.data.satuan;
+
+      const updatedHarga = [...hargaList];
+      updatedHarga[idx] = resp.data.harga_barang;
+
+      const updatedKondisi = [...kondisiList];
+      updatedKondisi[idx] = resp.data.kondisi;
+
+      const updatedKondisiLainnya = [...lainnyaList];
+      updatedKondisiLainnya[idx] = resp.data.kondisi;
+
+      setKategoriList(updatedKategori);
+      setJenisBarangList(updatedJenisBarang);
+      setSatuanList(updatedSatuan);
+      setHargaList(updatedHarga);
+      setKondisiList(updatedKondisi);
+      setLainnyaList(updatedKondisiLainnya);
+
+    } catch (error) {
+      console.error("Error fetching barang details:", error.message);
+      toast.error("Gagal mengambil detail barang.")
+    }
   };
 
   
@@ -291,35 +315,8 @@ function PengajuanScrapping() {
     e.preventDefault();
     if (items.length === 0) { toast.error("Tidak ada item untuk diajukan."); return; }
 
-    for (let i = 0; i < items.length; i++) {
-          const it = items[i];
-          const idx = i + 1;
-    
-          if (!it.id_barang){
-            toast.error(`Item ${idx}: Pilih barang terlebih dahulu`);
-            return;
-          }
-          if (!it.kondisi || it.kondisi === ""){
-            toast.error(`Item ${idx}: Pilih kondisi barang!`);
-            return;
-          }
-          if (it.kondisi === "Lainnya" && (!it.kondisi_lainnya || it.kondisi_lainnya.trim() === "")){
-            toast.error(`Item ${idx}: Pilih kondisi barang!`);
-            return;
-          }
-    }
-
     try {
-      const payload = items.map(it => ({
-        id_pengajuan,
-        jumlah_barang: it.jumlah_barang,
-        total: it.total,
-        kondisi: it.kondisi_lainnya !== "" ? it.kondisi_lainnya : it.kondisi,
-        jenis_pengajuan,
-        id_karyawan: it.id_karyawan || userData.id_karyawan || id_karyawan || "",
-        id_barang: it.id_barang,
-      }));
-      await axios.post('http://localhost:5000/generate-pengajuan', {
+      const res = await axios.post('http://localhost:5000/generate-pengajuan', {
         id_pengajuan,
         status: "Belum Diproses"
       }, {
@@ -327,17 +324,34 @@ function PengajuanScrapping() {
           Authorization: `Bearer ${token}`,
         },
       });
-      await axios.post('http://localhost:5000/pengajuan', { items: payload }, {
+
+      const detailItems = items.map((item, idx) => ({
+        id_pengajuan, 
+        id_karyawan, 
+        id_barang: item.namaBarang?.value,
+        jumlah_barang: item.jumlah_barang, 
+        kondisi: item.kondisi_lainnya !== "" ? item.kondisi_lainnya : item.kondisi, 
+        jenis_pengajuan,
+        harga: hargaList[idx], 
+        total: item.jumlah_barang * hargaList[idx],
+      }));
+
+      await axios.post('http://localhost:5000/pengajuan', { 
+        items: detailItems
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
       if (role === "Admin") {
         history.push("/admin/data-pengajuan");
       } else if (role === "User") {
         history.push("/user/dashboard-user");
       }
+
       toast.success("Pengajuan berhasil dikirim.");
       setItems([blankItem()]); 
       IDPengajuan();
+
     } catch (error) {
       console.error(error);
       console.log("Error:", error.message);
@@ -346,20 +360,21 @@ function PengajuanScrapping() {
   }
 
   const handleItemChange = (idx, field, value) => {
-    setItems(prev => {
-      const copy = [...prev];
-      copy[idx] = { ...copy[idx], [field]: value };
+    console.log("idx:", idx, "field:", field, "value:", value);
+    const updated = [...items];
+    updated[idx][field] = value;
 
-      if (field === "id_barang") {
-        const sel = namaBarang.find(b => b.value === value) || null;
-        copy[idx].selectedBarang = sel;
-      }
+    if (field === "kondisi" && value !== "LAINNYA") {
+      updated[idx].kondisi_lainnya = "";
+    }
+    setItems(updated);
+  };
 
-      const hargaNum = parseFloat(String(copy[idx].harga || 0)) || 0;
-      const jumlahNum = parseFloat(String(copy[idx].jumlah_barang || 0)) || 0;
-      copy[idx].total = hargaNum * jumlahNum;
-      return copy;
-    });
+  const handleJumlahBarang = (idx, value) => {
+    const updatedItems = [...items];
+    updatedItems[idx].jumlah_barang = value;
+    updatedItems[idx].total = Number(value) * Number(updatedItems[idx].harga);
+    setItems(updatedItems);
   };
 
   return (
@@ -412,41 +427,29 @@ function PengajuanScrapping() {
                             <Form.Group className="mb-2">
                               <span className="text-danger">*</span>
                               <label>Barang</label>
-                              <Form.Select
-                                className="form-control"
-                                value={item.id_barang || ""}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  handleItemChange(idx, "id_barang", val);
-                                  getDetailKategori(val, idx);
-
-                                }}
+                              <Select
+                                options={getFilterOptions(idx)}
+                                value={item.namaBarang}
+                                onChange={(option) => handleSelect(idx, option)}
+                                isSearchable={isSearchable}
                               >
-                                <option className="placeholder-form" key="blankChoice" hidden value="">
-                                    Pilih Barang
-                                </option>
-                                {namaBarang.map(option => (
-                                    <option key={option.value} value={option.value} hidden={option.value === id_barang}>
-                                        {option.label}
-                                    </option>
-                                ))}
-                              </Form.Select>
+                              </Select>
                             </Form.Group>
                             <Form.Group className="mb-2">
                               <label>Kategori</label>
-                              <Form.Control type="text" value={item.kategori || ""} disabled />
+                              <Form.Control type="text" value={kategoriList[idx] || ""} disabled />
                             </Form.Group>
                             <Form.Group className="mb-2">
                               <label>Jenis Barang</label>
-                              <Form.Control type="text" value={item.jenis_barang || ""} disabled />
+                              <Form.Control type="text" value={jenisBarangList[idx] || ""} disabled />
                             </Form.Group>
                             <Form.Group className="mb-2">
                               <label>Satuan</label>
-                              <Form.Control type="text" value={item.satuan || ""} disabled />
+                              <Form.Control type="text" value={satuanList[idx] || ""} disabled />
                             </Form.Group>
                             <Form.Group className="mb-2">
                               <label>Harga (Rp)</label>
-                              <Form.Control type="text" value={formatRupiah(item.harga)} disabled />
+                              <Form.Control type="text" value={formatRupiah(hargaList[idx] || "")} disabled />
                             </Form.Group>
                           </Col>
 
@@ -460,13 +463,13 @@ function PengajuanScrapping() {
                                 value={item.jumlah_barang}
                                 onChange={(e) => {
                                   const val = e.target.value.replace(/[^0-9.]/g, "");
-                                  handleItemChange(idx, "jumlah_barang", val);
+                                  handleJumlahBarang(idx, val);
                                 }}
                               />
                             </Form.Group>
                             <Form.Group className="mb-2">
                               <label>Total (Rp)</label>
-                              <Form.Control type="text" value={formatRupiah(item.total)} readOnly />
+                              <Form.Control type="text" value={formatRupiah(item.jumlah_barang * hargaList[idx] || "0")} readOnly />
                             </Form.Group>
 
                             <Form.Group className="mb-2">

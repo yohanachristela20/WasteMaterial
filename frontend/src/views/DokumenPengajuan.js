@@ -294,7 +294,7 @@ function DokumenPengajuan() {
                                             <p style={{fontSize: 20, marginTop: 70}}>
                                               {uniquePemohon.map((p) => 
                                                 (<div key={p?.id_karyawan}>
-                                                  {p?.divisi === "PRODUCTION" ? "(IMELDA)" : p?.divisi === "TEKNIK & ADM. MEKANIK" ? "(ABDUL GOFUR)" : "(SRI LESTARI)" }
+                                                  {p?.divisi === "PRODUCTION" ? "(IMELDA)" : p?.divisi === "LOGISTIC" ? "(R.WIJIANTI)" :  p?.divisi === "TEKNIK & ADM. MEKANIK" ? "(ABDUL GOFUR)" : "(SRI LESTARI)" }
                                                 </div>))}</p>
                                           </Col>
                                         </Row>

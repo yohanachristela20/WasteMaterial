@@ -6,6 +6,7 @@ import "../assets/scss/lbd/_text.scss";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { useHistory } from "react-router-dom";
+import Pengajuan from "./Pengajuan.js";
 
 import {
   Badge,
@@ -19,15 +20,18 @@ import {
 
 function DetailPengajuan() {
   const location = useLocation();
-  console.log("location:", location.pathname);
+  // console.log("location:", location.pathname);
   const contentRef = useRef(null);
   const history = useHistory();
-  console.log("history:", history);
+  // console.log("history:", history);
 
   const [selectedPengajuan, setSelectedPengajuan] = useState(location?.state?.selectedPengajuan || null);
   const [detailPengajuan, setDetailPengajuan] = useState([]);
   const [detailTransaksi, setDetailTransaksi] = useState([]);
   const [isUpdateClicked, setIsUpdateClicked] = useState(false);
+  const [showUbahPengajuan, setShowUbahPengajuan] = useState(false);
+
+
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -147,15 +151,29 @@ function DetailPengajuan() {
         state: {selectedPengajuan}
       });
     } 
+
+    // <div>
+    //   <Pengajuan 
+    //     showUbahPengajuan = {showUbahPengajuan}
+    //     setShowUbahPengajuan = {setShowUbahPengajuan}
+    //     ubahPengajuan = {selectedPengajuan}
+    //   />
+    // </div>
   };
 
   // console.log("selected Pengajuan:", selectedPengajuan.id_pengajuan);
 
-   
   return (
     <>
       <Container fluid>
         <Row>
+          {/* <div>
+            <Pengajuan 
+              showUbahPengajuan = {showUbahPengajuan}
+              setShowUbahPengajuan = {setShowUbahPengajuan}
+              ubahPengajuan = {selectedPengajuan}
+            />
+          </div> */}
           <Col className="card-screening">
             <Card className="card-screening p-4">
               <div ref={contentRef} style={{padding: '40px'}}>
@@ -301,7 +319,8 @@ function DetailPengajuan() {
              <Button 
               onClick={(e) => {
                 ubahPengajuan(selectedPengajuan); 
-                setIsUpdateClicked(true)
+                setIsUpdateClicked(true);
+                setShowUbahPengajuan(true);
               }}
               // setIsUpdateClicked={true}
               className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"

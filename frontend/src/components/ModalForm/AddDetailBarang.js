@@ -161,6 +161,7 @@ const AddDetailBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
 									Authorization: `Bearer ${token}`,
 							},
 					});
+					window.location.reload();
 					setShowAddModal(false); 
 					onSuccess();
 					

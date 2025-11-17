@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { FaPlusCircle, FaSearch, FaTrashAlt} from 'react-icons/fa'; 
+import { FaPlusCircle, FaTrashAlt} from 'react-icons/fa'; 
 import { useHistory } from "react-router-dom";
 import {toast } from 'react-toastify';
 import PendingAlert from "components/Alert/PendingAlert.js";
@@ -16,18 +16,15 @@ import {
 } from "react-bootstrap";
 
 function PengajuanJual() {
-   const history = useHistory();
-
+  const history = useHistory();
   const [id_pengajuan, setIDPengajuan] = useState("");
   const [nama_kategori, setNamaKategori] = useState([]);
-
   const [jumlah_barang, setJumlahBarang] = useState("");
-
-  const [id_barang, setIdBarang] = useState("");
   const [userData, setUserData] = useState({id_karyawan: "", nama: "", divisi: ""}); 
   const [jenis_pengajuan, setJenisPengajuan] = useState("");
   const [total, setTotal] = useState(0);
-  const [items, setItems] = useState([]);
+  const uniqueKey = () => Date.now() + Math.random();
+  const [items, setItems] = useState([{key: uniqueKey(), namaBarang: null, id_barang: "", jumlah_barang: "", harga: 0, total: 0, kondisi_lainnya: ""}]);
   const [id_karyawan, setIdKaryawan] = useState("");
   const [detailPengajuan, setDetailPengajuan] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,84 +32,43 @@ function PengajuanJual() {
   const [prevId, setPrevId] = useState(null);
   const previousId = useRef();  
   const [statusPrevPengajuan, setStatusPrevPengajuan] = useState([]);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedValue, setSelectedValue] = useState("");
-  const [show, setShow] = useState(true);
-  const [namaBarangError, setNamaBarangError] = useState(false);
-  const [selectedBarang, setSelectedBarang] = useState(null);
-  const [kategori, setKategori] = useState("");
-  const [jenis_barang, setJenisBarang] = useState("");
-  const [satuan, setSatuan] = useState("");
   const [harga, setHarga] = useState(0);
-  const [kondisi, setKondisi] = useState("");
   const [isSearchable, setIsSearchable] = useState(true);
-  const [otherFieldValue, setOtherFieldValue] = useState('');
-  const [selected_kategori, setSelectedKategori] = useState(null);
-  const [selectedOption, setSelectedOption] = useState('');
-  const [connectedFieldValue, setConnectedFieldValue] = useState('');
 
   const [namaBarang, setNamaBarang] = useState([]); //kunci
+  const [kategoriList, setKategoriList] = useState([]);
+  const [jenisBarangList, setJenisBarangList] = useState([]);
+  const [satuanList, setSatuanList] = useState([]);
+  const [hargaList, setHargaList] = useState([]);
+  const [kondisiList, setKondisiList] = useState([]);
+  const [lainnyaList, setLainnyaList] = useState([]);
   
   const token = localStorage.getItem("token");
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredOptions, setFilteredOptions] = useState(namaBarang);
-
-	const handleSearchChange = (e) => {
-		const term = e.target.value.toLowerCase();
-		setSearchTerm(term);
-		const filtered = nama_kategori.filter(option =>
-		option.label.toLowerCase().includes(term)
-		);
-		setFilteredOptions(filtered);
+	const handleSelect = (idx, option) => {
+		const updatedItems = [...items];
+    updatedItems[idx].namaBarang = option;
+    updatedItems[idx].id_barang = option.value;
+    setItems(updatedItems);
+    getDetailKategori(option.value, idx);
 	};
 
-	const handleSelect = (option, e) => {
-		setSelectedValue(option.value);
-		setSearchTerm(option.label);
-		setSatuan(option.value);
-		setShowDropdown(false);
-		getDetailKategori(option.value);
+  const getFilterOptions = (idx) => {
+    const selectedValues = items
+    .map((item, i) => i !== idx ? item.id_barang: null)
+    .filter(Boolean);
 
-		// const selected = nama_kategori.find(emp => emp.value === option.value);
-		// const id = selected ? selected.value : "";
-		// setKategori(id);
-
-		// setJenisBarang(option.value);
-		// setHarga(data.harga_barang !== undefined && data.harga_barang !== null ? formatRupiah(String(data.harga_barang)) : "");
-
-	};
-
-  const handleDropdownChange = (namaBarang) => {
-    const selectedValue = namaBarang;
-    console.log("selectedValue:", selectedValue);
-    setSelectedOption(selectedValue);
-
-    const selectedItem = items.find(item => item.value === selectedValue);
-    console.log("selectedItem:", selectedItem);
-
-    if (selectedItem) {
-      setConnectedFieldValue(selectedItem.relatedField);
-    } else {
-      setConnectedFieldValue(''); 
-    }
+    return namaBarang.filter(opt => !selectedValues.includes(opt.value));
   };
 
-  // console.log("selectedValue:", selectedValue);
-  // console.log("selectedBarang:", selectedBarang);
-  // console.log("selected Id Barang:", id_barang);
-  // console.log("Nama Kategori:", kategori);
-
-  // console.log("namaKategori:", nama_kategori);
-
   const IDPengajuan = async(e) => {
-        const response = await axios.get('http://localhost:5000/getLastPengajuanID', {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            }
-        });
-        const newId = response.data?.newId || "";
-        setIDPengajuan(newId);
+    const response = await axios.get('http://localhost:5000/getLastPengajuanID', {
+      headers: {
+          Authorization: `Bearer ${token}`,
+      }
+    });
+    const newId = response.data?.newId || "";
+    setIDPengajuan(newId);
   };
 
   const tujuanPengajuan = async(e) => {
@@ -120,8 +76,8 @@ function PengajuanJual() {
   };
 
   useEffect(() => {
-      IDPengajuan();
-      tujuanPengajuan();
+    IDPengajuan();
+    tujuanPengajuan();
   }, []);
 
   useEffect(() => {
@@ -189,70 +145,62 @@ function PengajuanJual() {
   const getNamaBarang = async() => {
       try {
           const response = await axios.get('http://localhost:5000/namaBarang', {
-              headers: {
-                  Authorization: `Bearer ${token}`,
-              }
+            headers: {
+                Authorization: `Bearer ${token}`,
+            }
           });
 
           const options = (response.data || []).map(item => ({
-              value: item.id_barang, 
-              label: item.id_barang + " " + item.nama,
+            value: item.id_barang, 
+            label: item.id_barang + " " + item.nama,
           }));
 
           setNamaBarang(options);
           
       } catch (error) {
-          console.error("Error fetching data: ", error.message);
+        console.error("Error fetching data: ", error.message);
       }
   };
-
-  // console.log("namaBarang:", namaBarang);
 
   const getDetailKategori = async(id_barang, idx) => {
-      console.log("INDEX:", idx);
-      console.log("ID BARANG:", id_barang);
-      if (!id_barang) return;
-      try {
-          const resp = await axios.get(`http://localhost:5000/detail-kategori/${id_barang}`, {
-              headers: {
-                  Authorization: `Bearer ${token}`,
-              }
-          });
-          const data = resp.data || {};
-          console.log("data:", data);
-          
-          setItems(prev => {
-            const copy = [...prev];
-            const hargaNum = parseFloat(data?.harga_barang || 0);
-            // console.log("hargaNum:", hargaNum);
-            // setHarga(hargaNum);
-            const jumlahNum = parseFloat(copy[idx]?.jumlah_barang || 0);
-            console.log("jumlahNum:", jumlahNum);
+    if (!id_barang) return;
+    try {
+      const resp = await axios.get(`http://localhost:5000/detail-kategori/${id_barang}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
+      });
 
-            copy[idx] = {
-              ...copy[idx],
-              id_barang: data.id_barang || "",
-              id_kategori: data.id_kategori || "",
-              kategori: data.kategori || "",
-              jenis_barang: data.jenis_barang || "",
-              harga: hargaNum,
-              satuan: data.satuan || "",
-              total: hargaNum * jumlahNum,
-            };
-            
-            console.log("kategori:", copy[idx]?.kategori);
-            setKategori(copy[idx]?.kategori);
-            return copy;
-          });
-          
+      const updatedKategori = [...kategoriList];
+      updatedKategori[idx] = resp.data.kategori;
 
-        } catch (error) {
-          console.error("Error fetching barang details:", error.message);
-          toast.error("Gagal mengambil detail barang.")
-      }
+      const updatedJenisBarang = [...jenisBarangList];
+      updatedJenisBarang[idx] = resp.data.jenis_barang;
+
+      const updatedSatuan = [...satuanList];
+      updatedSatuan[idx] = resp.data.satuan;
+
+      const updatedHarga = [...hargaList];
+      updatedHarga[idx] = resp.data.harga_barang;
+
+      const updatedKondisi = [...kondisiList];
+      updatedKondisi[idx] = resp.data.kondisi;
+
+      const updatedKondisiLainnya = [...lainnyaList];
+      updatedKondisiLainnya[idx] = resp.data.kondisi;
+
+      setKategoriList(updatedKategori);
+      setJenisBarangList(updatedJenisBarang);
+      setSatuanList(updatedSatuan);
+      setHargaList(updatedHarga);
+      setKondisiList(updatedKondisi);
+      setLainnyaList(updatedKondisiLainnya);
+
+    } catch (error) {
+      console.error("Error fetching barang details:", error.message);
+      toast.error("Gagal mengambil detail barang.")
+    }
   };
-
-  // console.log("kategori:", items.kategori);
   
   const getDetailPengajuan = async() => {
       try {
@@ -276,7 +224,6 @@ function PengajuanJual() {
       getNamaKategori();
       getNamaBarang();
       getDetailPengajuan();
-
       setTimeout(() => setLoading(false), 1000);
   }, []);
 
@@ -368,7 +315,7 @@ function PengajuanJual() {
     if (items.length === 0) { toast.error("Tidak ada item untuk diajukan."); return; }
 
     try {
-      await axios.post('http://localhost:5000/generate-pengajuan', {
+      const res = await axios.post('http://localhost:5000/generate-pengajuan', {
         id_pengajuan,
         status: "Belum Diproses"
       }, {
@@ -376,14 +323,20 @@ function PengajuanJual() {
           Authorization: `Bearer ${token}`,
         },
       });
-      await axios.post('http://localhost:5000/pengajuan', { 
-        jumlah_barang, 
-        kondisi, 
+
+      const detailItems = items.map((item, idx) => ({
+        id_pengajuan, 
+        id_karyawan, 
+        id_barang: item.namaBarang?.value,
+        jumlah_barang: item.jumlah_barang, 
+        kondisi: item.kondisi_lainnya !== "" ? item.kondisi_lainnya : item.kondisi, 
         jenis_pengajuan,
-        total,
-        id_barang, 
-        id_pengajuan,
-        id_karyawan
+        harga: hargaList[idx], 
+        total: item.jumlah_barang * hargaList[idx],
+      }));
+
+      await axios.post('http://localhost:5000/pengajuan', { 
+        items: detailItems
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -394,10 +347,10 @@ function PengajuanJual() {
         history.push("/user/dashboard-user");
       }
 
-
       toast.success("Pengajuan berhasil dikirim.");
       setItems([blankItem()]); 
       IDPengajuan();
+
     } catch (error) {
       console.error(error);
       console.log("Error:", error.message);
@@ -406,50 +359,22 @@ function PengajuanJual() {
   }
 
   const handleItemChange = (idx, field, value) => {
-    setItems(prev => {
-      const copy = [...prev];
-      copy[idx] = { ...copy[idx], [field]: value };
+    console.log("idx:", idx, "field:", field, "value:", value);
+    const updated = [...items];
+    updated[idx][field] = value;
 
-      if (field === "id_barang") {
-        const sel = namaBarang.find(b => b.value === value) || null;
-        copy[idx].selectedBarang = sel;
-      }
-
-      const hargaNum = parseFloat(String(copy[idx].harga || 0)) || 0;
-      const jumlahNum = parseFloat(String(copy[idx].jumlah_barang || 0)) || 0;
-      copy[idx].total = hargaNum * jumlahNum;
-
-      return copy;
-    });
+    if (field === "kondisi" && value !== "LAINNYA") {
+      updated[idx].kondisi_lainnya = "";
+    }
+    setItems(updated);
   };
 
-  // console.log("Items:", items);
-
-  const handleJumlahBarang = (value) => {
-    setJumlahBarang(value);
+  const handleJumlahBarang = (idx, value) => {
+    const updatedItems = [...items];
+    updatedItems[idx].jumlah_barang = value;
+    updatedItems[idx].total = Number(value) * Number(updatedItems[idx].harga);
+    setItems(updatedItems);
   };
-
-  const handleKondisi = (value) => {
-    setKondisi(value);
-  };
-
-  const handleChange = (selected, idx) => {
-    setSelectedBarang(selected);
-    // setKategori(selectedBarang.kategori || "");
-  }
-
-  const handleOtherFieldChange = (e) => {
-    setOtherFieldValue(e.target.value);
-  };
-
-  const uniqueKategori = [
-    ...new Map(
-      items.map((d) => [d?.kategori, d])
-    ).values(),
-  ];
-
-
-  // console.log("selectedBarang:", selectedBarang);
 
   return (
     <>
@@ -502,14 +427,9 @@ function PengajuanJual() {
                               <span className="text-danger">*</span>
                               <label>Barang</label>
                               <Select
-                                options={namaBarang}
+                                options={getFilterOptions(idx)}
                                 value={item.namaBarang}
-                                onChange={handleSelect}
-                                // onChange={(e) => 
-                                //   {const val = item.namaBarang
-                                //   handleSelect(idx, "id_barang", val);
-                                //   getDetailKategori(val, idx);
-                                // }}
+                                onChange={(option) => handleSelect(idx, option)}
                                 isSearchable={isSearchable}
                               >
                               </Select>
@@ -518,20 +438,20 @@ function PengajuanJual() {
                               <label>Kategori</label>
                               <Form.Control 
                                 type="text" 
-                                value={kategori} 
+                                value={kategoriList[idx] || ""} 
                                 disabled />
                             </Form.Group>
                             <Form.Group className="mb-2">
                               <label>Jenis Barang</label>
-                              <Form.Control type="text" value={item.jenis_barang || ""} disabled />
+                              <Form.Control type="text" value={jenisBarangList[idx] || ""} disabled />
                             </Form.Group>
                             <Form.Group className="mb-2">
                               <label>Satuan</label>
-                              <Form.Control type="text" value={item.satuan || ""} disabled />
+                              <Form.Control type="text" value={satuanList[idx] || ""} disabled />
                             </Form.Group>
                             <Form.Group className="mb-2">
                               <label>Harga (Rp)</label>
-                              <Form.Control type="text" value={formatRupiah(item.harga || "")} disabled />
+                              <Form.Control type="text" value={formatRupiah(hargaList[idx] || "")} disabled />
                             </Form.Group>
                           </Col>
 
@@ -542,16 +462,16 @@ function PengajuanJual() {
                               <Form.Control
                                 type="text"
                                 required
-                                value={jumlah_barang}
+                                value={item.jumlah_barang}
                                 onChange={(e) => {
                                   const val = e.target.value.replace(/[^0-9.]/g, "");
-                                  handleJumlahBarang(val);
+                                  handleJumlahBarang(idx, val);
                                 }}
                               />
                             </Form.Group>
                             <Form.Group className="mb-2">
                               <label>Total (Rp)</label>
-                              <Form.Control type="text" value={formatRupiah(jumlah_barang * harga)} readOnly />
+                              <Form.Control type="text" value={formatRupiah(item.jumlah_barang * hargaList[idx] || "0")} readOnly />
                             </Form.Group>
 
                             <Form.Group className="mb-2">
@@ -559,8 +479,8 @@ function PengajuanJual() {
                               <label>Kondisi</label>
                               <Form.Select
                                 className="form-control"
-                                value={kondisi}
-                                onChange={(e) => handleKondisi(e.target.value)}
+                                value={item.kondisi || ""}
+                                onChange={(e) => handleItemChange(idx, "kondisi", e.target.value)}
                                 required
                               >
                                 <option className="placeholder-form" key='blankChoice' hidden value>Pilih Kondisi</option>
@@ -578,7 +498,9 @@ function PengajuanJual() {
                                   type="text"
                                   required={item.kondisi === "LAINNYA"}
                                   value={item.kondisi_lainnya || ""}
-                                  onChange={(e) => handleItemChange(idx, "kondisi_lainnya", e.target.value.toUpperCase())}
+                                  onChange={(e) => {
+                                    handleItemChange(idx, "kondisi_lainnya" ,e.target.value.toUpperCase());
+                                  }}
                                 />
                               </Form.Group>
                             )}

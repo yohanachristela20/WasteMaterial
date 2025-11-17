@@ -43,7 +43,7 @@ router.get('/data-penjualan', getPenjualan);
 router.get('/filter-penjualan-tahunan', filterPenjualanTahunan);
 router.get('/data-divisi', getDataPerDivisi); 
 router.get('/data-scrapping-divisi', getScrappingPerDivisi);
-router.patch('/pengajuan/:id_pengajuan', updatePengajuan);
+router.patch('/ubah-pengajuan/:id_pengajuan', updatePengajuan);
 
 //import bulk create all -- hanya bisa untuk mengimpor 1 pengajuan, 1 item per transaksi
 // router.post('/pengajuan/import-csv', upload.single("csvfile"), async(req,res) => {
