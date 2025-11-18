@@ -512,16 +512,49 @@ export const getDataPemohonPerDivisi = async (req, res) => {
 };
 
 export const updatePengajuan = async(req, res) => {
-    try {
-        await Pengajuan.update(req.body, {
-            where: {
-                id_pengajuan: req.params.id_pengajuan
-            }
-        });
-        res.status(200).json({msg: "Data pengajuan berhasil diperbarui."});
-    } catch (error) {
-        res.status(500).json({message: error.message});
+  let transaction;
+  try {
+    const { items } = req.body;
+
+    if (Array.isArray(items)) {
+      transaction = await db.transaction();
+
+      await Pengajuan.destroy({
+        where: { id_pengajuan: req.params.id_pengajuan },
+        transaction,
+      });
+
+      const payload = items.map((it) => ({
+        id_pengajuan: req.params.id_pengajuan,
+        id_karyawan: it.id_karyawan || it.id_karyawan || null,
+        id_barang: it.id_barang || null,
+        jumlah_barang: it.jumlah_barang !== undefined ? Number(it.jumlah_barang) : 0,
+        kondisi: it.kondisi || null,
+        jenis_pengajuan: it.jenis_pengajuan || null,
+        harga: it.harga !== undefined ? Number(it.harga) : null,
+        total: it.total !== undefined ? Number(it.total) : (it.jumlah_barang ? Number(it.jumlah_barang) * (it.harga || 0) : 0),
+      }));
+
+      if (payload.length > 0) {
+        await Pengajuan.bulkCreate(payload, { transaction, individualHooks: true });
+      }
+
+      await transaction.commit();
+      return res.status(200).json({ msg: "Data pengajuan berhasil diperbarui." });
     }
+
+    await Pengajuan.update(req.body, {
+      where: {
+        id_pengajuan: req.params.id_pengajuan,
+      },
+    });
+
+    res.status(200).json({ msg: "Data pengajuan berhasil diperbarui." });
+  } catch (error) {
+    if (transaction) await transaction.rollback();
+    console.error("Error updating pengajuan:", error.message);
+    res.status(500).json({ message: error.message });
+  }
 };
 
 

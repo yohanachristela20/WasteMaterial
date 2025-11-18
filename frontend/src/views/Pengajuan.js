@@ -4,7 +4,6 @@ import { FaPlusCircle, FaTrashAlt} from 'react-icons/fa';
 import { useHistory } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import {toast } from 'react-toastify';
-// import PendingAlert from "components/Alert/PendingAlert.js";
 import Select from "react-select";
 
 import {
@@ -200,7 +199,7 @@ function Pengajuan() {
       });
 
       const namaBarang = [...namaBarangList];
-      namaBarangList[idx] = resp.data.nama_barang;
+      namaBarang[idx] = resp.data.nama_barang;
 
       const updatedKategori = [...kategoriList];
       updatedKategori[idx] = resp.data.kategori;
@@ -234,32 +233,84 @@ function Pengajuan() {
     }
   };
 
-  console.log("namaBarangList:", namaBarangList);
+  // console.log("namaBarangList:", namaBarangList);
   
-  const getDetailPengajuan = async() => {
-      try {
-          const resp = await axios.get(`http://localhost:5000/detail-pengajuan`, {
-              headers: {
-                  Authorization: `Bearer ${token}`,
-              }
-          });
-          
-          setDetailPengajuan(resp.data);
-      } catch (error) {
-        if (error.response?.status === 401) {
-          console.error("Unauthorized: Token is invalid or expired.");
-        } else {
-          console.error("Error fetching data:", error.message);
-        }
-      }
+
+  const getDetailPengajuanById = async (id_pengajuan) => {
+    if (!id_pengajuan) return;
+    try {
+      const resp = await axios.get(`http://localhost:5000/detail-pengajuan/${id_pengajuan}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = Array.isArray(resp.data) ? resp.data : [];
+
+      const mappedItems = data.map((d) => {
+        const barang = d.BarangDiajukan || {};
+        const kategori = barang.KategoriBarang || {};
+
+        return {
+          key: uniqueKey(),
+          id_barang: barang.id_barang || d.id_barang || "",
+          namaBarang: {
+            value: barang.id_barang || d.id_barang || "",
+            label: `${barang.id_barang || d.id_barang || ""} ${barang.nama || ""}`.trim(),
+          },
+          jumlah_barang: d.jumlah_barang || "",
+          harga: kategori.harga_barang || 0,
+          total: d.total || (d.jumlah_barang * (kategori.harga_barang || 0)) || 0,
+          kondisi: d.kondisi || kategori.kondisi || "",
+          kondisi_lainnya: d.kondisi || "",
+        };
+      });
+
+      const names = [];
+      const kategories = [];
+      const jenis = [];
+      const satuan = [];
+      const hargas = [];
+      const konds = [];
+      const lains = [];
+
+      data.forEach((d, idx) => {
+        const barang = d.BarangDiajukan || {};
+        const kategori = barang.KategoriBarang || {};
+
+        names[idx] = `${barang.id_barang || d.id_barang || ""} ${barang.nama || ""}`.trim();
+        kategories[idx] = kategori.nama || "";
+        jenis[idx] = kategori.jenis_barang || "";
+        satuan[idx] = kategori.satuan || "";
+        hargas[idx] = kategori.harga_barang || 0;
+        konds[idx] = d.kondisi || kategori.kondisi || "";
+        lains[idx] = d.kondisi || "";
+      });
+
+      setItems(mappedItems.length ? mappedItems : [blankItem()]);
+      setNamaBarangList(names);
+      setKategoriList(kategories);
+      setJenisBarangList(jenis);
+      setSatuanList(satuan);
+      setHargaList(hargas);
+      setKondisiList(konds);
+      setLainnyaList(lains);
+      setDetailPengajuan(data);
+    } catch (error) {
+      console.error("Error fetching pengajuan detail:", error.message);
+      toast.error("Gagal mengambil detail pengajuan.");
+    }
   };
 
   useEffect(() => {
-      getNamaKategori();
-      getNamaBarang();
-      getDetailPengajuan();
-      setTimeout(() => setLoading(false), 1000);
+    getNamaKategori();
+    getNamaBarang();
+    setTimeout(() => setLoading(false), 1000);
   }, []);
+
+  useEffect(() => {
+    if (selectedPengajuan?.id_pengajuan) {
+      getDetailPengajuanById(selectedPengajuan.id_pengajuan);
+    }
+  }, [selectedPengajuan]);
 
  
   const formatRupiah = (angka) => {
@@ -349,40 +400,53 @@ function Pengajuan() {
     if (items.length === 0) { toast.error("Tidak ada item untuk diajukan."); return; }
 
     try {
-      const res = await axios.post('http://localhost:5000/generate-pengajuan', {
-        id_pengajuan,
-        status: "Belum Diproses"
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const isEditing = Boolean(selectedPengajuan?.id_pengajuan);
+
+      // Determine id_pengajuan to use for payload
+      const targetIdPengajuan = isEditing ? selectedPengajuan.id_pengajuan : id_pengajuan;
 
       const detailItems = items.map((item, idx) => ({
-        id_pengajuan, 
-        id_karyawan, 
-        id_barang: item.namaBarang?.value,
-        jumlah_barang: item.jumlah_barang, 
-        kondisi: item.kondisi_lainnya !== "" ? item.kondisi_lainnya : item.kondisi, 
-        jenis_pengajuan,
-        harga: hargaList[idx], 
-        total: item.jumlah_barang * hargaList[idx],
+        id_pengajuan: targetIdPengajuan,
+        id_karyawan: item.id_karyawan || id_karyawan,
+        id_barang: item.namaBarang?.value || item.id_barang,
+        jumlah_barang: item.jumlah_barang || 0,
+        kondisi: item.kondisi_lainnya && item.kondisi_lainnya !== "" ? item.kondisi_lainnya : (item.kondisi || ""),
+        jenis_pengajuan: jenis_pengajuan || selectedPengajuan?.jenis_pengajuan || "",
+        harga: hargaList[idx] !== undefined ? hargaList[idx] : item.harga || 0,
+        total: (Number(item.jumlah_barang) || 0) * (Number(hargaList[idx] || item.harga || 0)),
       }));
 
-      await axios.post('http://localhost:5000/pengajuan', { 
-        items: detailItems
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      if (isEditing) {
+        // Update existing pengajuan (replace items)
+        await axios.patch(`http://localhost:5000/ubah-pengajuan/${targetIdPengajuan}`, {
+          items: detailItems,
+        }, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
+        toast.success("Pengajuan berhasil diperbarui.");
+      } else {
+        // Create new pengajuan: generate id (GenPengajuan) then insert items
+        await axios.post('http://localhost:5000/generate-pengajuan', {
+          id_pengajuan: targetIdPengajuan,
+          status: "Belum Diproses",
+        }, { headers: { Authorization: `Bearer ${token}` } });
+
+        await axios.post('http://localhost:5000/pengajuan', {
+          items: detailItems,
+        }, { headers: { Authorization: `Bearer ${token}` } });
+
+        toast.success("Pengajuan berhasil dikirim.");
+      }
+
+      // After success, redirect and reset form
       if (role === "Admin") {
         history.push("/admin/data-pengajuan");
       } else if (role === "User") {
         history.push("/user/dashboard-user");
       }
 
-      toast.success("Pengajuan berhasil dikirim.");
-      setItems([blankItem()]); 
+      setItems([blankItem()]);
       IDPengajuan();
 
     } catch (error) {
@@ -414,15 +478,6 @@ function Pengajuan() {
     <>
       <Container fluid>
         <Form onSubmit={handleSubmit}>
-          {/* <Row>
-            <Col md="12">
-              {uniqueStatus.map((s) => (
-                <div key={s?.prevId} >
-                  <PendingAlert hidden={s?.status !== "Belum Diproses"} />
-                </div>
-              ))}
-            </Col>
-          </Row> */}
           <Row>
             <Col className="card-screening">
               <Card className="card-screening p-4">
@@ -462,11 +517,10 @@ function Pengajuan() {
                               <label>Barang</label>
                               <Select
                                 options={getFilterOptions(idx)}
-                                value={namaBarangList[idx] ||item.namaBarang}
+                                value={item.namaBarang}
                                 onChange={(option) => handleSelect(idx, option)}
                                 isSearchable={isSearchable}
-                              >
-                              </Select>
+                              />
                             </Form.Group>
                             <Form.Group className="mb-2">
                               <label>Kategori</label>
@@ -496,7 +550,7 @@ function Pengajuan() {
                               <Form.Control
                                 type="text"
                                 required
-                                value={selectedPengajuan?.jumlah_barang || item.jumlah_barang}
+                                value={item.jumlah_barang}
                                 onChange={(e) => {
                                   const val = e.target.value.replace(/[^0-9.]/g, "");
                                   handleJumlahBarang(idx, val);
@@ -505,7 +559,7 @@ function Pengajuan() {
                             </Form.Group>
                             <Form.Group className="mb-2">
                               <label>Total (Rp)</label>
-                              <Form.Control type="text" value={formatRupiah(selectedPengajuan?.total || item.jumlah_barang * hargaList[idx] || "0")} readOnly />
+                              <Form.Control type="text" value={formatRupiah((item.jumlah_barang * (hargaList[idx])) || "0")} readOnly />
                             </Form.Group>
 
                             <Form.Group className="mb-2">
@@ -513,12 +567,9 @@ function Pengajuan() {
                               <label>Kondisi</label>
                               <Form.Select
                                 className="form-control"
-                                value={kondisiList[idx] || kondisi}
+                                value={item.kondisi || kondisiList[idx] || kondisi}
                                 required
-                                // onChange={(e) => handleItemChange(idx, "kondisi", e.target.value)}
-                                onChange={(e) => {
-                                  setKondisi(e.target.value);
-                                }}
+                                onChange={(e) => handleItemChange(idx, "kondisi", e.target.value)}
                               >
                                 {/* <option className="placeholder-form" key='blankChoice' hidden value>Pilih Kondisi</option> */}
                                 <option value="RUSAK">RUSAK</option>
@@ -529,7 +580,7 @@ function Pengajuan() {
                             </Form.Group>
 
 
-                            {item.kondisi === "LAINNYA" && (
+                              {item.kondisi === "LAINNYA" && (
                               <Form.Group className="mb-2">
                                 <label>Kondisi Lainnya</label>
                                 <Form.Control
@@ -558,7 +609,7 @@ function Pengajuan() {
                       <Button variant="success" type="button" className="mr-3 btn-fill" onClick={handleAddCard} disabled={uniqueStatus.some((s) => s?.status === "Belum Diproses")}>
                         <FaPlusCircle className="mb-1" /> Tambah Pengajuan
                       </Button>
-                      <Button variant="primary" type="submit" className="btn-fill" disabled={uniqueStatus.some((s) => s?.status === "Belum Diproses")}>Simpan</Button>
+                      <Button variant="primary" type="submit" className="btn-fill">Ubah</Button>
                     </Col>
                   </Row>
 
