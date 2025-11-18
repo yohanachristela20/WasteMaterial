@@ -144,7 +144,7 @@ function DetailPengajuan() {
   };
 
   const ubahPengajuan = (selectedPengajuan) => {
-    console.log("selected Pengajuan:", selectedPengajuan.id_pengajuan, "status:", selectedPengajuan?.GeneratePengajuan?.status);
+    console.log("selected Pengajuan:", selectedPengajuan, "status:", selectedPengajuan?.GeneratePengajuan?.status);
     if (selectedPengajuan?.GeneratePengajuan?.status !== "Selesai" && isUpdateClicked === true) {
       history.push({
         pathname: "/admin/pengajuan",
@@ -320,7 +320,7 @@ function DetailPengajuan() {
               onClick={(e) => {
                 ubahPengajuan(selectedPengajuan); 
                 setIsUpdateClicked(true);
-                setShowUbahPengajuan(true);
+                // setShowUbahPengajuan(true);
               }}
               // setIsUpdateClicked={true}
               className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"

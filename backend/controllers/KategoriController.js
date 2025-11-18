@@ -113,12 +113,16 @@ export const detailKategori = async(req, res) => {
 
         const result = {
             id_barang: barang.id_barang,
+            nama_barang: barang.nama,
             id_kategori: barang.KategoriBarang?.id_kategori || null,
             kategori: barang.KategoriBarang?.nama || "-",
             jenis_barang: barang.KategoriBarang?.jenis_barang || "-",
             satuan: barang.KategoriBarang?.satuan || "-", 
             harga_barang: barang.KategoriBarang?.harga_barang || 0,
         };
+
+        // console.log("NAMA BARANG:", result.nama_barang);
+
 
         res.status(200).json(result);
     } catch (error) {
