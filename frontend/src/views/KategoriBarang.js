@@ -128,7 +128,7 @@ function KategoriBarang() {
 
   const getDataBarang = async () =>{
     try {
-      const response = await axios.get("http://localhost:5000/kategori-barang", {
+      const response = await axios.get("http://localhost:5001/kategori-barang", {
         headers: {
           Authorization: `Bearer ${token}`,
       },
@@ -161,7 +161,7 @@ function KategoriBarang() {
     getDataBarang();
     toast.success("Kategori barang berhasil ditambahkan!", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 5001,
         hideProgressBar: true,
     });
 };
@@ -170,7 +170,7 @@ const handleEditSuccess = () => {
   getDataBarang();
   toast.success("Kategori barang berhasil diperbarui!", {
       position: "top-right",
-      autoClose: 5000,
+      autoClose: 5001,
       hideProgressBar: true,
   });
 };
@@ -185,7 +185,7 @@ const handleImportSuccess = () => {
 
 const deleteDetailBarang = async() => {
   try {
-    await axios.delete(`http://localhost:5000/kategori-barang/${deletedKategori}`, {
+    await axios.delete(`http://localhost:5001/kategori-barang/${deletedKategori}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       }
@@ -193,7 +193,7 @@ const deleteDetailBarang = async() => {
     setShowModal(false);
     toast.success("Kategori barang berhasil dihapus.", {
       position: "top-right",
-      autoClose: 5000,
+      autoClose: 5001,
       hideProgressBar: true,
     });
 

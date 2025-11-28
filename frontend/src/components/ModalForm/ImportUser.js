@@ -20,7 +20,7 @@ const ImportUser = ({showImportModal, setShowImportModal, onSuccess}) => {
     const formData = new FormData();
     formData.append("csvfile", file);
 
-    fetch("http://localhost:5000/user/import-csv", {
+    fetch("http://localhost:5001/user/import-csv", {
       method: "POST",
       body: formData,
       headers: {

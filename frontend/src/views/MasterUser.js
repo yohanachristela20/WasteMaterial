@@ -97,7 +97,7 @@ function MasterUser() {
 
   const getUser = async () =>{
     try {
-      const response = await axios.get("http://localhost:5000/user", {
+      const response = await axios.get("http://localhost:5001/user", {
         headers: {
           Authorization: `Bearer ${token}`,
       },
@@ -112,7 +112,7 @@ function MasterUser() {
 
   const getDetailUsers = async () =>{
     try {
-      const response = await axios.get("http://localhost:5000/detail-users", {
+      const response = await axios.get("http://localhost:5001/detail-users", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -128,7 +128,7 @@ function MasterUser() {
 
   const deleteUser = async() =>{
     try {
-      await axios.delete(`http://localhost:5000/user/${deletedUser}` , {
+      await axios.delete(`http://localhost:5001/user/${deletedUser}` , {
         headers: {
           Authorization: `Bearer ${token}`,
       },
@@ -136,7 +136,7 @@ function MasterUser() {
       setShowModal(false);
       toast.success("User berhasil dihapus!", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 5001,
         hideProgressBar: true,
       });
       window.location.reload();
@@ -153,7 +153,7 @@ function MasterUser() {
 
     try {
       const response = await axios.get(
-        `http://localhost:5000/user-details/${username}`,
+        `http://localhost:5001/user-details/${username}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -180,7 +180,7 @@ function MasterUser() {
     getUser();
     toast.success("Data user baru berhasil ditambahkan!", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 5001,
         hideProgressBar: true,
     });
   };
@@ -189,7 +189,7 @@ function MasterUser() {
     getUser();
     toast.success("Data user berhasil diperbarui!", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 5001,
         hideProgressBar: true,
     });
   };
@@ -202,7 +202,7 @@ function MasterUser() {
     getUser();
     toast.success("Data User berhasil diimport!", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 5001,
         hideProgressBar: true,
     });
   };
@@ -294,7 +294,7 @@ function MasterUser() {
 
   const setPassword = async(id_user) => {
     try {
-      await axios.put(`http://localhost:5000/user/${id_user}`, {
+      await axios.put(`http://localhost:5001/user/${id_user}`, {
       }, {
           headers: {
               Authorization: `Bearer ${token}`,
@@ -302,7 +302,7 @@ function MasterUser() {
       });
       toast.success("Password berhasil diubah!", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 5001,
         hideProgressBar: true,
       });
       getUser();    
@@ -310,7 +310,7 @@ function MasterUser() {
       const errorMessage = error.response?.data?.message || error.message;
       toast.error('Gagal menyimpan data user baru.', {
           position: "top-right",
-          autoClose: 5000,
+          autoClose: 5001,
           hideProgressBar: true,
         });
     }

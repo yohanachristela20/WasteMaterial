@@ -48,7 +48,7 @@ import {
     const username = localStorage.getItem("username");
       if (!token || !username) return;
       try {
-        const response = await axios.get(`http://localhost:5000/user-details/${username}`, {
+        const response = await axios.get(`http://localhost:5001/user-details/${username}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -72,7 +72,7 @@ import {
 
   const getPengajuan = async() => {
       try {
-          const resp = await axios.get(`http://localhost:5000/pengajuan`, {
+          const resp = await axios.get(`http://localhost:5001/pengajuan`, {
               headers: {
                   Authorization: `Bearer ${token}`,
               }
@@ -202,7 +202,7 @@ import {
 
   const deletePengajuan = async() =>{
     try {
-      await axios.delete(`http://localhost:5000/delete-pengajuan/${deletedPengajuan}`,
+      await axios.delete(`http://localhost:5001/delete-pengajuan/${deletedPengajuan}`,
       {
         headers: {Authorization: `Bearer ${token}`}
       }
@@ -210,7 +210,7 @@ import {
       setShowModal(false);
       toast.success("Data Pengajuan berhasil dihapus.", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 5001,
         hideProgressBar: true,
       });
       getPengajuan(); 
@@ -244,16 +244,16 @@ import {
     const fetchSummaryData = async () => {
       try {
         const [resTotalPenjualan, resTotalScrapping, resJumlahBelumDiproses, resPengajuanSelesai] = await Promise.all([
-          axios.get(`http://localhost:5000/total-penjualan/${id_karyawan}`, {
+          axios.get(`http://localhost:5001/total-penjualan/${id_karyawan}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get(`http://localhost:5000/total-scrapping/${id_karyawan}`, {
+          axios.get(`http://localhost:5001/total-scrapping/${id_karyawan}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get(`http://localhost:5000/jumlah-belum-diproses/${id_karyawan}`, {
+          axios.get(`http://localhost:5001/jumlah-belum-diproses/${id_karyawan}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get(`http://localhost:5000/jumlah-pengajuan-selesai/${id_karyawan}`, {
+          axios.get(`http://localhost:5001/jumlah-pengajuan-selesai/${id_karyawan}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -468,9 +468,9 @@ import {
                                 <td className="text_center">{pengajuan.jenis_pengajuan}</td>
                                 <td className="text_center">
                                   {pengajuan.GeneratePengajuan?.status === "Belum Diproses" ? (
-                                    <Badge bg="danger" text="light" className="p-2">Belum Diproses</Badge>
+                                    <Badge pill bg="danger" text="light" className="p-2">Belum Diproses</Badge>
                                   ) : pengajuan.GeneratePengajuan?.status ? (
-                                    <Badge bg="success" text="light" className="p-2">Selesai</Badge>
+                                    <Badge pill bg="success" text="light" className="p-2">Selesai</Badge>
                                   ) : null}
                                 </td>
                                 <td className="text_center">{new Date(pengajuan.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>

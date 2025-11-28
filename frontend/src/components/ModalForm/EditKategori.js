@@ -40,7 +40,7 @@ const EditKategori = ({ showEditModal, setShowEditModal, onSuccess, detailBarang
     const updateKategori = async(e) => {
         e.preventDefault();
         try {
-            await axios.patch(`http://localhost:5000/kategori-barang/${id_kategori}`, {
+            await axios.patch(`http://localhost:5001/kategori-barang/${id_kategori}`, {
                 nama,
                 tanggal_penetapan,
                 satuan,
@@ -54,7 +54,7 @@ const EditKategori = ({ showEditModal, setShowEditModal, onSuccess, detailBarang
             setShowEditModal(false);
             toast.success('Kategori barang berhasil diperbarui.', {
                 position: "top-right",
-                autoClose: 3000,
+                autoClose: 3001,
                 hideProgressBar: true,
             });
             window.location.reload();
@@ -62,7 +62,7 @@ const EditKategori = ({ showEditModal, setShowEditModal, onSuccess, detailBarang
             console.log(error.message);
             toast.error('Gagal mengubah kategori barang.', {
                 position: "top-right",
-                autoClose: 5000,
+                autoClose: 5001,
                 hideProgressBar: true,
             });
         }

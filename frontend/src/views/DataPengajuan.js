@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {FaFilePdf, FaFileImport, FaTrashAlt, FaHandHoldingUsd, FaRecycle, FaRegFileAlt, FaFolder, FaSortUp, FaSortDown, FaMoneyBillWave, FaHourglassStart, FaClipboardCheck, FaExclamationTriangle } from 'react-icons/fa'; 
+import {FaFilePdf, FaFileImport, FaTrashAlt, FaHandHoldingUsd, FaRecycle, FaRegFileAlt, FaFolder, FaSortUp, FaSortDown, FaMoneyBillWave, FaHourglassStart, FaClipboardCheck, FaExclamationTriangle, FaFileExcel } from 'react-icons/fa'; 
 import SearchBar from "components/Search/SearchBar.js";
 import axios from "axios";
 import { useHistory } from "react-router-dom"; 
@@ -12,6 +12,9 @@ import {toast } from 'react-toastify';
 import ReactLoading from "react-loading";
 import "../assets/scss/lbd/_loading.scss";
 import ImportPengajuan from "components/ModalForm/ImportPengajuan.js";
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+
 
 import {
   Badge,
@@ -26,6 +29,8 @@ import {
   Dropdown,
   Modal
 } from "react-bootstrap";
+import { data } from "jquery";
+import KategoriBarang from "./KategoriBarang";
 
  function DataPengajuan() {
   const history = useHistory();
@@ -43,10 +48,14 @@ import {
   const [showImportModal, setShowImportModal] = useState(false); 
   const [showModal, setShowModal] = useState(false); 
   const [deletedIDPengajuan, setDeletedIDPengajuan] = useState(null);
+  const [detailTransaksi, setDetailTransaksi] = useState([]);
+  const [detailPengajuan, setDetailPengajuan] = useState([]);
+
+  const token = localStorage.getItem("token");
 
   const getPengajuan = async() => {
       try {
-          const resp = await axios.get(`http://localhost:5000/pengajuan`, {
+          const resp = await axios.get(`http://localhost:5001/pengajuan`, {
               headers: {
                   Authorization: `Bearer ${token}`,
               }
@@ -66,7 +75,355 @@ import {
     getPengajuan();
     setTimeout(() => setLoading(false), 1000);
   }, []);
+  
 
+  useEffect(() => {
+    const getDetailTransaksi = async() => {
+        if (!token) {
+            console.error("Token tidak tersedia");
+            return;
+        }
+
+        try {
+            const resp = await axios.get(`http://localhost:5001/detail-transaksi`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });
+            setDetailTransaksi(resp.data || []);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    };
+
+
+    const getDetailPengajuan = async() => {
+        if (!token) {
+            console.error("Token tidak tersedia");
+            return;
+        }
+
+        try {
+            const resp = await axios.get(`http://localhost:5001/detail-pengajuan`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });
+            setDetailPengajuan(Array.isArray(resp.data) ? resp.data : []);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    };
+      // if (id_pengajuan) {
+      //   getDetailTransaksi();
+      // } 
+      getDetailTransaksi();
+      getDetailPengajuan();
+  }, [token]);
+
+  console.log("DETAIL PENGAJUAN:", detailPengajuan);
+
+  const formatRupiah = (angka) => {
+    let pinjamanString = angka.toString().replace(".00");
+    let sisa = pinjamanString.length % 3;
+    let rupiah = pinjamanString.substr(0, sisa);
+    let ribuan = pinjamanString.substr(sisa).match(/\d{3}/g);
+
+    if (ribuan) {
+        let separator = sisa ? "." : "";
+        rupiah += separator + ribuan.join(".");
+    }
+    
+    return rupiah;
+  };
+
+  const toNumber = (val) => {
+    if (val == null || val === "") return 0;
+    const n = Number(val);
+    if (!isNaN(n)) return n;
+    const parsed = parseFloat(String(val).replace(/\s/g, "").replace(/,/g, "."));
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
+  // GROUP TOTAL BY ID PENGAJUAN
+  const groupedPenjualan  = detailPengajuan.reduce((acc, item) => {
+    if (!acc[item.id_pengajuan]) {
+      acc[item.id_pengajuan] = {  
+        ...item,
+        totalPerID: 0
+      };
+    }
+
+    if (String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN") {
+      acc[item.id_pengajuan].totalPerID += toNumber(item.total);
+    } 
+    return acc;
+  }, {});
+
+
+   const groupByDate = detailPengajuan.reduce((acc, item) => {
+    if (String(item.jenis_pengajuan).toUpperCase() !== "PENJUALAN") return acc;
+
+    const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
+    const dateStr = related?.createdAt
+      ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
+      : "";
+
+    if (!dateStr) return acc;
+
+    if (!acc[dateStr]) {
+      acc[dateStr] = {
+        date: dateStr,
+        totalPerDay: 0,
+        items: []
+      };
+    }
+
+    acc[dateStr].totalPerDay += toNumber(item.total);
+    acc[dateStr].items.push(item.id_pengajuan);
+
+    return acc;
+  }, {});
+
+
+  // console.log("groupedPenjualan:", groupedPenjualan);
+
+
+  // TOTAL PER ID
+  // const exportToExcel = () => {
+  //   const headers = ["TANGGAL","NO BPBB", "ID KATEGORI", "DESKRIPSI KATEGORI", "QTY", "UOM", "HARGA PER UOM", "JUMLAH", "TOTAL", "TOTAL PER DAY", "DIVISI", "PEMBELI", "KETERANGAN"];
+
+  //   const groups = detailPengajuan
+  //     .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
+  //     .reduce((acc, item) => {
+  //       (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
+  //       return acc;
+  //     }, {});
+
+  //   const rows = [];
+  //   const merges = [];
+  //   let sheetRowIndex = 1;
+
+  //   const dateFirstRowMap = {};
+  //   const dateLastRowMap = {};
+
+  //   Object.keys(groups).forEach((id_pengajuan) => {
+  //     const items = groups[id_pengajuan];
+  //     const firstRowForPengajuan = sheetRowIndex;
+
+  //     items.forEach((item) => {
+  //       const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
+  //       const createdAt = related.createdAt
+  //         ? new Date(related.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
+  //         : "";
+  //       const dateStr = related?.createdAt
+  //         ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
+  //         : "";
+
+  //       if (dateStr) {
+  //         if (!dateFirstRowMap[dateStr]) dateFirstRowMap[dateStr] = sheetRowIndex;
+  //         dateLastRowMap[dateStr] = sheetRowIndex;
+  //       }
+
+  //       const idTransaksi = related.id_transaksi || "";
+  //       const pembeli = related.VendorPenjualan?.nama || "";
+  //       const keterangan = related.keterangan || "";
+  //       const totalPerID = groupedPenjualan[item.id_pengajuan]?.totalPerID || 0;
+  //       const totalPerDay = groupByDate[dateStr]?.totalPerDay || 0;
+
+  //       // console.log("totalPerDay:", totalPerDay);
+
+  //       const showTotalPerDay = dateStr && dateFirstRowMap[dateStr] === sheetRowIndex;
+
+  //       // if (idx === 0) {
+  //       //   rows.push([
+  //       //     createdAt,
+  //       //     idTransaksi,
+  //       //     item.BarangDiajukan?.id_kategori || "",
+  //       //     item.BarangDiajukan?.KategoriBarang?.nama || "",
+  //       //     item.jumlah_barang || "",
+  //       //     item.BarangDiajukan?.KategoriBarang?.satuan || "",
+  //       //     item.BarangDiajukan?.KategoriBarang?.harga_barang || "",
+  //       //     item.total || "",
+  //       //     totalPerID,
+  //       //     showTotalPerDay ? totalPerDay : "", 
+  //       //     item.Pemohon?.divisi || "",
+  //       //     pembeli,
+  //       //     keterangan,
+
+  //       //   ]);
+  //       // } else {
+  //       //   rows.push([
+  //       //     "", 
+  //       //     "", 
+  //       //     item.BarangDiajukan?.id_kategori || "",
+  //       //     item.BarangDiajukan?.KategoriBarang?.nama || "",
+  //       //     item.jumlah_barang || "",
+  //       //     item.BarangDiajukan?.KategoriBarang?.satuan || "",
+  //       //     item.BarangDiajukan?.KategoriBarang?.harga_barang || "",
+  //       //     item.total || "",
+  //       //     "",
+  //       //     "",
+  //       //     "", 
+  //       //     "", 
+  //       //     "", 
+  //       //   ]);
+  //       // }
+
+  //       rows.push([
+  //         createdAt,
+  //         idTransaksi,
+  //         item.BarangDiajukan?.id_kategori || "",
+  //         item.BarangDiajukan?.KategoriBarang?.nama || "",
+  //         item.jumlah_barang || "",
+  //         item.BarangDiajukan?.KategoriBarang?.satuan || "",
+  //         item.BarangDiajukan?.KategoriBarang?.harga_barang || "",
+  //         item.total || "",
+  //         totalPerID,
+  //         showTotalPerDay ? totalPerDay : "", 
+  //         item.Pemohon?.divisi || "",
+  //         pembeli,
+  //         keterangan,
+
+  //       ]);
+  //       sheetRowIndex++;
+  //     });
+
+  //     const lastRowForPengajuan = sheetRowIndex - 1;
+  //     if (items.length > 1) {
+  //       const colsToMerge = [0, 1, 8, 10, 11]; 
+  //       colsToMerge.forEach((col) => {
+  //         merges.push({
+  //           s: { r: firstRowForPengajuan, c: col },
+  //           e: { r: lastRowForPengajuan, c: col }
+  //         });
+  //       });
+  //     }
+
+  //     Object.keys(dateFirstRowMap).forEach((dateStr) => {
+  //     const sRow = dateFirstRowMap[dateStr];
+  //     const eRow = dateLastRowMap[dateStr];
+  //     if (sRow !== undefined && eRow !== undefined && eRow > sRow) {
+  //       merges.push({
+  //         s: { r: sRow, c: 9 },
+  //         e: { r: eRow, c: 9 }
+  //       });
+  //     }
+  //   });
+
+  //   });
+
+  //   const allData = [headers, ...rows];
+  //   const worksheet = XLSX.utils.aoa_to_sheet(allData);
+  //   // worksheet['!merges'] = worksheet['!merges'] ? worksheet['!merges'].concat(merges) : merges;
+  //   worksheet['!merges'] = merges;
+
+  //   const workbook = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(workbook, worksheet, 'Laporan Penjualan');
+  //   XLSX.writeFile(workbook, 'laporan_penjualan.xlsx');
+  // };
+
+  const exportToExcel = () => {
+    const headers = ["TANGGAL","NO BPBB", "ID KATEGORI", "DESKRIPSI KATEGORI", "QTY", "UOM", "HARGA PER UOM", "JUMLAH", "TOTAL", "TOTAL PER DAY", "DIVISI", "PEMBELI", "KETERANGAN"];
+
+    const groups = detailPengajuan
+      .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
+      .reduce((acc, item) => {
+        (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
+        return acc;
+      }, {});
+
+    const rows = [];
+    const merges = [];
+    let sheetRowIndex = 1; 
+
+    const dateFirstRowMap = {};
+    const dateLastRowMap = {}; 
+
+    Object.keys(groups).forEach((id_pengajuan) => {
+      const items = groups[id_pengajuan];
+      const firstRowForPengajuan = sheetRowIndex;
+
+      items.forEach((item) => {
+        const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
+        const createdAtFull = related.createdAt
+          ? new Date(related.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
+          : "";
+        const dateStr = related?.createdAt
+          ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
+          : "";
+
+        if (dateStr) {
+          if (!dateFirstRowMap[dateStr]) dateFirstRowMap[dateStr] = sheetRowIndex;
+          dateLastRowMap[dateStr] = sheetRowIndex;
+        }
+
+        const idTransaksi = related.id_transaksi || "";
+        const pembeli = related.VendorPenjualan?.nama || "";
+        const keterangan = related.keterangan || "";
+        const totalPerID = groupedPenjualan[id_pengajuan]?.totalPerID || 0;
+        const totalPerDay = groupByDate[dateStr]?.totalPerDay || 0;
+        const showTotalPerDay = dateStr && dateFirstRowMap[dateStr] === sheetRowIndex;
+
+        const hargaBarang = item.BarangDiajukan?.KategoriBarang?.harga_barang;
+        const roundHargaBarang = hargaBarang.replace(/\.00$/, '');
+
+        const jumlah = item.total;
+        const roundJumlah = jumlah.replace(/\.00$/, '');
+
+        rows.push([
+          createdAtFull,
+          idTransaksi,
+          item.BarangDiajukan?.id_kategori || "",
+          item.BarangDiajukan?.KategoriBarang?.nama || "",
+          item.jumlah_barang || "",
+          item.BarangDiajukan?.KategoriBarang?.satuan || "",
+          roundHargaBarang || "",
+          roundJumlah || "",          
+          totalPerID ||  "",            
+          showTotalPerDay ? totalPerDay : "", 
+          item.Pemohon?.divisi || "",
+          pembeli,                  
+          keterangan,              
+        ]);
+
+        sheetRowIndex++;
+      });
+
+      const lastRowForPengajuan = sheetRowIndex - 1;
+      if (items.length > 1) {
+        const colsToMerge = [0, 1, 7, 8, 10, 11];
+        colsToMerge.forEach((col) => {
+          merges.push({
+            s: { r: firstRowForPengajuan, c: col },
+            e: { r: lastRowForPengajuan, c: col }
+          });
+        });
+      }
+    });
+
+    Object.keys(dateFirstRowMap).forEach((dateStr) => {
+      const sRow = dateFirstRowMap[dateStr];
+      const eRow = dateLastRowMap[dateStr];
+      if (sRow !== undefined && eRow !== undefined && eRow > sRow) {
+        merges.push({
+          s: { r: sRow, c: 9 },
+          e: { r: eRow, c: 9 }
+        });
+      }
+    });
+
+    const allData = [headers, ...rows];
+    const worksheet = XLSX.utils.aoa_to_sheet(allData);
+    worksheet['!merges'] = merges;
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Laporan Penjualan');
+    XLSX.writeFile(workbook, 'laporan_penjualan.xlsx');
+  };
+
+
+  
   const filteredPengajuan = pengajuan.filter((dataPengajuan) => 
     (dataPengajuan.id_pengajuan && String(dataPengajuan.id_pengajuan).toLowerCase().includes(searchQuery)) ||
     (dataPengajuan.Pemohon?.divisi && String(dataPengajuan.Pemohon?.divisi).toLowerCase().includes(searchQuery)) ||
@@ -121,24 +478,12 @@ import {
     setCurrentPage(pageNumber);
   }
 
-  const token = localStorage.getItem("token");
-  const formatRupiah = (angka) => {
-    let pinjamanString = angka.toString().replace(".00");
-    let sisa = pinjamanString.length % 3;
-    let rupiah = pinjamanString.substr(0, sisa);
-    let ribuan = pinjamanString.substr(sisa).match(/\d{3}/g);
 
-    if (ribuan) {
-        let separator = sisa ? "." : "";
-        rupiah += separator + ribuan.join(".");
-    }
-    
-    return rupiah;
-  };
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value.toLowerCase());
   };
+  
 
   const downloadPDF = (data) => {
     const doc = new jsPDF({ orientation: 'landscape' });
@@ -210,7 +555,7 @@ import {
 
   const deletePengajuan = async() =>{
       try {
-        await axios.delete(`http://localhost:5000/delete-pengajuan/${deletedIDPengajuan}`,
+        await axios.delete(`http://localhost:5001/delete-pengajuan/${deletedIDPengajuan}`,
         {
           headers: {Authorization: `Bearer ${token}`}
         }
@@ -218,7 +563,7 @@ import {
         setShowModal(false);
         toast.success("Data Pengajuan berhasil dihapus.", {
           position: "top-right",
-          autoClose: 5000,
+          autoClose: 5001,
           hideProgressBar: true,
         });
         getPengajuan(); 
@@ -269,20 +614,23 @@ import {
     });
   }
 
+
+ 
+
   useEffect(() => {
     const fetchSummaryData = async () => {
       try {
         const [resTotalPenjualan, resTotalScrapping, resJumlahBelumDiproses, resPengajuanSelesai] = await Promise.all([
-          axios.get("http://localhost:5000/total-penjualan", {
+          axios.get("http://localhost:5001/total-penjualan", {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://localhost:5000/total-scrapping", {
+          axios.get("http://localhost:5001/total-scrapping", {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://localhost:5000/jumlah-belum-diproses", {
+          axios.get("http://localhost:5001/jumlah-belum-diproses", {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://localhost:5000/jumlah-pengajuan-selesai", {
+          axios.get("http://localhost:5001/jumlah-pengajuan-selesai", {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -408,8 +756,6 @@ import {
               </Card>
             </Col>
           </Row>
-
-          
           <Row>
             {/* <Button
               className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
@@ -428,6 +774,15 @@ import {
               onClick={downloadPDF}>
               <FaFilePdf style={{ marginRight: '8px' }} />
               Unduh PDF
+            </Button>
+
+            <Button
+              className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
+              type="button"
+              variant="primary"
+              onClick={exportToExcel}>
+              <FaFileExcel style={{ marginRight: '8px' }} />
+              Unduh Laporan
             </Button>
             
             <SearchBar searchQuery={searchQuery} handleSearchChange={handleSearchChange} />

@@ -59,7 +59,7 @@ function Beranda() {
 
   const getPengajuan = async() => {
     try {
-        const resp = await axios.get(`http://localhost:5000/pengajuan`, {
+        const resp = await axios.get(`http://localhost:5001/pengajuan`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             }
@@ -140,13 +140,13 @@ function Beranda() {
   useEffect(() => {
     getPenjualan();
     getPenjualanData();
-    setTimeout(() => setLoading(false), 3000)
+    setTimeout(() => setLoading(false), 3001)
   }, []);
 
 
   const getPenjualan = async () =>{
     try {
-      const response = await axios.get("http://localhost:5000/pengajuan", {
+      const response = await axios.get("http://localhost:5001/pengajuan", {
         headers: {
           Authorization: `Bearer ${token}`,
       },
@@ -159,7 +159,7 @@ function Beranda() {
 
   const getPenjualanData = async () =>{
     try {
-      const response = await axios.get("http://localhost:5000/detail-pengajuan", {
+      const response = await axios.get("http://localhost:5001/detail-pengajuan", {
         headers: {
           Authorization: `Bearer ${token}`,
       },
@@ -190,7 +190,7 @@ function Beranda() {
    useEffect(() => {
     const fetchYears = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/filter-penjualan-tahunan", {
+        const response = await axios.get("http://localhost:5001/filter-penjualan-tahunan", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -212,7 +212,7 @@ function Beranda() {
       if (!token || !username) return;
       try {
         const response = await axios.get(
-          `http://localhost:5000/user-details/${username}`,
+          `http://localhost:5001/user-details/${username}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -233,16 +233,16 @@ function Beranda() {
     const fetchSummaryData = async () => {
       try {
         const [resTotalPenjualan, resTotalScrapping, resJumlahBelumDiproses, resPengajuanSelesai] = await Promise.all([
-          axios.get("http://localhost:5000/total-penjualan", {
+          axios.get("http://localhost:5001/total-penjualan", {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://localhost:5000/total-scrapping", {
+          axios.get("http://localhost:5001/total-scrapping", {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://localhost:5000/jumlah-belum-diproses", {
+          axios.get("http://localhost:5001/jumlah-belum-diproses", {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://localhost:5000/jumlah-pengajuan-selesai", {
+          axios.get("http://localhost:5001/jumlah-pengajuan-selesai", {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -267,7 +267,7 @@ function Beranda() {
 
   const dataPenjualan = async (selectedYear) => {
     try {
-      const response = await axios.get("http://localhost:5000/data-penjualan", {
+      const response = await axios.get("http://localhost:5001/data-penjualan", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -309,7 +309,7 @@ function Beranda() {
         const divisi = selectedDivisi || "";
         const isAllSelected = divisi === "" && bulan === "";
 
-        const response = await axios.get("http://localhost:5000/data-divisi", {
+        const response = await axios.get("http://localhost:5001/data-divisi", {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -349,7 +349,7 @@ function Beranda() {
         const divisi = selectedDivisi || "";
         const isAllSelected = divisi === "" && bulan === "";
 
-        const response = await axios.get("http://localhost:5000/data-scrapping-divisi", {
+        const response = await axios.get("http://localhost:5001/data-scrapping-divisi", {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -426,14 +426,14 @@ function Beranda() {
 
   const deletePengajuan = async(id_pengajuan) =>{
       try {
-        await axios.delete(`http://localhost:5000/delete-pengajuan/${id_pengajuan}`,
+        await axios.delete(`http://localhost:5001/delete-pengajuan/${id_pengajuan}`,
         {
           headers: {Authorization: `Bearer ${token}`}
         }
         ); 
         toast.success("Data Pengajuan berhasil dihapus.", {
           position: "top-right",
-          autoClose: 5000,
+          autoClose: 5001,
           hideProgressBar: true,
         });
         getPengajuan(); 

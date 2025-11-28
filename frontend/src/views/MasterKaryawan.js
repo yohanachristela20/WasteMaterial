@@ -84,7 +84,7 @@ function MasterKaryawan() {
 
       setLoading(true);
       
-      const response = await axios.get("http://localhost:5000/karyawan", {
+      const response = await axios.get("http://localhost:5001/karyawan", {
         headers: {
           Authorization: `Bearer ${token}`,
       },
@@ -99,7 +99,7 @@ function MasterKaryawan() {
 
   const deleteKaryawan = async() =>{
     try {
-      await axios.delete(`http://localhost:5000/karyawan/${deletedKaryawan}` , {
+      await axios.delete(`http://localhost:5001/karyawan/${deletedKaryawan}` , {
         headers: {
           Authorization: `Bearer ${token}`,
       },
@@ -107,7 +107,7 @@ function MasterKaryawan() {
       setShowModal(false);
       toast.success("Data karyawan berhasil dihapus.", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 5001,
         hideProgressBar: true,
     });
       getKaryawan(); 
@@ -139,7 +139,7 @@ function MasterKaryawan() {
     getKaryawan();
     toast.success("Data karyawan baru berhasil ditambahkan!", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 5001,
         hideProgressBar: true,
     });
   };
@@ -148,7 +148,7 @@ function MasterKaryawan() {
     getKaryawan();
     toast.success("Data karyawan berhasil diperbarui!", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 5001,
         hideProgressBar: true,
     });
   };
@@ -161,7 +161,7 @@ function MasterKaryawan() {
     getKaryawan();
     toast.success("Data Karyawan berhasil diimport!", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 5001,
         hideProgressBar: true,
     });
   };

@@ -30,7 +30,7 @@ const EditKaryawan = ({showEditModal, setShowEditModal, karyawan, onSuccess}) =>
         }
 
         try {
-            await axios.patch(`http://localhost:5000/karyawan/${karyawan.id_karyawan}`, {
+            await axios.patch(`http://localhost:5001/karyawan/${karyawan.id_karyawan}`, {
                 id_karyawan,
                 nama, 
                 divisi
@@ -41,7 +41,7 @@ const EditKaryawan = ({showEditModal, setShowEditModal, karyawan, onSuccess}) =>
             });
             toast.success('Data karyawan berhasil diperbarui.', {
                 position: "top-right",
-                autoClose: 5000,
+                autoClose: 5001,
                 hideProgressBar: true,
             });
             window.location.reload();
@@ -50,7 +50,7 @@ const EditKaryawan = ({showEditModal, setShowEditModal, karyawan, onSuccess}) =>
             console.log(error.message);
             toast.error('Gagal mengubah data karyawan.', {
                 position: "top-right",
-                autoClose: 5000,
+                autoClose: 5001,
                 hideProgressBar: true,
             });
         }

@@ -22,7 +22,7 @@ const EditUser = ({showEditModal, setShowEditModal, user, onSuccess}) => {
     const updateUser = async(e) => {
         e.preventDefault();
         try {
-            await axios.patch(`http://localhost:5000/user/${user.id_user}`, {
+            await axios.patch(`http://localhost:5001/user/${user.id_user}`, {
                 id_user,
                 username,
                 password,
@@ -37,7 +37,7 @@ const EditUser = ({showEditModal, setShowEditModal, user, onSuccess}) => {
             // onSuccess();
             toast.success('Data User berhasil diperbarui.', {
                 position: "top-right",
-                autoClose: 5000,
+                autoClose: 5001,
                 hideProgressBar: true,
             });
             window.location.reload();
@@ -45,7 +45,7 @@ const EditUser = ({showEditModal, setShowEditModal, user, onSuccess}) => {
             // console.log(error.message);
             toast.error('Gagal mengubah data user.', {
                 position: "top-right",
-                autoClose: 5000,
+                autoClose: 5001,
                 hideProgressBar: true,
             });
         }

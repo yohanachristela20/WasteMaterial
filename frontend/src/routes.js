@@ -187,6 +187,13 @@ const dashboardRoutes = [
     component: DokumenPengajuan,
     layout: "/user"
   },
+  {
+    path: "/ubah-pengajuan",
+    name: "Pengajuan",
+    icon: "nc-icon nc-notes",
+    component: Pengajuan,
+    layout: "/user"
+  },
 
   // {
   //   path: "/data-pengajuan-user",

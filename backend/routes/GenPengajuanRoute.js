@@ -84,8 +84,8 @@ router.get("/jumlah-pengajuan-selesai", async (req, res) => {
 
 			res.status(200).json({ jumlahPengajuanSelesai: jumlah_pengajuan_selesai});
 	} catch (error) {
-					console.error("Error fetching pengajuan selesai:", error.message);
-					res.status(500).json({ message: "Internal server error" });
+		console.error("Error fetching pengajuan selesai:", error.message);
+		res.status(500).json({ message: "Internal server error" });
 	}
 });
 

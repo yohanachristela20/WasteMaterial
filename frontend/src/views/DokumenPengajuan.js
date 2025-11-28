@@ -32,7 +32,7 @@ function DokumenPengajuan() {
             return;
         }
         try {
-            const resp = await axios.get(`http://localhost:5000/detail-pengajuan/${selectedPengajuan?.id_pengajuan}`, {
+            const resp = await axios.get(`http://localhost:5001/detail-pengajuan/${selectedPengajuan?.id_pengajuan}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 }
@@ -50,7 +50,7 @@ function DokumenPengajuan() {
         }
 
         try {
-            const resp = await axios.get(`http://localhost:5000/detail-transaksi/${selectedPengajuan?.id_pengajuan}`, {
+            const resp = await axios.get(`http://localhost:5001/detail-transaksi/${selectedPengajuan?.id_pengajuan}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 }

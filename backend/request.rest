@@ -1,9 +1,9 @@
-GET http://localhost:5000/karyawan
+GET http://localhost:5001/karyawan
 ###
-GET http://localhost:5000/plafond/PL003
+GET http://localhost:5001/plafond/PL003
 
 ###
-# POST http://localhost:5000/antrean
+# POST http://localhost:5001/antrean
 # Content-Type: application/json
 
 # {
@@ -12,7 +12,7 @@ GET http://localhost:5000/plafond/PL003
 
 
 ###
-POST http://localhost:5000/plafond-update
+POST http://localhost:5001/plafond-update
 Content-Type: application/json
 
 {
@@ -24,5 +24,5 @@ Content-Type: application/json
 
 
 ###m 
-GET http://localhost:5000/plafond/latest-id 
+GET http://localhost:5001/plafond/latest-id 
 

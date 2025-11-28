@@ -102,7 +102,7 @@ function Barang() {
 
   const getDataBarang = async () =>{
     try {
-      const response = await axios.get("http://localhost:5000/data-barang", {
+      const response = await axios.get("http://localhost:5001/data-barang", {
         headers: {
           Authorization: `Bearer ${token}`,
       },
@@ -115,7 +115,7 @@ function Barang() {
 
   const getDetailBarang = async() => {
       try {
-          const resp = await axios.get(`http://localhost:5000/detail-barang`, {
+          const resp = await axios.get(`http://localhost:5001/detail-barang`, {
               headers: {
                   Authorization: `Bearer ${token}`,
               }
@@ -161,7 +161,7 @@ function Barang() {
     getDataBarang();
     toast.success("Data barang berhasil ditambahkan!", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 5001,
         hideProgressBar: true,
     });
     window.location.reload();
@@ -171,7 +171,7 @@ function Barang() {
     getDataBarang();
     toast.success("Data barang berhasil diperbarui!", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 5001,
         hideProgressBar: true,
     });
     window.location.reload();
@@ -187,7 +187,7 @@ function Barang() {
 
   const deleteBarang = async() => {
     try {
-      await axios.delete(`http://localhost:5000/data-barang/${deletedBarang}`, {
+      await axios.delete(`http://localhost:5001/data-barang/${deletedBarang}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         }
@@ -195,7 +195,7 @@ function Barang() {
       setShowModal(false);
       toast.success("Data barang berhasil dihapus.", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 5001,
         hideProgressBar: true,
       });
       window.location.reload();

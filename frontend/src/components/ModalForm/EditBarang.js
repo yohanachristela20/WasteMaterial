@@ -36,7 +36,7 @@ const EditBarang = ({showEditModal, setShowEditModal, dataBarang, onSuccess}) =>
     const updateDetailBarang = async(e) => {
         e.preventDefault();
         try {
-            await axios.patch(`http://localhost:5000/data-barang/${id_barang}`, {
+            await axios.patch(`http://localhost:5001/data-barang/${id_barang}`, {
                 nama,
                 id_sap,
                 id_kategori,
@@ -48,7 +48,7 @@ const EditBarang = ({showEditModal, setShowEditModal, dataBarang, onSuccess}) =>
             setShowEditModal(false);
             toast.success('Master barang berhasil diperbarui.', {
                 position: "top-right",
-                autoClose: 3000,
+                autoClose: 3001,
                 hideProgressBar: true,
             });
             window.location.reload();
@@ -57,7 +57,7 @@ const EditBarang = ({showEditModal, setShowEditModal, dataBarang, onSuccess}) =>
             console.log(error.message);
             toast.error('Gagal mengubah master barang.', {
                 position: "top-right",
-                autoClose: 5000,
+                autoClose: 5001,
                 hideProgressBar: true,
             });
         }
@@ -89,7 +89,7 @@ const EditBarang = ({showEditModal, setShowEditModal, dataBarang, onSuccess}) =>
 
     const getNamaKategori = async() => {
         try {
-            const response = await axios.get('http://localhost:5000/namaKategori', {
+            const response = await axios.get('http://localhost:5001/namaKategori', {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 }

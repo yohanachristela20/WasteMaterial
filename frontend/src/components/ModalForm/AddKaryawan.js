@@ -14,7 +14,7 @@ const AddKaryawan = ({showAddModal, setShowAddModal, onSuccess}) => {
     const token = localStorage.getItem("token");
 
     const idKaryawan = async(e) => {
-        const response = await axios.get('http://localhost:5000/getLastKaryawanId', {
+        const response = await axios.get('http://localhost:5001/getLastKaryawanId', {
             headers: {
                 Authorization: `Bearer ${token}`,
             }
@@ -39,7 +39,7 @@ const AddKaryawan = ({showAddModal, setShowAddModal, onSuccess}) => {
         }
 
         try {
-            await axios.post('http://localhost:5000/karyawan', {
+            await axios.post('http://localhost:5001/karyawan', {
                 id_karyawan,
                 nama, 
                 divisi

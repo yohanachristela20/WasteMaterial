@@ -29,7 +29,7 @@ const EditVendor = ({showEditModal, setShowEditModal, vendor, onSuccess}) => {
         e.preventDefault();
 
         try {
-            await axios.patch(`http://localhost:5000/vendor/${vendor.id_vendor}`, {
+            await axios.patch(`http://localhost:5001/vendor/${vendor.id_vendor}`, {
                 id_vendor,
                 nama, 
                 alamat,
@@ -48,7 +48,7 @@ const EditVendor = ({showEditModal, setShowEditModal, vendor, onSuccess}) => {
             console.log(error.message);
             toast.error('Gagal mengubah data vendor.', {
                 position: "top-right",
-                autoClose: 5000,
+                autoClose: 5001,
                 hideProgressBar: true,
               });
         }

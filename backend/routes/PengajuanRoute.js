@@ -410,6 +410,7 @@ router.get("/total-penjualan", async (req, res) => {
     }
 });
 
+
 router.get("/total-scrapping", async (req, res) => {
     try {
       const totalScrapping = (await Pengajuan.sum("total", {

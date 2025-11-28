@@ -32,7 +32,7 @@ const AddDataBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
 
 	const getDataBarang = async () =>{
     try {
-      const response = await axios.get("http://localhost:5000/data-barang", {
+      const response = await axios.get("http://localhost:5001/data-barang", {
         headers: {
           Authorization: `Bearer ${token}`,
       },
@@ -76,7 +76,7 @@ const AddDataBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
 	};
 
 	const IdBarang = async(e) => {
-			const response = await axios.get('http://localhost:5000/getLastDataBarangId', {
+			const response = await axios.get('http://localhost:5001/getLastDataBarangId', {
 					headers: {
 							Authorization: `Bearer ${token}`,
 					}
@@ -110,7 +110,7 @@ const AddDataBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
 		}
 
 		try {
-				await axios.post('http://localhost:5000/data-barang', {
+				await axios.post('http://localhost:5001/data-barang', {
 						id_barang,
 						nama,
 						id_sap,
@@ -127,7 +127,7 @@ const AddDataBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
 				console.log(error.message);
 				// toast.error('Gagal menyimpan data plafond baru.', {
 				//     position: "top-right",
-				//     autoClose: 5000,
+				//     autoClose: 5001,
 				//     hideProgressBar: true,
 				//   });
 		}
@@ -159,7 +159,7 @@ const AddDataBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
 
 	const getNamaKategori = async() => {
 			try {
-					const response = await axios.get('http://localhost:5000/namaKategori', {
+					const response = await axios.get('http://localhost:5001/namaKategori', {
 							headers: {
 									Authorization: `Bearer ${token}`,
 							}
@@ -182,7 +182,7 @@ const AddDataBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
 	const getKategoriDetails = async(kategoriId) => {
 		if (!kategoriId) return;
 		try {
-			const resp = await axios.get(`http://localhost:5000/kategori-barang/${kategoriId}`, {
+			const resp = await axios.get(`http://localhost:5001/kategori-barang/${kategoriId}`, {
 				headers: {
 						Authorization: `Bearer ${token}`,
 				}

@@ -62,7 +62,7 @@ function PengajuanScrapping() {
   };
 
   const IDPengajuan = async(e) => {
-    const response = await axios.get('http://localhost:5000/getLastPengajuanID', {
+    const response = await axios.get('http://localhost:5001/getLastPengajuanID', {
       headers: {
           Authorization: `Bearer ${token}`,
       }
@@ -102,7 +102,7 @@ function PengajuanScrapping() {
   useEffect(() => {
     const getStatusPrevPengajuan = async() => {
       try {
-        const res = await axios.get(`http://localhost:5000/prev-status/${prevId}`, {
+        const res = await axios.get(`http://localhost:5001/prev-status/${prevId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           }
@@ -125,7 +125,7 @@ function PengajuanScrapping() {
 
   const getNamaKategori = async() => {
       try {
-          const response = await axios.get('http://localhost:5000/namaKategori', {
+          const response = await axios.get('http://localhost:5001/namaKategori', {
               headers: {
                   Authorization: `Bearer ${token}`,
               }
@@ -145,7 +145,7 @@ function PengajuanScrapping() {
 
   const getNamaBarang = async() => {
       try {
-          const response = await axios.get('http://localhost:5000/namaBarang', {
+          const response = await axios.get('http://localhost:5001/namaBarang', {
             headers: {
                 Authorization: `Bearer ${token}`,
             }
@@ -167,7 +167,7 @@ function PengajuanScrapping() {
   const getDetailKategori = async(id_barang, idx) => {
     if (!id_barang) return;
     try {
-      const resp = await axios.get(`http://localhost:5000/detail-kategori/${id_barang}`, {
+      const resp = await axios.get(`http://localhost:5001/detail-kategori/${id_barang}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         }
@@ -207,7 +207,7 @@ function PengajuanScrapping() {
   
   const getDetailPengajuan = async() => {
       try {
-          const resp = await axios.get(`http://localhost:5000/detail-pengajuan`, {
+          const resp = await axios.get(`http://localhost:5001/detail-pengajuan`, {
               headers: {
                   Authorization: `Bearer ${token}`,
               }
@@ -260,7 +260,7 @@ function PengajuanScrapping() {
       if (!token || !username) return;
 
       try {
-        const response = await axios.get(`http://localhost:5000/user-details/${username}`, {
+        const response = await axios.get(`http://localhost:5001/user-details/${username}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -316,7 +316,7 @@ function PengajuanScrapping() {
     if (items.length === 0) { toast.error("Tidak ada item untuk diajukan."); return; }
 
     try {
-      const res = await axios.post('http://localhost:5000/generate-pengajuan', {
+      const res = await axios.post('http://localhost:5001/generate-pengajuan', {
         id_pengajuan,
         status: "Belum Diproses"
       }, {
@@ -336,7 +336,7 @@ function PengajuanScrapping() {
         total: item.jumlah_barang * hargaList[idx],
       }));
 
-      await axios.post('http://localhost:5000/pengajuan', { 
+      await axios.post('http://localhost:5001/pengajuan', { 
         items: detailItems
       }, {
         headers: { Authorization: `Bearer ${token}` }

@@ -26,7 +26,7 @@ const ImportMasterBarang = ({showImportModal, setShowImportModal, onSuccess}) =>
     const formData = new FormData();
     formData.append("csvfile", file);
 
-    fetch("http://localhost:5000/kategori-barang/import-csv", {
+    fetch("http://localhost:5001/kategori-barang/import-csv", {
       method: "POST",
       body: formData,
       headers: {

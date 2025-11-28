@@ -17,7 +17,7 @@ const AddUser = ({showAddModal, setShowAddModal, onSuccess}) => {
         try {
             const defaultPassword = "cmpi"; 
 
-            const response = await axios.get('http://localhost:5000/last-id', {
+            const response = await axios.get('http://localhost:5001/last-id', {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -30,7 +30,7 @@ const AddUser = ({showAddModal, setShowAddModal, onSuccess}) => {
                 newId = `USR${incrementedIdNumber}`;
             }
 
-            await axios.post('http://localhost:5000/user', {
+            await axios.post('http://localhost:5001/user', {
                 id_user: newId,
                 username, 
                 password: defaultPassword,
@@ -47,7 +47,7 @@ const AddUser = ({showAddModal, setShowAddModal, onSuccess}) => {
             window.location.reload();
             toast.success('Data user baru berhasil dibuat.', {
                 position: "top-right",
-                autoClose: 5000,
+                autoClose: 5001,
                 hideProgressBar: true,
             });
         } catch (error) {
@@ -55,7 +55,7 @@ const AddUser = ({showAddModal, setShowAddModal, onSuccess}) => {
             console.log(error.message);
             toast.error('Gagal menyimpan data user baru.', {
                 position: "top-right",
-                autoClose: 5000,
+                autoClose: 5001,
                 hideProgressBar: true,
             });
         }

@@ -14,7 +14,7 @@ const AddVendor = ({showAddModal, setShowAddModal, onSuccess}) => {
     const token = localStorage.getItem("token");
 
     const idVendor = async(e) => {
-        const response = await axios.get('http://localhost:5000/getLastVendorId', {
+        const response = await axios.get('http://localhost:5001/getLastVendorId', {
             headers: {
                 Authorization: `Bearer ${token}`,
             }
@@ -33,7 +33,7 @@ const AddVendor = ({showAddModal, setShowAddModal, onSuccess}) => {
     const saveVendor = async(e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/vendor', {
+            await axios.post('http://localhost:5001/vendor', {
                 id_vendor,
                 nama, 
                 alamat,

@@ -56,6 +56,9 @@ function Pengajuan() {
 
   // console.log("selectedPengajuan:", selectedPengajuan);
 
+  // console.log("kondisi:", kondisi);
+  // console.log("kondisiList:", kondisiList); 
+
   useEffect(() => {
     if (selectedPengajuan) {
       setIdBarang(selectedPengajuan?.id_barang);
@@ -80,6 +83,8 @@ function Pengajuan() {
     getDetailKategori(option.value, idx);
   };
 
+
+
   const getFilterOptions = (idx) => {
     const selectedValues = items
     .map((item, i) => i !== idx ? item.id_barang: null)
@@ -89,7 +94,7 @@ function Pengajuan() {
   };
 
   const IDPengajuan = async(e) => {
-    const response = await axios.get('http://localhost:5000/getLastPengajuanID', {
+    const response = await axios.get('http://localhost:5001/getLastPengajuanID', {
       headers: {
           Authorization: `Bearer ${token}`,
       }
@@ -129,7 +134,7 @@ function Pengajuan() {
   useEffect(() => {
     const getStatusPrevPengajuan = async() => {
       try {
-        const res = await axios.get(`http://localhost:5000/prev-status/${prevId}`, {
+        const res = await axios.get(`http://localhost:5001/prev-status/${prevId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           }
@@ -152,7 +157,7 @@ function Pengajuan() {
 
   const getNamaKategori = async() => {
       try {
-          const response = await axios.get('http://localhost:5000/namaKategori', {
+          const response = await axios.get('http://localhost:5001/namaKategori', {
               headers: {
                   Authorization: `Bearer ${token}`,
               }
@@ -171,7 +176,7 @@ function Pengajuan() {
 
   const getNamaBarang = async() => {
       try {
-          const response = await axios.get('http://localhost:5000/namaBarang', {
+          const response = await axios.get('http://localhost:5001/namaBarang', {
             headers: {
                 Authorization: `Bearer ${token}`,
             }
@@ -192,7 +197,7 @@ function Pengajuan() {
   const getDetailKategori = async(id_barang, idx) => {
     if (!id_barang) return;
     try {
-      const resp = await axios.get(`http://localhost:5000/detail-kategori/${id_barang}`, {
+      const resp = await axios.get(`http://localhost:5001/detail-kategori/${id_barang}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         }
@@ -239,7 +244,7 @@ function Pengajuan() {
   const getDetailPengajuanById = async (id_pengajuan) => {
     if (!id_pengajuan) return;
     try {
-      const resp = await axios.get(`http://localhost:5000/detail-pengajuan/${id_pengajuan}`, {
+      const resp = await axios.get(`http://localhost:5001/detail-pengajuan/${id_pengajuan}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -342,7 +347,7 @@ function Pengajuan() {
       if (!token || !username) return;
 
       try {
-        const response = await axios.get(`http://localhost:5000/user-details/${username}`, {
+        const response = await axios.get(`http://localhost:5001/user-details/${username}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -411,14 +416,16 @@ function Pengajuan() {
         id_barang: item.namaBarang?.value || item.id_barang,
         jumlah_barang: item.jumlah_barang || 0,
         kondisi: item.kondisi_lainnya && item.kondisi_lainnya !== "" ? item.kondisi_lainnya : (item.kondisi || ""),
-        jenis_pengajuan: jenis_pengajuan || selectedPengajuan?.jenis_pengajuan || "",
+        jenis_pengajuan: item.jenis_pengajuan || selectedPengajuan?.jenis_pengajuan || "",
         harga: hargaList[idx] !== undefined ? hargaList[idx] : item.harga || 0,
         total: (Number(item.jumlah_barang) || 0) * (Number(hargaList[idx] || item.harga || 0)),
       }));
 
+      
+
       if (isEditing) {
         // Update existing pengajuan (replace items)
-        await axios.patch(`http://localhost:5000/ubah-pengajuan/${targetIdPengajuan}`, {
+        await axios.patch(`http://localhost:5001/ubah-pengajuan/${targetIdPengajuan}`, {
           items: detailItems,
         }, {
           headers: { Authorization: `Bearer ${token}` },
@@ -427,12 +434,12 @@ function Pengajuan() {
         toast.success("Pengajuan berhasil diperbarui.");
       } else {
         // Create new pengajuan: generate id (GenPengajuan) then insert items
-        await axios.post('http://localhost:5000/generate-pengajuan', {
+        await axios.post('http://localhost:5001/generate-pengajuan', {
           id_pengajuan: targetIdPengajuan,
           status: "Belum Diproses",
         }, { headers: { Authorization: `Bearer ${token}` } });
 
-        await axios.post('http://localhost:5000/pengajuan', {
+        await axios.post('http://localhost:5001/pengajuan', {
           items: detailItems,
         }, { headers: { Authorization: `Bearer ${token}` } });
 
@@ -456,6 +463,9 @@ function Pengajuan() {
     }
   }
 
+  // console.log("detailItems to submit:", items);
+
+
   const handleItemChange = (idx, field, value) => {
     console.log("idx:", idx, "field:", field, "value:", value);
     const updated = [...items];
@@ -464,6 +474,10 @@ function Pengajuan() {
     if (field === "kondisi" && value !== "LAINNYA") {
       updated[idx].kondisi_lainnya = "";
     }
+
+    // if (field === "jenis_pengajuan") {
+    //   updated[idx].jenis_pengajuan = "";
+    // }
     setItems(updated);
   };
 
@@ -502,6 +516,7 @@ function Pengajuan() {
                   </Row>
 
                   {items.map((item, idx) => (
+                    // console.log("kondisi list:", kondisiList[idx]),
                     <Card className="my-4" key={item.key}>
                       <Card.Header>
                         <div className="d-flex justify-content-between align-items-center">
@@ -571,7 +586,7 @@ function Pengajuan() {
                                 required
                                 onChange={(e) => handleItemChange(idx, "kondisi", e.target.value)}
                               >
-                                {/* <option className="placeholder-form" key='blankChoice' hidden value>Pilih Kondisi</option> */}
+                                <option className="placeholder-form" key='blankChoice' hidden value>Pilih Kondisi</option>
                                 <option value="RUSAK">RUSAK</option>
                                 <option value="TIDAK DIGUNAKAN">TIDAK DIGUNAKAN</option>
                                 <option value="SISA PRODUKSI">SISA PRODUKSI</option>
@@ -579,8 +594,19 @@ function Pengajuan() {
                               </Form.Select>
                             </Form.Group>
 
-
-                              {item.kondisi === "LAINNYA" && (
+                            {item.kondisi_lainnya !== "" ? item.kondisi_lainnya !== "" && (
+                              <Form.Group className="mb-2">
+                                <label>Kondisi Lainnya</label>
+                                <Form.Control
+                                  type="text"
+                                  // required={item.kondisi === "LAINNYA"}
+                                  value={item.kondisi_lainnya || ""}
+                                  onChange={(e) => {
+                                    handleItemChange(idx, "kondisi_lainnya" ,e.target.value.toUpperCase());
+                                  }}
+                                />
+                              </Form.Group>
+                            ) : item.kondisi === "LAINNYA" && (
                               <Form.Group className="mb-2">
                                 <label>Kondisi Lainnya</label>
                                 <Form.Control
@@ -593,11 +619,38 @@ function Pengajuan() {
                                 />
                               </Form.Group>
                             )}
+
+
+                            {/* {item.kondisi === "LAINNYA" || item.kondisi_lainnya !== "" && (
+                              <Form.Group className="mb-2">
+                                <label>Kondisi Lainnya</label>
+                                <Form.Control
+                                  type="text"
+                                  required={item.kondisi === "LAINNYA"}
+                                  value={item.kondisi_lainnya || ""}
+                                  onChange={(e) => {
+                                    handleItemChange(idx, "kondisi_lainnya" ,e.target.value.toUpperCase());
+                                  }}
+                                />
+                              </Form.Group>
+                            )} */}
                             <Form.Group className="mb-2">
                               <label>Tujuan</label>
-                              <Form.Control type="text" value={selectedPengajuan?.jenis_pengajuan} disabled />
-                            </Form.Group>
+                              
+                              {/* <Form.Control type="text" value={selectedPengajuan?.jenis_pengajuan} disabled />
+                               */}
 
+                              <Form.Select
+                                  className="form-control"
+                                  value={item.jenis_pengajuan || selectedPengajuan?.jenis_pengajuan}
+                                  required
+                                  onChange={(e) => handleItemChange(idx, "jenis_pengajuan", e.target.value)}
+                                >
+                                  <option className="placeholder-form" key='blankChoice' hidden value>Pilih Jenis Pengajuan</option>
+                                  <option value="PENJUALAN">PENJUALAN</option>
+                                  <option value="SCRAPPING">SCRAPPING</option>
+                              </Form.Select>
+                          </Form.Group>
                           </Col>
                         </Row>
                       </Card.Body>

@@ -80,7 +80,7 @@ function Transaksi() {
 	};
 
   const IDPenjualan = async(e) => {
-      const response = await axios.get('http://localhost:5000/getLastTransaksiID', {
+      const response = await axios.get('http://localhost:5001/getLastTransaksiID', {
           headers: {
               Authorization: `Bearer ${token}`,
           }
@@ -95,7 +95,7 @@ function Transaksi() {
 
   const getNamaKategori = async() => {
       try {
-          const response = await axios.get('http://localhost:5000/namaKategori', {
+          const response = await axios.get('http://localhost:5001/namaKategori', {
               headers: {
                   Authorization: `Bearer ${token}`,
               }
@@ -117,7 +117,7 @@ function Transaksi() {
 
   const getNamaBarang = async() => {
       try {
-          const response = await axios.get('http://localhost:5000/namaBarang', {
+          const response = await axios.get('http://localhost:5001/namaBarang', {
               headers: {
                   Authorization: `Bearer ${token}`,
               }
@@ -140,7 +140,7 @@ function Transaksi() {
   const getDetailVendor = async(idVendor) => {
       if (!idVendor) return;
       try {
-          const resp = await axios.get(`http://localhost:5000/detail-vendor/${idVendor}`, {
+          const resp = await axios.get(`http://localhost:5001/detail-vendor/${idVendor}`, {
               headers: {
                   Authorization: `Bearer ${token}`,
               }
@@ -164,7 +164,7 @@ function Transaksi() {
         }
 
         try {
-            const resp = await axios.get(`http://localhost:5000/detail-pengajuan/${selectedPengajuan?.id_pengajuan}`, {
+            const resp = await axios.get(`http://localhost:5001/detail-pengajuan/${selectedPengajuan?.id_pengajuan}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 }
@@ -205,7 +205,7 @@ function Transaksi() {
       if (!token || !username) return;
 
       try {
-        const response = await axios.get(`http://localhost:5000/user-details/${username}`, {
+        const response = await axios.get(`http://localhost:5001/user-details/${username}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -258,7 +258,7 @@ function Transaksi() {
         return;
       }
 
-      await axios.post('http://localhost:5000/transaksi', {
+      await axios.post('http://localhost:5001/transaksi', {
         id_transaksi, 
         cara_bayar,
         id_vendor,
@@ -270,7 +270,7 @@ function Transaksi() {
             Authorization: `Bearer ${token}`,
         },
       });
-      await axios.patch(`http://localhost:5000/gen-pengajuan/${selectedPengajuan?.id_pengajuan}`, {
+      await axios.patch(`http://localhost:5001/gen-pengajuan/${selectedPengajuan?.id_pengajuan}`, {
         status: "Selesai",
       }, {
         headers: {
@@ -291,7 +291,7 @@ const updateSopirVendor = async (id_vendor, sopir) => {
   if (!id_vendor || !sopir) return;
   try {
     await axios.patch(
-      `http://localhost:5000/vendor/${id_vendor}`,
+      `http://localhost:5001/vendor/${id_vendor}`,
       { sopir }, 
       {
         headers: {
@@ -331,7 +331,7 @@ const updateSopirVendor = async (id_vendor, sopir) => {
 
   const getNamaVendor = async() => {
       try {
-          const response = await axios.get('http://localhost:5000/namaVendor', {
+          const response = await axios.get('http://localhost:5001/namaVendor', {
               headers: {
                   Authorization: `Bearer ${token}`,
               }

@@ -82,7 +82,7 @@ function MasterVendor() {
     const token = localStorage.getItem("token");
 
     try {
-      const response = await axios.get("http://localhost:5000/vendor", {
+      const response = await axios.get("http://localhost:5001/vendor", {
         headers: {
           Authorization: `Bearer ${token}`,
       },
@@ -95,7 +95,7 @@ function MasterVendor() {
 
   const deleteVendor = async() =>{
     try {
-      await axios.delete(`http://localhost:5000/vendor/${deletedVendor}` , {
+      await axios.delete(`http://localhost:5001/vendor/${deletedVendor}` , {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -103,7 +103,7 @@ function MasterVendor() {
       setShowModal(false);
       toast.success("Data vendor berhasil dihapus.", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 5001,
         hideProgressBar: true,
       });
       getVendor(); 
@@ -135,7 +135,7 @@ function MasterVendor() {
     getVendor();
     toast.success("Data vendor baru berhasil dibuat!", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 5001,
         hideProgressBar: true,
     });
   };
@@ -144,7 +144,7 @@ function MasterVendor() {
     getVendor();
     toast.success("Data vendor berhasil diperbarui!", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 5001,
         hideProgressBar: true,
     });
   };
@@ -157,7 +157,7 @@ function MasterVendor() {
     getVendor();
     toast.success("Data vendor berhasil diimport!", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 5001,
         hideProgressBar: true,
     });
   };

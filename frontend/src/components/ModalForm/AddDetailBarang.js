@@ -85,7 +85,7 @@ const AddDetailBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
 
 	const getDataBarang = async () =>{
 		try {
-			const response = await axios.get("http://localhost:5000/kategori-barang", {
+			const response = await axios.get("http://localhost:5001/kategori-barang", {
 				headers: {
 					Authorization: `Bearer ${token}`,
 			},
@@ -101,7 +101,7 @@ const AddDetailBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
 	}, []); 
 
 	const IdBarang = async(e) => {
-			const response = await axios.get('http://localhost:5000/getLastBarangId', {
+			const response = await axios.get('http://localhost:5001/getLastBarangId', {
 				headers: {
 						Authorization: `Bearer ${token}`,
 				}
@@ -149,7 +149,7 @@ const AddDetailBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
 			}
 
 			try {
-					await axios.post('http://localhost:5000/kategori-barang', {
+					await axios.post('http://localhost:5001/kategori-barang', {
 							id_kategori,
 							nama: namaBaru,
 							satuan,

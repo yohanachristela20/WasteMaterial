@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import axios from "axios";
 import "../assets/scss/lbd/_text.scss";
 import html2canvas from "html2canvas";
@@ -14,15 +15,17 @@ import {
   Table,
   Button,
 } from "react-bootstrap";
-import { FaFilePdf } from "react-icons/fa";
+import { FaFilePdf, FaRegEdit } from "react-icons/fa";
 
 function DetailPengajuanUser() {
   const location = useLocation();
   const contentRef = useRef(null);
+  const history = useHistory();
 
   const [selectedPengajuan, setSelectedPengajuan] = useState(location?.state?.selectedPengajuan || null);
   const [detailPengajuan, setDetailPengajuan] = useState([]);
   const [detailTransaksi, setDetailTransaksi] = useState([]);
+  const [isUpdateClicked, setIsUpdateClicked] = useState(false);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -33,7 +36,7 @@ function DetailPengajuanUser() {
         }
 
         try {
-            const resp = await axios.get(`http://localhost:5000/detail-pengajuan/${selectedPengajuan?.id_pengajuan}`, {
+            const resp = await axios.get(`http://localhost:5001/detail-pengajuan/${selectedPengajuan?.id_pengajuan}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 }
@@ -51,7 +54,7 @@ function DetailPengajuanUser() {
         }
 
         try {
-            const resp = await axios.get(`http://localhost:5000/detail-transaksi/${selectedPengajuan?.id_pengajuan}`, {
+            const resp = await axios.get(`http://localhost:5001/detail-transaksi/${selectedPengajuan?.id_pengajuan}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 }
@@ -132,6 +135,15 @@ function DetailPengajuanUser() {
       }
   
       pdf.save('Detail Pengajuan.pdf'); 
+  };
+
+    const ubahPengajuan = (selectedPengajuan) => {
+    if (selectedPengajuan?.GeneratePengajuan?.status !== "Selesai" && isUpdateClicked === true) {
+      history.push({
+        pathname: "/user/ubah-pengajuan",
+        state: {selectedPengajuan}
+      });
+    } 
   };
 
   return (
@@ -278,6 +290,21 @@ function DetailPengajuanUser() {
               >
                 <FaFilePdf style={{ marginRight: '8px' }} />
                 Unduh PDF
+              </Button>
+              <Button 
+                onClick={(e) => {
+                  ubahPengajuan(selectedPengajuan); 
+                  setIsUpdateClicked(true);
+                  // setShowUbahPengajuan(true);
+                }}
+                // setIsUpdateClicked={true}
+                className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
+                type="button"
+                variant="warning"
+                hidden={selectedPengajuan?.GeneratePengajuan?.status === "Selesai"}
+              >
+                <FaRegEdit style={{ marginRight: '8px' }} />
+                Ubah Data
               </Button>
             </Col>
           </Row>
