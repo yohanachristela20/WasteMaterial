@@ -121,7 +121,7 @@ import KategoriBarang from "./KategoriBarang";
       getDetailPengajuan();
   }, [token]);
 
-  console.log("DETAIL PENGAJUAN:", detailPengajuan);
+  // console.log("DETAIL PENGAJUAN:", detailPengajuan);
 
   const formatRupiah = (angka) => {
     let pinjamanString = angka.toString().replace(".00");
@@ -323,7 +323,11 @@ import KategoriBarang from "./KategoriBarang";
   //   XLSX.writeFile(workbook, 'laporan_penjualan.xlsx');
   // };
 
+
+
+
   const exportToExcel = () => {
+    const titleHeaders = ["LAPORAN PENJUALAN"];
     const headers = ["TANGGAL","NO BPBB", "ID KATEGORI", "DESKRIPSI KATEGORI", "QTY", "UOM", "HARGA PER UOM", "JUMLAH", "TOTAL", "TOTAL PER DAY", "DIVISI", "PEMBELI", "KETERANGAN"];
 
     const groups = detailPengajuan
@@ -335,7 +339,7 @@ import KategoriBarang from "./KategoriBarang";
 
     const rows = [];
     const merges = [];
-    let sheetRowIndex = 1; 
+    let sheetRowIndex = 2; 
 
     const dateFirstRowMap = {};
     const dateLastRowMap = {}; 
@@ -380,7 +384,7 @@ import KategoriBarang from "./KategoriBarang";
           item.BarangDiajukan?.KategoriBarang?.satuan || "",
           roundHargaBarang || "",
           roundJumlah || "",          
-          totalPerID ||  "",            
+          totalPerID || "",            
           showTotalPerDay ? totalPerDay : "", 
           item.Pemohon?.divisi || "",
           pembeli,                  
@@ -392,7 +396,7 @@ import KategoriBarang from "./KategoriBarang";
 
       const lastRowForPengajuan = sheetRowIndex - 1;
       if (items.length > 1) {
-        const colsToMerge = [0, 1, 7, 8, 10, 11];
+        const colsToMerge = [0, 1, 8, 10, 11];
         colsToMerge.forEach((col) => {
           merges.push({
             s: { r: firstRowForPengajuan, c: col },
@@ -413,9 +417,11 @@ import KategoriBarang from "./KategoriBarang";
       }
     });
 
-    const allData = [headers, ...rows];
+    const allData = [titleHeaders, headers, ...rows];
     const worksheet = XLSX.utils.aoa_to_sheet(allData);
-    worksheet['!merges'] = merges;
+
+    const titleMerge = { s: { r: 0, c: 0 }, e: { r: 0, c: 12 } };
+    worksheet['!merges'] = [titleMerge, ...merges];
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Laporan Penjualan');
