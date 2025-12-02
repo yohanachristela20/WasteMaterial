@@ -12,8 +12,10 @@ import {toast } from 'react-toastify';
 import ReactLoading from "react-loading";
 import "../assets/scss/lbd/_loading.scss";
 import ImportPengajuan from "components/ModalForm/ImportPengajuan.js";
-import * as XLSX from 'xlsx';
+// import * as XLSX from 'xlsx';
+import * as XLSX from 'sheetjs-style';
 import { saveAs } from 'file-saver';
+
 
 
 import {
@@ -29,7 +31,7 @@ import {
   Dropdown,
   Modal
 } from "react-bootstrap";
-import { data } from "jquery";
+import { data, merge } from "jquery";
 import KategoriBarang from "./KategoriBarang";
 
  function DataPengajuan() {
@@ -145,24 +147,31 @@ import KategoriBarang from "./KategoriBarang";
     return isNaN(parsed) ? 0 : parsed;
   };
 
-  // GROUP TOTAL BY ID PENGAJUAN
-  const groupedPenjualan  = detailPengajuan.reduce((acc, item) => {
-    if (!acc[item.id_pengajuan]) {
-      acc[item.id_pengajuan] = {  
-        ...item,
-        totalPerID: 0
-      };
-    }
-
-    if (String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN") {
-      acc[item.id_pengajuan].totalPerID += toNumber(item.total);
-    } 
+  // GROUP TOTAL BY ID PENGAJUAN - NON ASSET 
+  const penjualanNonAsset = detailPengajuan
+  .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET")
+  .reduce((acc, item) => {
+    const id = item.id_pengajuan;
+    if(!acc[id]) acc[id] = { totalPerID: 0 }; 
+    acc[id].totalPerID += Number(item.total) || 0;
     return acc;
   }, {});
 
+  // GROUP TOTAL BY ID PENGAJUAN - ASSET 
+  const penjualanAsset = detailPengajuan
+  .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "ASSET")
+  .reduce((acc, item) => {
+    const id = item.id_pengajuan;
+    if(!acc[id]) acc[id] = { totalPerID: 0 }; 
+    acc[id].totalPerID += Number(item.total) || 0;
+    return acc;
+  }, {});
 
-   const groupByDate = detailPengajuan.reduce((acc, item) => {
-    if (String(item.jenis_pengajuan).toUpperCase() !== "PENJUALAN") return acc;
+  //GROUP TOTAL BY DATE - NON ASSET 
+  const byDateNonAsset = detailPengajuan
+  .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET")
+  .reduce((acc, item) => {
+    if (String(item.jenis_pengajuan).toUpperCase() !== "PENJUALAN" ) return acc;
 
     const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
     const dateStr = related?.createdAt
@@ -185,170 +194,71 @@ import KategoriBarang from "./KategoriBarang";
     return acc;
   }, {});
 
+  // GROUP TOTAL BY DATE - ASSET 
+  const byDateAsset = detailPengajuan
+  .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "ASSET")
+  .reduce((acc, item) => {
+    if (String(item.jenis_pengajuan).toUpperCase() !== "PENJUALAN" ) return acc;
 
-  // console.log("groupedPenjualan:", groupedPenjualan);
+    const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
+    const dateStr = related?.createdAt
+      ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
+      : "";
 
+    if (!dateStr) return acc;
 
-  // TOTAL PER ID
-  // const exportToExcel = () => {
-  //   const headers = ["TANGGAL","NO BPBB", "ID KATEGORI", "DESKRIPSI KATEGORI", "QTY", "UOM", "HARGA PER UOM", "JUMLAH", "TOTAL", "TOTAL PER DAY", "DIVISI", "PEMBELI", "KETERANGAN"];
+    if (!acc[dateStr]) {
+      acc[dateStr] = {
+        date: dateStr,
+        totalPerDay: 0,
+        items: []
+      };
+    }
 
-  //   const groups = detailPengajuan
-  //     .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
-  //     .reduce((acc, item) => {
-  //       (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
-  //       return acc;
-  //     }, {});
+    acc[dateStr].totalPerDay += toNumber(item.total);
+    acc[dateStr].items.push(item.id_pengajuan);
 
-  //   const rows = [];
-  //   const merges = [];
-  //   let sheetRowIndex = 1;
-
-  //   const dateFirstRowMap = {};
-  //   const dateLastRowMap = {};
-
-  //   Object.keys(groups).forEach((id_pengajuan) => {
-  //     const items = groups[id_pengajuan];
-  //     const firstRowForPengajuan = sheetRowIndex;
-
-  //     items.forEach((item) => {
-  //       const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
-  //       const createdAt = related.createdAt
-  //         ? new Date(related.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
-  //         : "";
-  //       const dateStr = related?.createdAt
-  //         ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
-  //         : "";
-
-  //       if (dateStr) {
-  //         if (!dateFirstRowMap[dateStr]) dateFirstRowMap[dateStr] = sheetRowIndex;
-  //         dateLastRowMap[dateStr] = sheetRowIndex;
-  //       }
-
-  //       const idTransaksi = related.id_transaksi || "";
-  //       const pembeli = related.VendorPenjualan?.nama || "";
-  //       const keterangan = related.keterangan || "";
-  //       const totalPerID = groupedPenjualan[item.id_pengajuan]?.totalPerID || 0;
-  //       const totalPerDay = groupByDate[dateStr]?.totalPerDay || 0;
-
-  //       // console.log("totalPerDay:", totalPerDay);
-
-  //       const showTotalPerDay = dateStr && dateFirstRowMap[dateStr] === sheetRowIndex;
-
-  //       // if (idx === 0) {
-  //       //   rows.push([
-  //       //     createdAt,
-  //       //     idTransaksi,
-  //       //     item.BarangDiajukan?.id_kategori || "",
-  //       //     item.BarangDiajukan?.KategoriBarang?.nama || "",
-  //       //     item.jumlah_barang || "",
-  //       //     item.BarangDiajukan?.KategoriBarang?.satuan || "",
-  //       //     item.BarangDiajukan?.KategoriBarang?.harga_barang || "",
-  //       //     item.total || "",
-  //       //     totalPerID,
-  //       //     showTotalPerDay ? totalPerDay : "", 
-  //       //     item.Pemohon?.divisi || "",
-  //       //     pembeli,
-  //       //     keterangan,
-
-  //       //   ]);
-  //       // } else {
-  //       //   rows.push([
-  //       //     "", 
-  //       //     "", 
-  //       //     item.BarangDiajukan?.id_kategori || "",
-  //       //     item.BarangDiajukan?.KategoriBarang?.nama || "",
-  //       //     item.jumlah_barang || "",
-  //       //     item.BarangDiajukan?.KategoriBarang?.satuan || "",
-  //       //     item.BarangDiajukan?.KategoriBarang?.harga_barang || "",
-  //       //     item.total || "",
-  //       //     "",
-  //       //     "",
-  //       //     "", 
-  //       //     "", 
-  //       //     "", 
-  //       //   ]);
-  //       // }
-
-  //       rows.push([
-  //         createdAt,
-  //         idTransaksi,
-  //         item.BarangDiajukan?.id_kategori || "",
-  //         item.BarangDiajukan?.KategoriBarang?.nama || "",
-  //         item.jumlah_barang || "",
-  //         item.BarangDiajukan?.KategoriBarang?.satuan || "",
-  //         item.BarangDiajukan?.KategoriBarang?.harga_barang || "",
-  //         item.total || "",
-  //         totalPerID,
-  //         showTotalPerDay ? totalPerDay : "", 
-  //         item.Pemohon?.divisi || "",
-  //         pembeli,
-  //         keterangan,
-
-  //       ]);
-  //       sheetRowIndex++;
-  //     });
-
-  //     const lastRowForPengajuan = sheetRowIndex - 1;
-  //     if (items.length > 1) {
-  //       const colsToMerge = [0, 1, 8, 10, 11]; 
-  //       colsToMerge.forEach((col) => {
-  //         merges.push({
-  //           s: { r: firstRowForPengajuan, c: col },
-  //           e: { r: lastRowForPengajuan, c: col }
-  //         });
-  //       });
-  //     }
-
-  //     Object.keys(dateFirstRowMap).forEach((dateStr) => {
-  //     const sRow = dateFirstRowMap[dateStr];
-  //     const eRow = dateLastRowMap[dateStr];
-  //     if (sRow !== undefined && eRow !== undefined && eRow > sRow) {
-  //       merges.push({
-  //         s: { r: sRow, c: 9 },
-  //         e: { r: eRow, c: 9 }
-  //       });
-  //     }
-  //   });
-
-  //   });
-
-  //   const allData = [headers, ...rows];
-  //   const worksheet = XLSX.utils.aoa_to_sheet(allData);
-  //   // worksheet['!merges'] = worksheet['!merges'] ? worksheet['!merges'].concat(merges) : merges;
-  //   worksheet['!merges'] = merges;
-
-  //   const workbook = XLSX.utils.book_new();
-  //   XLSX.utils.book_append_sheet(workbook, worksheet, 'Laporan Penjualan');
-  //   XLSX.writeFile(workbook, 'laporan_penjualan.xlsx');
-  // };
-
-
-
+    return acc;
+  }, {});
 
   const exportToExcel = () => {
-    const titleHeaders = ["LAPORAN PENJUALAN"];
+    const titleHeaders = ["LAPORAN PENJUALAN WASTE MATERIAL"];
     const headers = ["TANGGAL","NO BPBB", "ID KATEGORI", "DESKRIPSI KATEGORI", "QTY", "UOM", "HARGA PER UOM", "JUMLAH", "TOTAL", "TOTAL PER DAY", "DIVISI", "PEMBELI", "KETERANGAN"];
 
-    const groups = detailPengajuan
+    const nonAssetGroups = detailPengajuan
       .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
+      .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET")
       .reduce((acc, item) => {
         (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
         return acc;
-      }, {});
+    }, {});
 
-    const rows = [];
-    const merges = [];
+    const assetGroups = detailPengajuan
+      .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
+      .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "ASSET")
+      .reduce((acc, item) => {
+        (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
+        return acc;
+    }, {});
+
+    const rowsNonAsset = [];
+    const rowsAsset = [];
+    const mergesNonAsset = [];
+    const mergesAsset = [];
     let sheetRowIndex = 2; 
 
-    const dateFirstRowMap = {};
-    const dateLastRowMap = {}; 
+    const dateFirstNonAsset = {};
+    const dateFirstAsset = {};
+    const dateLastAsset = {}; 
+    const dateLastNonAsset = {};
 
-    Object.keys(groups).forEach((id_pengajuan) => {
-      const items = groups[id_pengajuan];
-      const firstRowForPengajuan = sheetRowIndex;
+    Object.keys(nonAssetGroups).forEach((id_pengajuan) => {
+      const items = nonAssetGroups[id_pengajuan];
+      const firstRowNonAsset = sheetRowIndex;
 
-      items.forEach((item) => {
+      items.forEach((item, index) => {
+        const isFirstRow = index === 0;
+        const totalPerID = isFirstRow ? penjualanNonAsset[id_pengajuan].totalPerID : "";
         const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
         const createdAtFull = related.createdAt
           ? new Date(related.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
@@ -358,33 +268,31 @@ import KategoriBarang from "./KategoriBarang";
           : "";
 
         if (dateStr) {
-          if (!dateFirstRowMap[dateStr]) dateFirstRowMap[dateStr] = sheetRowIndex;
-          dateLastRowMap[dateStr] = sheetRowIndex;
+          if (!dateFirstNonAsset[dateStr]) dateFirstNonAsset[dateStr] = sheetRowIndex;
+          dateLastNonAsset[dateStr] = sheetRowIndex;
         }
 
         const idTransaksi = related.id_transaksi || "";
         const pembeli = related.VendorPenjualan?.nama || "";
         const keterangan = related.keterangan || "";
-        const totalPerID = groupedPenjualan[id_pengajuan]?.totalPerID || 0;
-        const totalPerDay = groupByDate[dateStr]?.totalPerDay || 0;
-        const showTotalPerDay = dateStr && dateFirstRowMap[dateStr] === sheetRowIndex;
 
-        const hargaBarang = item.BarangDiajukan?.KategoriBarang?.harga_barang;
-        const roundHargaBarang = hargaBarang.replace(/\.00$/, '');
+        const totalPerDay = Number(byDateNonAsset[dateStr]?.totalPerDay) || 0;
+        const showTotalPerDay = dateStr && dateFirstNonAsset[dateStr] === sheetRowIndex;
+        console.log("totalPerDay Non-asset:", totalPerDay);
 
-        const jumlah = item.total;
-        const roundJumlah = jumlah.replace(/\.00$/, '');
+        const hargaBarang = Number(item?.BarangDiajukan?.KategoriBarang?.harga_barang) || 0;
+        const jumlah = Number(item?.total) || 0;
 
-        rows.push([
+        rowsNonAsset.push([
           createdAtFull,
           idTransaksi,
           item.BarangDiajukan?.id_kategori || "",
           item.BarangDiajukan?.KategoriBarang?.nama || "",
-          item.jumlah_barang || "",
+          Number(item.jumlah_barang) || "",
           item.BarangDiajukan?.KategoriBarang?.satuan || "",
-          roundHargaBarang || "",
-          roundJumlah || "",          
-          totalPerID || "",            
+          hargaBarang,
+          jumlah,          
+          totalPerID,            
           showTotalPerDay ? totalPerDay : "", 
           item.Pemohon?.divisi || "",
           pembeli,                  
@@ -394,42 +302,200 @@ import KategoriBarang from "./KategoriBarang";
         sheetRowIndex++;
       });
 
-      const lastRowForPengajuan = sheetRowIndex - 1;
+      const lastRowNonAsset = sheetRowIndex - 1;
       if (items.length > 1) {
         const colsToMerge = [0, 1, 8, 10, 11];
         colsToMerge.forEach((col) => {
-          merges.push({
-            s: { r: firstRowForPengajuan, c: col },
-            e: { r: lastRowForPengajuan, c: col }
+          mergesNonAsset.push({
+            s: { r: firstRowNonAsset, c: col },
+            e: { r: lastRowNonAsset, c: col }
           });
         });
       }
     });
 
-    Object.keys(dateFirstRowMap).forEach((dateStr) => {
-      const sRow = dateFirstRowMap[dateStr];
-      const eRow = dateLastRowMap[dateStr];
+    Object.keys(dateFirstNonAsset).forEach((dateStr) => {
+      const sRow = dateFirstNonAsset[dateStr];
+      const eRow = dateLastNonAsset[dateStr];
       if (sRow !== undefined && eRow !== undefined && eRow > sRow) {
-        merges.push({
+        mergesNonAsset.push({
           s: { r: sRow, c: 9 },
           e: { r: eRow, c: 9 }
         });
       }
     });
 
-    const allData = [titleHeaders, headers, ...rows];
-    const worksheet = XLSX.utils.aoa_to_sheet(allData);
+    const allNonAsset = [titleHeaders, headers, ...rowsNonAsset];
+    const wsNonAsset = XLSX.utils.aoa_to_sheet(allNonAsset);
+
+    rowsNonAsset.forEach((row, i) => {
+      const excelRow = i + 2;
+      const numericCols = [4,6,7,8,9];
+      numericCols.forEach(col => {
+        const cellAddr = XLSX.utils.encode_cell({r: excelRow, c: col});
+        const cell = wsNonAsset[cellAddr];
+        if (!cell) return;
+
+        cell.t = "n";
+        cell.v = Number(cell.v);
+      })
+    });
 
     const titleMerge = { s: { r: 0, c: 0 }, e: { r: 0, c: 12 } };
-    worksheet['!merges'] = [titleMerge, ...merges];
+    wsNonAsset['!merges'] = [titleMerge, ...mergesNonAsset];
+
+    headers.forEach((_, colIndex) => {
+      const cellTitle = XLSX.utils.encode_cell({ r: 0, c: colIndex });
+      const cellHeaders = XLSX.utils.encode_cell({ r: 1, c: colIndex });
+      if (wsNonAsset[cellHeaders]) {
+        wsNonAsset[cellHeaders].s = {
+          fill: {
+            fgColor: { rgb: "5594fa" } 
+          }, 
+          alignment: {
+            horizontal: "center",
+          }
+        };
+      }
+      if (wsNonAsset[cellTitle]) {
+        wsNonAsset[cellTitle].s = {
+          alignment: {
+            horizontal: "center",
+          }, 
+          font: {
+            bold: true,
+            sz: 14,
+          }
+        }
+      }
+    });
+
+
+    Object.keys(assetGroups).forEach((id_pengajuan) => {
+      const items = assetGroups[id_pengajuan];
+      const firstRowAsset = sheetRowIndex;
+
+      items.forEach((item, index) => {
+        const isFirstRow = index === 0;
+        const totalPerID = isFirstRow ? penjualanAsset[id_pengajuan].totalPerID : "";
+        const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
+        const createdAtFull = related.createdAt
+          ? new Date(related.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
+          : "";
+        const dateStr = related?.createdAt
+          ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
+          : "";
+
+        if (dateStr) {
+          if (!dateFirstAsset[dateStr]) dateFirstAsset[dateStr] = sheetRowIndex;
+          dateLastAsset[dateStr] = sheetRowIndex;
+        }
+
+        const idTransaksi = related.id_transaksi || "";
+        const pembeli = related.VendorPenjualan?.nama || "";
+        const keterangan = related.keterangan || "";
+
+        const totalPerDayAsset = Number(byDateAsset[dateStr]?.totalPerDay) || 0;
+        console.log("totalPerDayAsset:", totalPerDayAsset);
+
+        const showTotalPerDayAsset = dateStr && dateFirstAsset[dateStr] === sheetRowIndex;
+
+        const hargaBarang = Number(item?.BarangDiajukan?.KategoriBarang?.harga_barang) || 0;
+        const jumlah = Number(item?.total) || 0;
+
+        rowsAsset.push([
+          createdAtFull,
+          idTransaksi,
+          item.BarangDiajukan?.id_kategori || "",
+          item.BarangDiajukan?.KategoriBarang?.nama || "",
+          Number(item.jumlah_barang) || "",
+          item.BarangDiajukan?.KategoriBarang?.satuan || "",
+          hargaBarang,
+          jumlah,          
+          totalPerID,            
+          showTotalPerDayAsset ? totalPerDayAsset : "", 
+          item.Pemohon?.divisi || "",
+          pembeli,                  
+          keterangan,              
+        ]);
+
+        sheetRowIndex++;
+      });
+
+      const lastRowAsset = sheetRowIndex - 1;
+      if (items.length > 1) {
+        const colsToMerge = [0, 1, 8, 10, 11];
+        colsToMerge.forEach((col) => {
+          mergesAsset.push({
+            s: { r: firstRowAsset, c: col },
+            e: { r: lastRowAsset, c: col }
+          });
+        });
+      }
+    });
+
+    Object.keys(dateFirstAsset).forEach((dateStr) => {
+      const sRow = dateFirstAsset[dateStr];
+      const eRow = dateLastAsset[dateStr];
+      if (sRow !== undefined && eRow !== undefined && eRow > sRow) {
+        mergesAsset.push({
+          s: { r: sRow, c: 9 },
+          e: { r: eRow, c: 9 }
+        });
+      }
+    });
+
+    const allAsset = [titleHeaders, headers, ...rowsAsset];
+    const wsAsset = XLSX.utils.aoa_to_sheet(allAsset);
+
+    rowsAsset.forEach((row, i) => {
+      const excelRow = i + 2;
+      const numericCols = [4,6,7,8,9];
+      numericCols.forEach(col => {
+        const cellAddr = XLSX.utils.encode_cell({r: excelRow, c: col});
+        const cell = wsAsset[cellAddr];
+        if (!cell) return;
+
+        cell.t = "n";
+        cell.v = Number(cell.v);
+      })
+    });
+
+    wsAsset['!merges'] = [titleMerge, ...mergesAsset];
+
+    headers.forEach((_, colIndex) => {
+      const cellTitle = XLSX.utils.encode_cell({ r: 0, c: colIndex });
+      const cellHeaders = XLSX.utils.encode_cell({ r: 1, c: colIndex });
+      if (wsAsset[cellHeaders]) {
+        wsAsset[cellHeaders].s = {
+          fill: {
+            fgColor: { rgb: "5594fa" } 
+          }, 
+          alignment: {
+            horizontal: "center",
+          }
+        };
+      }
+      if (wsAsset[cellTitle]) {
+        wsAsset[cellTitle].s = {
+          alignment: {
+            horizontal: "center",
+          }, 
+          font: {
+            bold: true,
+            sz: 14,
+          }
+        }
+      }
+    });
 
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Laporan Penjualan');
+
+    XLSX.utils.book_append_sheet(workbook, wsNonAsset, 'Non-Asset');
+    XLSX.utils.book_append_sheet(workbook, wsAsset, 'Asset');
     XLSX.writeFile(workbook, 'laporan_penjualan.xlsx');
   };
 
-
-  
   const filteredPengajuan = pengajuan.filter((dataPengajuan) => 
     (dataPengajuan.id_pengajuan && String(dataPengajuan.id_pengajuan).toLowerCase().includes(searchQuery)) ||
     (dataPengajuan.Pemohon?.divisi && String(dataPengajuan.Pemohon?.divisi).toLowerCase().includes(searchQuery)) ||
