@@ -149,7 +149,7 @@ import KategoriBarang from "./KategoriBarang";
 
   // GROUP TOTAL BY ID PENGAJUAN - NON ASSET 
   const penjualanNonAsset = detailPengajuan
-  .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET")
+  .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() !== "AMPAS KELAPA (N)")
   .reduce((acc, item) => {
     const id = item.id_pengajuan;
     if(!acc[id]) acc[id] = { totalPerID: 0 }; 
@@ -167,9 +167,48 @@ import KategoriBarang from "./KategoriBarang";
     return acc;
   }, {});
 
+
+  // GROUP TOTAL BY ID PENGAJUAN - AMPAS KELAPA
+    const penjualanAmpasKelapa = detailPengajuan
+  .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() === "AMPAS KELAPA (N)")
+  .reduce((acc, item) => {
+    const id = item.id_pengajuan;
+    if(!acc[id]) acc[id] = { totalPerID: 0 }; 
+    acc[id].totalPerID += Number(item.total) || 0;
+    return acc;
+  }, {});
+
+
   //GROUP TOTAL BY DATE - NON ASSET 
   const byDateNonAsset = detailPengajuan
-  .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET")
+  .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() !== "AMPAS KELAPA (N)")
+  .reduce((acc, item) => {
+    if (String(item.jenis_pengajuan).toUpperCase() !== "PENJUALAN" ) return acc;
+
+    const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
+    const dateStr = related?.createdAt
+      ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
+      : "";
+
+    if (!dateStr) return acc;
+
+    if (!acc[dateStr]) {
+      acc[dateStr] = {
+        date: dateStr,
+        totalPerDay: 0,
+        items: []
+      };
+    }
+
+    acc[dateStr].totalPerDay += toNumber(item.total);
+    acc[dateStr].items.push(item.id_pengajuan);
+
+    return acc;
+  }, {});
+
+  //GROUP TOTAL BY DATE - AMPAS KELAPA 
+  const byDateKelapa = detailPengajuan
+  .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() === "AMPAS KELAPA (N)")
   .reduce((acc, item) => {
     if (String(item.jenis_pengajuan).toUpperCase() !== "PENJUALAN" ) return acc;
 
@@ -227,7 +266,7 @@ import KategoriBarang from "./KategoriBarang";
 
     const nonAssetGroups = detailPengajuan
       .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
-      .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET")
+      .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() !== "AMPAS KELAPA (N)")
       .reduce((acc, item) => {
         (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
         return acc;
@@ -241,20 +280,38 @@ import KategoriBarang from "./KategoriBarang";
         return acc;
     }, {});
 
+    const ampasKelapaGroups = detailPengajuan
+      .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
+      .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() === "AMPAS KELAPA (N)")
+      .reduce((acc, item) => {
+        (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
+        return acc;
+    }, {});
+
     const rowsNonAsset = [];
     const rowsAsset = [];
+    const rowsAmpasKelapa = [];
+
     const mergesNonAsset = [];
     const mergesAsset = [];
-    let sheetRowIndex = 2; 
+    const mergesAmpasKelapa = [];
+
+    let sheetRowNonAsset = 2; 
+    let sheetRowAsset = 2;
+    let sheetRowAmpasKelapa = 2;
 
     const dateFirstNonAsset = {};
     const dateFirstAsset = {};
+    const dateFirstKelapa = {};
+
     const dateLastAsset = {}; 
     const dateLastNonAsset = {};
+    const dateLastKelapa = {};
 
+    //Sheet 1 - Non Asset
     Object.keys(nonAssetGroups).forEach((id_pengajuan) => {
       const items = nonAssetGroups[id_pengajuan];
-      const firstRowNonAsset = sheetRowIndex;
+      const firstRowNonAsset = sheetRowNonAsset;
 
       items.forEach((item, index) => {
         const isFirstRow = index === 0;
@@ -268,8 +325,8 @@ import KategoriBarang from "./KategoriBarang";
           : "";
 
         if (dateStr) {
-          if (!dateFirstNonAsset[dateStr]) dateFirstNonAsset[dateStr] = sheetRowIndex;
-          dateLastNonAsset[dateStr] = sheetRowIndex;
+          if (!dateFirstNonAsset[dateStr]) dateFirstNonAsset[dateStr] = sheetRowNonAsset;
+          dateLastNonAsset[dateStr] = sheetRowNonAsset;
         }
 
         const idTransaksi = related.id_transaksi || "";
@@ -277,7 +334,7 @@ import KategoriBarang from "./KategoriBarang";
         const keterangan = related.keterangan || "";
 
         const totalPerDay = Number(byDateNonAsset[dateStr]?.totalPerDay) || 0;
-        const showTotalPerDay = dateStr && dateFirstNonAsset[dateStr] === sheetRowIndex;
+        const showTotalPerDay = dateStr && dateFirstNonAsset[dateStr] === sheetRowNonAsset;
         console.log("totalPerDay Non-asset:", totalPerDay);
 
         const hargaBarang = Number(item?.BarangDiajukan?.KategoriBarang?.harga_barang) || 0;
@@ -299,10 +356,10 @@ import KategoriBarang from "./KategoriBarang";
           keterangan,              
         ]);
 
-        sheetRowIndex++;
+        sheetRowNonAsset++;
       });
 
-      const lastRowNonAsset = sheetRowIndex - 1;
+      const lastRowNonAsset = sheetRowNonAsset - 1;
       if (items.length > 1) {
         const colsToMerge = [0, 1, 8, 10, 11];
         colsToMerge.forEach((col) => {
@@ -350,10 +407,13 @@ import KategoriBarang from "./KategoriBarang";
       if (wsNonAsset[cellHeaders]) {
         wsNonAsset[cellHeaders].s = {
           fill: {
-            fgColor: { rgb: "5594fa" } 
+            fgColor: { rgb: "62f740" } 
           }, 
           alignment: {
             horizontal: "center",
+          },
+          font: {
+            bold: true,
           }
         };
       }
@@ -371,9 +431,10 @@ import KategoriBarang from "./KategoriBarang";
     });
 
 
+    // Sheet 2 - Asset 
     Object.keys(assetGroups).forEach((id_pengajuan) => {
       const items = assetGroups[id_pengajuan];
-      const firstRowAsset = sheetRowIndex;
+      const firstRowAsset = sheetRowAsset;
 
       items.forEach((item, index) => {
         const isFirstRow = index === 0;
@@ -387,8 +448,8 @@ import KategoriBarang from "./KategoriBarang";
           : "";
 
         if (dateStr) {
-          if (!dateFirstAsset[dateStr]) dateFirstAsset[dateStr] = sheetRowIndex;
-          dateLastAsset[dateStr] = sheetRowIndex;
+          if (!dateFirstAsset[dateStr]) dateFirstAsset[dateStr] = sheetRowAsset;
+          dateLastAsset[dateStr] = sheetRowAsset;
         }
 
         const idTransaksi = related.id_transaksi || "";
@@ -396,9 +457,9 @@ import KategoriBarang from "./KategoriBarang";
         const keterangan = related.keterangan || "";
 
         const totalPerDayAsset = Number(byDateAsset[dateStr]?.totalPerDay) || 0;
-        console.log("totalPerDayAsset:", totalPerDayAsset);
+        // console.log("totalPerDayAsset:", totalPerDayAsset);
 
-        const showTotalPerDayAsset = dateStr && dateFirstAsset[dateStr] === sheetRowIndex;
+        const showTotalPerDayAsset = dateStr && dateFirstAsset[dateStr] === sheetRowAsset;
 
         const hargaBarang = Number(item?.BarangDiajukan?.KategoriBarang?.harga_barang) || 0;
         const jumlah = Number(item?.total) || 0;
@@ -419,10 +480,10 @@ import KategoriBarang from "./KategoriBarang";
           keterangan,              
         ]);
 
-        sheetRowIndex++;
+        sheetRowAsset++;
       });
 
-      const lastRowAsset = sheetRowIndex - 1;
+      const lastRowAsset = sheetRowAsset - 1;
       if (items.length > 1) {
         const colsToMerge = [0, 1, 8, 10, 11];
         colsToMerge.forEach((col) => {
@@ -473,6 +534,9 @@ import KategoriBarang from "./KategoriBarang";
           }, 
           alignment: {
             horizontal: "center",
+          }, 
+          font: {
+            bold: true,
           }
         };
       }
@@ -489,10 +553,132 @@ import KategoriBarang from "./KategoriBarang";
       }
     });
 
+    //Sheet 3 - Ampas Kelapa
+    Object.keys(ampasKelapaGroups).forEach((id_pengajuan) => {
+      const items = ampasKelapaGroups[id_pengajuan];
+      const firsRowKelapa = sheetRowAmpasKelapa;
+
+      items.forEach((item, index) => {
+        const isFirstRow = index === 0;
+        const totalPerID = isFirstRow ? penjualanAmpasKelapa[id_pengajuan].totalPerID : "";
+        const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
+        const createdAtFull = related.createdAt
+          ? new Date(related.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
+          : "";
+        const dateStr = related?.createdAt
+          ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
+          : "";
+
+        if (dateStr) {
+          if (!dateFirstKelapa[dateStr]) dateFirstKelapa[dateStr] = sheetRowAmpasKelapa;
+          dateLastKelapa[dateStr] = sheetRowAmpasKelapa;
+        }
+
+        const idTransaksi = related.id_transaksi || "";
+        const pembeli = related.VendorPenjualan?.nama || "";
+        const keterangan = related.keterangan || "";
+
+        const totalPerDayKelapa = Number(byDateKelapa[dateStr]?.totalPerDay) || 0;
+        const showTotalPerDayKelapa = dateStr && dateFirstKelapa[dateStr] === sheetRowAmpasKelapa;
+        console.log("totalPerDayKelapa:", totalPerDayKelapa);
+
+        const hargaBarang = Number(item?.BarangDiajukan?.KategoriBarang?.harga_barang) || 0;
+        const jumlah = Number(item?.total) || 0;
+
+        rowsAmpasKelapa.push([
+          createdAtFull,
+          idTransaksi,
+          item.BarangDiajukan?.id_kategori || "",
+          item.BarangDiajukan?.KategoriBarang?.nama || "",
+          Number(item.jumlah_barang) || "",
+          item.BarangDiajukan?.KategoriBarang?.satuan || "",
+          hargaBarang,
+          jumlah,          
+          totalPerID,            
+          showTotalPerDayKelapa ? totalPerDayKelapa : "", 
+          item.Pemohon?.divisi || "",
+          pembeli,                  
+          keterangan,              
+        ]);
+
+        sheetRowAmpasKelapa++;
+      });
+
+      const lastRowKelapa = sheetRowAmpasKelapa - 1;
+      if (items.length > 1) {
+        const colsToMerge = [0, 1, 8, 10, 11];
+        colsToMerge.forEach((col) => {
+          mergesAmpasKelapa.push({
+            s: { r: firsRowKelapa, c: col },
+            e: { r: lastRowKelapa, c: col }
+          });
+        });
+      }
+    });
+
+    Object.keys(dateFirstKelapa).forEach((dateStr) => {
+      const sRow = dateFirstKelapa[dateStr];
+      const eRow = dateLastKelapa[dateStr];
+      if (sRow !== undefined && eRow !== undefined && eRow > sRow) {
+        mergesAmpasKelapa.push({
+          s: { r: sRow, c: 9 },
+          e: { r: eRow, c: 9 }
+        });
+      }
+    });
+
+    const allAmpasKelapa = [titleHeaders, headers, ...rowsAmpasKelapa];
+    const wsAmpasKelapa = XLSX.utils.aoa_to_sheet(allAmpasKelapa);
+
+    rowsAmpasKelapa.forEach((row, i) => {
+      const excelRow = i + 2;
+      const numericCols = [4,6,7,8,9];
+      numericCols.forEach(col => {
+        const cellAddr = XLSX.utils.encode_cell({r: excelRow, c: col});
+        const cell = wsAmpasKelapa[cellAddr];
+        if (!cell) return;
+
+        cell.t = "n";
+        cell.v = Number(cell.v);
+      })
+    });
+
+    wsAmpasKelapa['!merges'] = [titleMerge, ...mergesAmpasKelapa];
+
+    headers.forEach((_, colIndex) => {
+      const cellTitle = XLSX.utils.encode_cell({ r: 0, c: colIndex });
+      const cellHeaders = XLSX.utils.encode_cell({ r: 1, c: colIndex });
+      if (wsAmpasKelapa[cellHeaders]) {
+        wsAmpasKelapa[cellHeaders].s = {
+          fill: {
+            fgColor: { rgb: "fcf51e" } 
+          }, 
+          alignment: {
+            horizontal: "center",
+          },
+          font: {
+            bold: true,
+          }
+        };
+      }
+      if (wsAmpasKelapa[cellTitle]) {
+        wsAmpasKelapa[cellTitle].s = {
+          alignment: {
+            horizontal: "center",
+          }, 
+          font: {
+            bold: true,
+            sz: 14,
+          }
+        }
+      }
+    });
+
     const workbook = XLSX.utils.book_new();
 
     XLSX.utils.book_append_sheet(workbook, wsNonAsset, 'Non-Asset');
     XLSX.utils.book_append_sheet(workbook, wsAsset, 'Asset');
+    XLSX.utils.book_append_sheet(workbook, wsAmpasKelapa, 'Ampas Kelapa');
     XLSX.writeFile(workbook, 'laporan_penjualan.xlsx');
   };
 
