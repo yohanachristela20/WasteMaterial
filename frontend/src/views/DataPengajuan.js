@@ -52,6 +52,7 @@ import KategoriBarang from "./KategoriBarang";
   const [deletedIDPengajuan, setDeletedIDPengajuan] = useState(null);
   const [detailTransaksi, setDetailTransaksi] = useState([]);
   const [detailPengajuan, setDetailPengajuan] = useState([]);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -206,6 +207,12 @@ import KategoriBarang from "./KategoriBarang";
     return acc;
   }, {});
 
+  //SUB TOTAL PER DAY - NON ASSET 
+  const subTotalNonAsset = Object.values(byDateNonAsset)
+  .reduce((sum, d) => sum + (Number(d.totalPerDay) || 0), 0);
+
+  console.log("subTotalNonAsset:", subTotalNonAsset);
+
   //GROUP TOTAL BY DATE - AMPAS KELAPA 
   const byDateKelapa = detailPengajuan
   .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() === "AMPAS KELAPA (N)")
@@ -232,6 +239,12 @@ import KategoriBarang from "./KategoriBarang";
 
     return acc;
   }, {});
+
+  // SUB TOTAL PER DAY - AMPAS KELAPA
+  const subTotalKelapa = Object.values(byDateKelapa)
+  .reduce((sum, d) => sum + (Number(d.totalPerDay) || 0), 0);
+
+  console.log("subTotalKelapa:", subTotalKelapa);
 
   // GROUP TOTAL BY DATE - ASSET 
   const byDateAsset = detailPengajuan
@@ -260,9 +273,31 @@ import KategoriBarang from "./KategoriBarang";
     return acc;
   }, {});
 
+
+  // SUB TOTAL PER DAY - ASSET
+  const subTotalAsset = Object.values(byDateAsset)
+  .reduce((sum, d) => sum + (Number(d.totalPerDay) || 0), 0);
+
+  console.log("subTotalAsset:", subTotalAsset);
+
+  //GRAND TOTAL 
+  const grandTotal = subTotalNonAsset + subTotalAsset + subTotalKelapa;
+
+
+
   const exportToExcel = () => {
     const titleHeaders = ["LAPORAN PENJUALAN WASTE MATERIAL"];
     const headers = ["TANGGAL","NO BPBB", "ID KATEGORI", "DESKRIPSI KATEGORI", "QTY", "UOM", "HARGA PER UOM", "JUMLAH", "TOTAL", "TOTAL PER DAY", "DIVISI", "PEMBELI", "KETERANGAN"];
+    const grandTotalHeaders = ["NO", "DESKRIPSI", "TOTAL"];
+
+    const grandTotalData = [
+      {NO: 1, DESKRIPSI:"Non-Asset", TOTAL: subTotalNonAsset }, 
+      {NO: 2, DESKRIPSI:"Asset", TOTAL: subTotalAsset }, 
+      {NO: 3, DESKRIPSI:"Ampas Kelapa", TOTAL: subTotalKelapa }, 
+      {NO: "", DESKRIPSI: "Grand Total", TOTAL: grandTotal},
+    ];
+
+    
 
     const nonAssetGroups = detailPengajuan
       .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
@@ -291,6 +326,7 @@ import KategoriBarang from "./KategoriBarang";
     const rowsNonAsset = [];
     const rowsAsset = [];
     const rowsAmpasKelapa = [];
+    const rowsGrandTotal = [];
 
     const mergesNonAsset = [];
     const mergesAsset = [];
@@ -299,6 +335,7 @@ import KategoriBarang from "./KategoriBarang";
     let sheetRowNonAsset = 2; 
     let sheetRowAsset = 2;
     let sheetRowAmpasKelapa = 2;
+    let sheetRowGrandTotal = 2;
 
     const dateFirstNonAsset = {};
     const dateFirstAsset = {};
@@ -371,6 +408,14 @@ import KategoriBarang from "./KategoriBarang";
       }
     });
 
+    rowsNonAsset.push([
+      "", "", "", "", "", "", "", "",
+      "SUB TOTAL: ", 
+      subTotalNonAsset, 
+      "", 
+      "",
+    ]);
+
     Object.keys(dateFirstNonAsset).forEach((dateStr) => {
       const sRow = dateFirstNonAsset[dateStr];
       const eRow = dateLastNonAsset[dateStr];
@@ -385,18 +430,24 @@ import KategoriBarang from "./KategoriBarang";
     const allNonAsset = [titleHeaders, headers, ...rowsNonAsset];
     const wsNonAsset = XLSX.utils.aoa_to_sheet(allNonAsset);
 
-    rowsNonAsset.forEach((row, i) => {
-      const excelRow = i + 2;
-      const numericCols = [4,6,7,8,9];
-      numericCols.forEach(col => {
-        const cellAddr = XLSX.utils.encode_cell({r: excelRow, c: col});
-        const cell = wsNonAsset[cellAddr];
-        if (!cell) return;
+    const borderStyle = {
+      style: "thin", 
+      color: { rgb: "FF000000" }
+    };
 
-        cell.t = "n";
-        cell.v = Number(cell.v);
-      })
-    });
+
+    // rowsNonAsset.forEach((row, i) => {
+    //   const excelRow = i + 2;
+    //   const numericCols = [4,6,7,9];
+    //   numericCols.forEach(col => {
+    //     const cellAddr = XLSX.utils.encode_cell({r: excelRow, c: col});
+    //     const cell = wsNonAsset[cellAddr];
+    //     if (!cell) return;
+
+    //     cell.t = "n";
+    //     cell.v = Number(cell.v);
+    //   })
+    // });
 
     const titleMerge = { s: { r: 0, c: 0 }, e: { r: 0, c: 12 } };
     wsNonAsset['!merges'] = [titleMerge, ...mergesNonAsset];
@@ -414,7 +465,13 @@ import KategoriBarang from "./KategoriBarang";
           },
           font: {
             bold: true,
-          }
+          },
+          border: {
+            top: borderStyle, 
+            bottom: borderStyle, 
+            left: borderStyle, 
+            right: borderStyle,
+          },
         };
       }
       if (wsNonAsset[cellTitle]) {
@@ -425,10 +482,49 @@ import KategoriBarang from "./KategoriBarang";
           font: {
             bold: true,
             sz: 14,
-          }
+          },
         }
       }
     });
+
+    const grandTotalNAIndex = rowsNonAsset.length + 1;
+    const cellAddr = XLSX.utils.encode_cell({r: grandTotalNAIndex, c: 9});
+    const cell = wsNonAsset[cellAddr];
+    const labelGrandTotalNA = rowsNonAsset.length + 1;
+    const cellLabelTotalNA = XLSX.utils.encode_cell({r: labelGrandTotalNA, c: 8});
+    const cellLabelNA = wsNonAsset[cellLabelTotalNA];
+
+    if(cell) {
+      cell.s = {
+        font: {
+          bold: true, 
+          sz: 12,
+        }, 
+        fill: {
+          fgColor: { rgb: "fcf51e" }
+        }, 
+        alignment: {
+          horizontal: "right", 
+          vertical: "right",
+        },
+      }
+    } 
+    
+    if(cellLabelNA) {
+      cellLabelNA.s = {
+        font: {
+          bold: true, 
+          sz: 12,
+        }, 
+        fill: {
+          fgColor: { rgb: "fcf51e" }
+        }, 
+        alignment: {
+          horizontal: "left", 
+          vertical: "left",
+        }
+      }
+    }
 
 
     // Sheet 2 - Asset 
@@ -495,6 +591,14 @@ import KategoriBarang from "./KategoriBarang";
       }
     });
 
+    rowsAsset.push([
+      "", "", "", "", "", "", "", "",
+      "SUB TOTAL: ", 
+      subTotalAsset, 
+      "", 
+      "",
+    ]);
+
     Object.keys(dateFirstAsset).forEach((dateStr) => {
       const sRow = dateFirstAsset[dateStr];
       const eRow = dateLastAsset[dateStr];
@@ -509,18 +613,18 @@ import KategoriBarang from "./KategoriBarang";
     const allAsset = [titleHeaders, headers, ...rowsAsset];
     const wsAsset = XLSX.utils.aoa_to_sheet(allAsset);
 
-    rowsAsset.forEach((row, i) => {
-      const excelRow = i + 2;
-      const numericCols = [4,6,7,8,9];
-      numericCols.forEach(col => {
-        const cellAddr = XLSX.utils.encode_cell({r: excelRow, c: col});
-        const cell = wsAsset[cellAddr];
-        if (!cell) return;
+    // rowsAsset.forEach((row, i) => {
+    //   const excelRow = i + 2;
+    //   const numericCols = [4,6,7,8,9];
+    //   numericCols.forEach(col => {
+    //     const cellAddr = XLSX.utils.encode_cell({r: excelRow, c: col});
+    //     const cell = wsAsset[cellAddr];
+    //     if (!cell) return;
 
-        cell.t = "n";
-        cell.v = Number(cell.v);
-      })
-    });
+    //     cell.t = "n";
+    //     cell.v = Number(cell.v);
+    //   })
+    // });
 
     wsAsset['!merges'] = [titleMerge, ...mergesAsset];
 
@@ -537,7 +641,13 @@ import KategoriBarang from "./KategoriBarang";
           }, 
           font: {
             bold: true,
-          }
+          }, 
+          border: {
+            top: borderStyle, 
+            bottom: borderStyle, 
+            left: borderStyle, 
+            right: borderStyle,
+          },
         };
       }
       if (wsAsset[cellTitle]) {
@@ -553,10 +663,49 @@ import KategoriBarang from "./KategoriBarang";
       }
     });
 
+    const grandTotalAIndex = rowsAsset.length + 1;
+    const cellAddrAsset = XLSX.utils.encode_cell({r: grandTotalAIndex, c: 9});
+    const cellAsset = wsAsset[cellAddrAsset];
+    const labelTotalAsset = rowsAsset.length + 1;
+    const cellLabelTotalA = XLSX.utils.encode_cell({r: labelTotalAsset, c: 8});
+    const cellLabelA = wsAsset[cellLabelTotalA];
+
+    if(cellAsset) {
+      cellAsset.s = {
+        font: {
+          bold: true, 
+          sz: 12,
+        }, 
+        fill: {
+          fgColor: { rgb: "fcf51e" }
+        }, 
+        alignment: {
+          horizontal: "right", 
+          vertical: "right",
+        },
+      }
+    } 
+    
+    if(cellLabelA) {
+      cellLabelA.s = {
+        font: {
+          bold: true, 
+          sz: 12,
+        }, 
+        fill: {
+          fgColor: { rgb: "fcf51e" }
+        }, 
+        alignment: {
+          horizontal: "left", 
+          vertical: "left",
+        }
+      }
+    }
+
     //Sheet 3 - Ampas Kelapa
     Object.keys(ampasKelapaGroups).forEach((id_pengajuan) => {
       const items = ampasKelapaGroups[id_pengajuan];
-      const firsRowKelapa = sheetRowAmpasKelapa;
+      const firstRowKelapa = sheetRowAmpasKelapa;
 
       items.forEach((item, index) => {
         const isFirstRow = index === 0;
@@ -609,12 +758,20 @@ import KategoriBarang from "./KategoriBarang";
         const colsToMerge = [0, 1, 8, 10, 11];
         colsToMerge.forEach((col) => {
           mergesAmpasKelapa.push({
-            s: { r: firsRowKelapa, c: col },
+            s: { r: firstRowKelapa, c: col },
             e: { r: lastRowKelapa, c: col }
           });
         });
       }
     });
+
+    rowsAmpasKelapa.push([
+      "", "", "", "", "", "", "", "",
+      "SUB TOTAL: ", 
+      subTotalKelapa, 
+      "", 
+      "",
+    ]);
 
     Object.keys(dateFirstKelapa).forEach((dateStr) => {
       const sRow = dateFirstKelapa[dateStr];
@@ -630,18 +787,18 @@ import KategoriBarang from "./KategoriBarang";
     const allAmpasKelapa = [titleHeaders, headers, ...rowsAmpasKelapa];
     const wsAmpasKelapa = XLSX.utils.aoa_to_sheet(allAmpasKelapa);
 
-    rowsAmpasKelapa.forEach((row, i) => {
-      const excelRow = i + 2;
-      const numericCols = [4,6,7,8,9];
-      numericCols.forEach(col => {
-        const cellAddr = XLSX.utils.encode_cell({r: excelRow, c: col});
-        const cell = wsAmpasKelapa[cellAddr];
-        if (!cell) return;
+    // rowsAmpasKelapa.forEach((row, i) => {
+    //   const excelRow = i + 2;
+    //   const numericCols = [4,6,7,8,9];
+    //   numericCols.forEach(col => {
+    //     const cellAddr = XLSX.utils.encode_cell({r: excelRow, c: col});
+    //     const cell = wsAmpasKelapa[cellAddr];
+    //     if (!cell) return;
 
-        cell.t = "n";
-        cell.v = Number(cell.v);
-      })
-    });
+    //     cell.t = "n";
+    //     cell.v = Number(cell.v);
+    //   })
+    // });
 
     wsAmpasKelapa['!merges'] = [titleMerge, ...mergesAmpasKelapa];
 
@@ -658,7 +815,13 @@ import KategoriBarang from "./KategoriBarang";
           },
           font: {
             bold: true,
-          }
+          }, 
+          border: {
+            top: borderStyle, 
+            bottom: borderStyle, 
+            left: borderStyle, 
+            right: borderStyle,
+          },
         };
       }
       if (wsAmpasKelapa[cellTitle]) {
@@ -674,11 +837,133 @@ import KategoriBarang from "./KategoriBarang";
       }
     });
 
+    const grandTotalAKIndex = rowsAmpasKelapa.length + 1;
+    const cellAddrKelapa = XLSX.utils.encode_cell({r: grandTotalAKIndex, c: 9});
+    const cellKelapa = wsAmpasKelapa[cellAddrKelapa];
+    const labelGrandTotalAK = rowsAmpasKelapa.length + 1;
+    const cellLabelTotalAK = XLSX.utils.encode_cell({r: labelGrandTotalAK, c: 8});
+    const cellLabelAK = wsAmpasKelapa[cellLabelTotalAK];
+
+    if(cellKelapa) {
+      cellKelapa.s = {
+        font: {
+          bold: true, 
+          sz: 12,
+        }, 
+        fill: {
+          fgColor: { rgb: "fcf51e" }
+        }, 
+        alignment: {
+          horizontal: "right", 
+          vertical: "right",
+        },
+      }
+    } 
+    
+    if(cellLabelAK) {
+      cellLabelAK.s = {
+        font: {
+          bold: true, 
+          sz: 12,
+        }, 
+        fill: {
+          fgColor: { rgb: "fcf51e" }
+        }, 
+        alignment: {
+          horizontal: "left", 
+          vertical: "left",
+        }
+      }
+    }
+
+
+    // TOTAL PER BULAN 
+    // const allGrandTotal = [titleHeaders, grandTotalHeaders, ...grandTotalData];
+    const wsGrandTotal = XLSX.utils.json_to_sheet(grandTotalData);
+
+    wsGrandTotal["A1"].s = {
+      fill: {
+        fgColor: { rgb: "f59b1d" } 
+      }, 
+      alignment: {
+        horizontal: "center",
+      },
+      font: {
+        bold: true,
+      },
+      border: {
+        top: borderStyle, 
+        bottom: borderStyle, 
+        left: borderStyle, 
+        right: borderStyle,
+      },
+    }
+    wsGrandTotal["B1"].s = {
+      fill: {
+        fgColor: { rgb: "f59b1d" } 
+      }, 
+      alignment: {
+        horizontal: "center",
+      },
+      font: {
+        bold: true,
+      },
+      border: {
+        top: borderStyle, 
+        bottom: borderStyle, 
+        left: borderStyle, 
+        right: borderStyle,
+      },
+    }
+    wsGrandTotal["C1"].s = {
+      fill: {
+        fgColor: { rgb: "f59b1d" } 
+      }, 
+      alignment: {
+        horizontal: "center",
+      },
+      font: {
+        bold: true,
+      },
+      border: {
+        top: borderStyle, 
+        bottom: borderStyle, 
+        left: borderStyle, 
+        right: borderStyle,
+      },
+    }
+    wsGrandTotal["B5"].s = {
+      fill: {
+        fgColor: { rgb: "fcf51e" } 
+      }, 
+      alignment: {
+        horizontal: "left",
+      },
+      font: {
+        bold: true,
+      },
+    }
+    wsGrandTotal["C5"].s = {
+      fill: {
+        fgColor: { rgb: "fcf51e" } 
+      }, 
+      alignment: {
+        horizontal: "right",
+      },
+      font: {
+        bold: true,
+      },
+      
+    }
+    
+
+
     const workbook = XLSX.utils.book_new();
 
     XLSX.utils.book_append_sheet(workbook, wsNonAsset, 'Non-Asset');
     XLSX.utils.book_append_sheet(workbook, wsAsset, 'Asset');
     XLSX.utils.book_append_sheet(workbook, wsAmpasKelapa, 'Ampas Kelapa');
+    XLSX.utils.book_append_sheet(workbook, wsGrandTotal, 'Grand Total');
     XLSX.writeFile(workbook, 'laporan_penjualan.xlsx');
   };
 
@@ -1038,7 +1323,9 @@ import KategoriBarang from "./KategoriBarang";
               className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
               type="button"
               variant="primary"
-              onClick={exportToExcel}>
+              // onClick={exportToExcel}
+              onClick={() => setShowDownloadModal(true)}
+              >
               <FaFileExcel style={{ marginRight: '8px' }} />
               Unduh Laporan
             </Button>
@@ -1163,6 +1450,40 @@ import KategoriBarang from "./KategoriBarang";
           <Row className="mb-3">
             <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
               <Button variant="danger" onClick={() => setShowModal(false)}>
+                Tidak
+              </Button>
+            </Col>
+            <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
+              <Button variant="success" onClick={() => deletePengajuan(pengajuan.id_pengajuan)}>
+                Ya
+              </Button> 
+            </Col>
+          </Row>
+        </Modal>
+
+        <Modal show={showDownloadModal} onHide={() => setShowDownloadModal(false)} dialogClassName="modal-warning">
+          <Modal.Header style={{borderBottom: "none"}}>
+            <FaExclamationTriangle style={{ width:"100%", height:"60px", position: "relative", textAlign:"center", marginTop:"20px"}} color="#ffca57ff"/>
+              <button
+                type="button"
+                className="close"
+                aria-label="Close"
+                onClick={() => setShowDownloadModal(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: "1.5rem",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+              >
+                &times; {/* Simbol 'x' */}
+              </button>
+          </Modal.Header>
+          <Modal.Body style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}} >Yakin ingin menghapus data pengajuan?</Modal.Body>
+          <Row className="mb-3">
+            <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
+              <Button variant="danger" onClick={() => setShowDownloadModal(false)}>
                 Tidak
               </Button>
             </Col>
