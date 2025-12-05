@@ -11,12 +11,7 @@ import "../assets/scss/lbd/_table-header.scss";
 import {toast } from 'react-toastify';
 import ReactLoading from "react-loading";
 import "../assets/scss/lbd/_loading.scss";
-import ImportPengajuan from "components/ModalForm/ImportPengajuan.js";
-// import * as XLSX from 'xlsx';
 import * as XLSX from 'sheetjs-style';
-import { saveAs } from 'file-saver';
-
-
 
 import {
   Badge,
@@ -29,10 +24,9 @@ import {
   DropdownButton,
   ButtonGroup, 
   Dropdown,
-  Modal
+  Modal,
+  Form
 } from "react-bootstrap";
-import { data, merge } from "jquery";
-import KategoriBarang from "./KategoriBarang";
 
  function DataPengajuan() {
   const history = useHistory();
@@ -53,6 +47,13 @@ import KategoriBarang from "./KategoriBarang";
   const [detailTransaksi, setDetailTransaksi] = useState([]);
   const [detailPengajuan, setDetailPengajuan] = useState([]);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [tanggal_awal, setTanggalAwal] = useState("");
+  const [tanggal_akhir, setTanggalAkhir] = useState("");
+  const [tanggalError, setTanggalError] = useState(false);
+  const [tanggal_awal_scrapping, setTanggalAwalScrap] = useState("");
+  const [tanggal_akhir_scrapping, setTanggalAkhirScrap] = useState("");
+  const [tglScrapError, setTglScrapError] = useState(false);
+  const [showDownloadScrap, setShowDownloadScrapping] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -117,14 +118,9 @@ import KategoriBarang from "./KategoriBarang";
             console.error("Error fetching data:", error);
         }
     };
-      // if (id_pengajuan) {
-      //   getDetailTransaksi();
-      // } 
       getDetailTransaksi();
       getDetailPengajuan();
   }, [token]);
-
-  // console.log("DETAIL PENGAJUAN:", detailPengajuan);
 
   const formatRupiah = (angka) => {
     let pinjamanString = angka.toString().replace(".00");
@@ -148,137 +144,267 @@ import KategoriBarang from "./KategoriBarang";
     return isNaN(parsed) ? 0 : parsed;
   };
 
-  // GROUP TOTAL BY ID PENGAJUAN - NON ASSET 
-  const penjualanNonAsset = detailPengajuan
-  .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() !== "AMPAS KELAPA (N)")
-  .reduce((acc, item) => {
-    const id = item.id_pengajuan;
-    if(!acc[id]) acc[id] = { totalPerID: 0 }; 
-    acc[id].totalPerID += Number(item.total) || 0;
-    return acc;
-  }, {});
+  let penjualanNonAsset;
+  let penjualanAsset
+  let penjualanAmpasKelapa;
 
-  // GROUP TOTAL BY ID PENGAJUAN - ASSET 
-  const penjualanAsset = detailPengajuan
-  .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "ASSET")
-  .reduce((acc, item) => {
-    const id = item.id_pengajuan;
-    if(!acc[id]) acc[id] = { totalPerID: 0 }; 
-    acc[id].totalPerID += Number(item.total) || 0;
-    return acc;
-  }, {});
+  if (tanggal_akhir !== "" && tanggal_awal !== "") {
+    // GROUP TOTAL BY ID PENGAJUAN - NON ASSET 
+    penjualanNonAsset = detailPengajuan
+    .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() !== "AMPAS KELAPA (N)" && item?.GeneratePengajuan?.status === "Selesai")
+    .filter(item => item.createdAt >= tanggal_awal && item.createdAt <= tanggal_akhir)
+    .reduce((acc, item) => {
+      const id = item.id_pengajuan;
+      if(!acc[id]) acc[id] = { totalPerID: 0 }; 
+      acc[id].totalPerID += Number(item.total) || 0;
+      return acc;
+    }, {});
 
+    // GROUP TOTAL BY ID PENGAJUAN - ASSET 
+    penjualanAsset = detailPengajuan
+    .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "ASSET" && item?.GeneratePengajuan?.status === "Selesai")
+    .filter(item => item.createdAt >= tanggal_awal && item.createdAt <= tanggal_akhir)
+    .reduce((acc, item) => {
+      const id = item.id_pengajuan;
+      if(!acc[id]) acc[id] = { totalPerID: 0 }; 
+      acc[id].totalPerID += Number(item.total) || 0;
+      return acc;
+    }, {});
 
-  // GROUP TOTAL BY ID PENGAJUAN - AMPAS KELAPA
-    const penjualanAmpasKelapa = detailPengajuan
-  .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() === "AMPAS KELAPA (N)")
-  .reduce((acc, item) => {
-    const id = item.id_pengajuan;
-    if(!acc[id]) acc[id] = { totalPerID: 0 }; 
-    acc[id].totalPerID += Number(item.total) || 0;
-    return acc;
-  }, {});
+    // GROUP TOTAL BY ID PENGAJUAN - AMPAS KELAPA
+    penjualanAmpasKelapa = detailPengajuan
+    .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() === "AMPAS KELAPA (N)" && item?.GeneratePengajuan?.status === "Selesai")
+    .filter(item => item.createdAt >= tanggal_awal && item.createdAt <= tanggal_akhir)
+    .reduce((acc, item) => {
+      const id = item.id_pengajuan;
+      if(!acc[id]) acc[id] = { totalPerID: 0 }; 
+      acc[id].totalPerID += Number(item.total) || 0;
+      return acc;
+    }, {});
 
+  } else {
+    // GROUP TOTAL BY ID PENGAJUAN - NON ASSET 
+    penjualanNonAsset = detailPengajuan
+    .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() !== "AMPAS KELAPA (N)" && item?.GeneratePengajuan?.status === "Selesai")
+    .reduce((acc, item) => {
+      const id = item.id_pengajuan;
+      if(!acc[id]) acc[id] = { totalPerID: 0 }; 
+      acc[id].totalPerID += Number(item.total) || 0;
+      return acc;
+    }, {});
 
-  //GROUP TOTAL BY DATE - NON ASSET 
-  const byDateNonAsset = detailPengajuan
-  .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() !== "AMPAS KELAPA (N)")
-  .reduce((acc, item) => {
-    if (String(item.jenis_pengajuan).toUpperCase() !== "PENJUALAN" ) return acc;
+    // GROUP TOTAL BY ID PENGAJUAN - ASSET 
+    penjualanAsset = detailPengajuan
+    .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "ASSET" && item?.GeneratePengajuan?.status === "Selesai")
+    .reduce((acc, item) => {
+      const id = item.id_pengajuan;
+      if(!acc[id]) acc[id] = { totalPerID: 0 }; 
+      acc[id].totalPerID += Number(item.total) || 0;
+      return acc;
+    }, {});
 
-    const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
-    const dateStr = related?.createdAt
-      ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
-      : "";
+    // GROUP TOTAL BY ID PENGAJUAN - AMPAS KELAPA
+    penjualanAmpasKelapa = detailPengajuan
+    .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() === "AMPAS KELAPA (N)" && item?.GeneratePengajuan?.status === "Selesai")
+    .reduce((acc, item) => {
+      const id = item.id_pengajuan;
+      if(!acc[id]) acc[id] = { totalPerID: 0 }; 
+      acc[id].totalPerID += Number(item.total) || 0;
+      return acc;
+    }, {});
+  }
 
-    if (!dateStr) return acc;
+  let byDateNonAsset;
+  let byDateAsset;
+  let byDateKelapa;
 
-    if (!acc[dateStr]) {
-      acc[dateStr] = {
-        date: dateStr,
-        totalPerDay: 0,
-        items: []
-      };
-    }
+  if (tanggal_akhir !== "" && tanggal_awal !== "") {
+    //GROUP TOTAL BY DATE - NON ASSET 
+    byDateNonAsset = detailPengajuan
+    .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() !== "AMPAS KELAPA (N)" && item?.GeneratePengajuan?.status === "Selesai")
+    .filter(item => item.createdAt >= tanggal_awal && item.createdAt <= tanggal_akhir)
+    .reduce((acc, item) => {
+      if (String(item.jenis_pengajuan).toUpperCase() !== "PENJUALAN" ) return acc;
 
-    acc[dateStr].totalPerDay += toNumber(item.total);
-    acc[dateStr].items.push(item.id_pengajuan);
+      const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
+      const dateStr = related?.createdAt
+        ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
+        : "";
 
-    return acc;
-  }, {});
+      if (!dateStr) return acc;
+
+      if (!acc[dateStr]) {
+        acc[dateStr] = {
+          date: dateStr,
+          totalPerDay: 0,
+          items: []
+        };
+      }
+
+      acc[dateStr].totalPerDay += toNumber(item.total);
+      acc[dateStr].items.push(item.id_pengajuan);
+
+      return acc;
+    }, {});
+
+    // GROUP TOTAL BY DATE - ASSET 
+    byDateAsset = detailPengajuan
+    .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "ASSET" && item?.GeneratePengajuan?.status === "Selesai")
+    .filter(item => item.createdAt >= tanggal_awal && item.createdAt <= tanggal_akhir)
+    .reduce((acc, item) => {
+      if (String(item.jenis_pengajuan).toUpperCase() !== "PENJUALAN" ) return acc;
+
+      const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
+      const dateStr = related?.createdAt
+        ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
+        : "";
+
+      if (!dateStr) return acc;
+
+      if (!acc[dateStr]) {
+        acc[dateStr] = {
+          date: dateStr,
+          totalPerDay: 0,
+          items: []
+        };
+      }
+
+      acc[dateStr].totalPerDay += toNumber(item.total);
+      acc[dateStr].items.push(item.id_pengajuan);
+
+      return acc;
+    }, {});
+
+    //GROUP TOTAL BY DATE - AMPAS KELAPA 
+    byDateKelapa = detailPengajuan
+    .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() === "AMPAS KELAPA (N)" && item?.GeneratePengajuan?.status === "Selesai")
+    .filter(item => item.createdAt >= tanggal_awal && item.createdAt <= tanggal_akhir)
+    .reduce((acc, item) => {
+      if (String(item.jenis_pengajuan).toUpperCase() !== "PENJUALAN" ) return acc;
+
+      const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
+      const dateStr = related?.createdAt
+        ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
+        : "";
+
+      if (!dateStr) return acc;
+
+      if (!acc[dateStr]) {
+        acc[dateStr] = {
+          date: dateStr,
+          totalPerDay: 0,
+          items: []
+        };
+      }
+
+      acc[dateStr].totalPerDay += toNumber(item.total);
+      acc[dateStr].items.push(item.id_pengajuan);
+
+      return acc;
+    }, {});
+  } else {
+    //GROUP TOTAL BY DATE - NON ASSET 
+    byDateNonAsset = detailPengajuan
+    .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() !== "AMPAS KELAPA (N)" && item?.GeneratePengajuan?.status === "Selesai")
+    .reduce((acc, item) => {
+      if (String(item.jenis_pengajuan).toUpperCase() !== "PENJUALAN" ) return acc;
+
+      const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
+      const dateStr = related?.createdAt
+        ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
+        : "";
+
+      if (!dateStr) return acc;
+
+      if (!acc[dateStr]) {
+        acc[dateStr] = {
+          date: dateStr,
+          totalPerDay: 0,
+          items: []
+        };
+      }
+
+      acc[dateStr].totalPerDay += toNumber(item.total);
+      acc[dateStr].items.push(item.id_pengajuan);
+
+      return acc;
+    }, {});
+
+    // GROUP TOTAL BY DATE - ASSET 
+    byDateAsset = detailPengajuan
+    .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "ASSET" && item?.GeneratePengajuan?.status === "Selesai")
+    .reduce((acc, item) => {
+      if (String(item.jenis_pengajuan).toUpperCase() !== "PENJUALAN" ) return acc;
+
+      const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
+      const dateStr = related?.createdAt
+        ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
+        : "";
+
+      if (!dateStr) return acc;
+
+      if (!acc[dateStr]) {
+        acc[dateStr] = {
+          date: dateStr,
+          totalPerDay: 0,
+          items: []
+        };
+      }
+
+      acc[dateStr].totalPerDay += toNumber(item.total);
+      acc[dateStr].items.push(item.id_pengajuan);
+
+      return acc;
+    }, {});
+
+    //GROUP TOTAL BY DATE - AMPAS KELAPA 
+    byDateKelapa = detailPengajuan
+    .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() === "AMPAS KELAPA (N)" && item?.GeneratePengajuan?.status === "Selesai")
+    .reduce((acc, item) => {
+      if (String(item.jenis_pengajuan).toUpperCase() !== "PENJUALAN" ) return acc;
+
+      const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
+      const dateStr = related?.createdAt
+        ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
+        : "";
+
+      if (!dateStr) return acc;
+
+      if (!acc[dateStr]) {
+        acc[dateStr] = {
+          date: dateStr,
+          totalPerDay: 0,
+          items: []
+        };
+      }
+
+      acc[dateStr].totalPerDay += toNumber(item.total);
+      acc[dateStr].items.push(item.id_pengajuan);
+
+      return acc;
+    }, {});
+  }
 
   //SUB TOTAL PER DAY - NON ASSET 
   const subTotalNonAsset = Object.values(byDateNonAsset)
   .reduce((sum, d) => sum + (Number(d.totalPerDay) || 0), 0);
 
-  console.log("subTotalNonAsset:", subTotalNonAsset);
-
-  //GROUP TOTAL BY DATE - AMPAS KELAPA 
-  const byDateKelapa = detailPengajuan
-  .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() === "AMPAS KELAPA (N)")
-  .reduce((acc, item) => {
-    if (String(item.jenis_pengajuan).toUpperCase() !== "PENJUALAN" ) return acc;
-
-    const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
-    const dateStr = related?.createdAt
-      ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
-      : "";
-
-    if (!dateStr) return acc;
-
-    if (!acc[dateStr]) {
-      acc[dateStr] = {
-        date: dateStr,
-        totalPerDay: 0,
-        items: []
-      };
-    }
-
-    acc[dateStr].totalPerDay += toNumber(item.total);
-    acc[dateStr].items.push(item.id_pengajuan);
-
-    return acc;
-  }, {});
+  // console.log("subTotalNonAsset:", subTotalNonAsset);
 
   // SUB TOTAL PER DAY - AMPAS KELAPA
   const subTotalKelapa = Object.values(byDateKelapa)
   .reduce((sum, d) => sum + (Number(d.totalPerDay) || 0), 0);
 
-  console.log("subTotalKelapa:", subTotalKelapa);
+  // console.log("subTotalKelapa:", subTotalKelapa);
 
-  // GROUP TOTAL BY DATE - ASSET 
-  const byDateAsset = detailPengajuan
-  .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "ASSET")
-  .reduce((acc, item) => {
-    if (String(item.jenis_pengajuan).toUpperCase() !== "PENJUALAN" ) return acc;
 
-    const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
-    const dateStr = related?.createdAt
-      ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
-      : "";
-
-    if (!dateStr) return acc;
-
-    if (!acc[dateStr]) {
-      acc[dateStr] = {
-        date: dateStr,
-        totalPerDay: 0,
-        items: []
-      };
-    }
-
-    acc[dateStr].totalPerDay += toNumber(item.total);
-    acc[dateStr].items.push(item.id_pengajuan);
-
-    return acc;
-  }, {});
 
 
   // SUB TOTAL PER DAY - ASSET
   const subTotalAsset = Object.values(byDateAsset)
   .reduce((sum, d) => sum + (Number(d.totalPerDay) || 0), 0);
 
-  console.log("subTotalAsset:", subTotalAsset);
+  // console.log("subTotalAsset:", subTotalAsset);
 
   //GRAND TOTAL 
   const grandTotal = subTotalNonAsset + subTotalAsset + subTotalKelapa;
@@ -288,7 +414,13 @@ import KategoriBarang from "./KategoriBarang";
   const exportToExcel = () => {
     const titleHeaders = ["LAPORAN PENJUALAN WASTE MATERIAL"];
     const headers = ["TANGGAL","NO BPBB", "ID KATEGORI", "DESKRIPSI KATEGORI", "QTY", "UOM", "HARGA PER UOM", "JUMLAH", "TOTAL", "TOTAL PER DAY", "DIVISI", "PEMBELI", "KETERANGAN"];
-    const grandTotalHeaders = ["NO", "DESKRIPSI", "TOTAL"];
+    let nonAssetGroups;
+    let assetGroups;
+    let ampasKelapaGroups;
+
+    // const currentDate = related?.createdAt
+    // ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
+    // : "";
 
     const grandTotalData = [
       {NO: 1, DESKRIPSI:"Non-Asset", TOTAL: subTotalNonAsset }, 
@@ -297,36 +429,65 @@ import KategoriBarang from "./KategoriBarang";
       {NO: "", DESKRIPSI: "Grand Total", TOTAL: grandTotal},
     ];
 
-    
 
-    const nonAssetGroups = detailPengajuan
-      .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
-      .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() !== "AMPAS KELAPA (N)")
-      .reduce((acc, item) => {
-        (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
-        return acc;
-    }, {});
+    if (tanggal_akhir !== "" && tanggal_awal !== "") {
+      nonAssetGroups = detailPengajuan
+        .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
+        .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() !== "AMPAS KELAPA (N)" && item?.GeneratePengajuan?.status === "Selesai")
+        .filter(item => item.createdAt >= tanggal_awal && item.createdAt <= tanggal_akhir) //format item.createdAt nya ada time nya -- jadi data tidak muncul jika = tanggal akhir
+        .reduce((acc, item) => {
+          (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
+          return acc;
+      }, {});
 
-    const assetGroups = detailPengajuan
-      .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
-      .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "ASSET")
-      .reduce((acc, item) => {
-        (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
-        return acc;
-    }, {});
+      assetGroups = detailPengajuan
+        .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
+        .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "ASSET" && item?.GeneratePengajuan?.status === "Selesai")
+        .filter(item => item.createdAt >= tanggal_awal && item.createdAt <= tanggal_akhir)
+        .reduce((acc, item) => {
+          (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
+          return acc;
+      }, {});
 
-    const ampasKelapaGroups = detailPengajuan
-      .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
-      .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() === "AMPAS KELAPA (N)")
-      .reduce((acc, item) => {
-        (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
-        return acc;
-    }, {});
+      
+       ampasKelapaGroups = detailPengajuan
+        .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
+        .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() === "AMPAS KELAPA (N)" && item?.GeneratePengajuan?.status === "Selesai")
+        .filter(item => item.createdAt >= tanggal_awal && item.createdAt <= tanggal_akhir)
+        .reduce((acc, item) => {
+          (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
+          return acc;
+      }, {});
+    } else {
+      nonAssetGroups = detailPengajuan
+        .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
+        .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() !== "AMPAS KELAPA (N)" && item?.GeneratePengajuan?.status === "Selesai")
+        .reduce((acc, item) => {
+          (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
+          return acc;
+      }, {});
+
+      assetGroups = detailPengajuan
+        .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
+        .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "ASSET" && item?.GeneratePengajuan?.status === "Selesai")
+        .reduce((acc, item) => {
+          (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
+          return acc;
+      }, {});
+
+      ampasKelapaGroups = detailPengajuan
+        .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
+        .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() === "AMPAS KELAPA (N)" && item?.GeneratePengajuan?.status === "Selesai")
+        .reduce((acc, item) => {
+          (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
+          return acc;
+      }, {});
+    }
+
 
     const rowsNonAsset = [];
     const rowsAsset = [];
     const rowsAmpasKelapa = [];
-    const rowsGrandTotal = [];
 
     const mergesNonAsset = [];
     const mergesAsset = [];
@@ -335,7 +496,6 @@ import KategoriBarang from "./KategoriBarang";
     let sheetRowNonAsset = 2; 
     let sheetRowAsset = 2;
     let sheetRowAmpasKelapa = 2;
-    let sheetRowGrandTotal = 2;
 
     const dateFirstNonAsset = {};
     const dateFirstAsset = {};
@@ -372,7 +532,7 @@ import KategoriBarang from "./KategoriBarang";
 
         const totalPerDay = Number(byDateNonAsset[dateStr]?.totalPerDay) || 0;
         const showTotalPerDay = dateStr && dateFirstNonAsset[dateStr] === sheetRowNonAsset;
-        console.log("totalPerDay Non-asset:", totalPerDay);
+        // console.log("totalPerDay Non-asset:", totalPerDay);
 
         const hargaBarang = Number(item?.BarangDiajukan?.KategoriBarang?.harga_barang) || 0;
         const jumlah = Number(item?.total) || 0;
@@ -408,13 +568,17 @@ import KategoriBarang from "./KategoriBarang";
       }
     });
 
-    rowsNonAsset.push([
-      "", "", "", "", "", "", "", "",
-      "SUB TOTAL: ", 
-      subTotalNonAsset, 
-      "", 
-      "",
-    ]);
+    if (subTotalNonAsset !== 0) {
+      rowsNonAsset.push([
+        "", "", "", "", "", "", "", "",
+        "SUB TOTAL: ", 
+        subTotalNonAsset, 
+        "", 
+        "",
+      ]);
+    } else {
+      ""
+    }
 
     Object.keys(dateFirstNonAsset).forEach((dateStr) => {
       const sRow = dateFirstNonAsset[dateStr];
@@ -494,7 +658,7 @@ import KategoriBarang from "./KategoriBarang";
     const cellLabelTotalNA = XLSX.utils.encode_cell({r: labelGrandTotalNA, c: 8});
     const cellLabelNA = wsNonAsset[cellLabelTotalNA];
 
-    if(cell) {
+    if(cell && subTotalNonAsset !== 0) {
       cell.s = {
         font: {
           bold: true, 
@@ -510,7 +674,7 @@ import KategoriBarang from "./KategoriBarang";
       }
     } 
     
-    if(cellLabelNA) {
+    if(cellLabelNA && subTotalNonAsset !== 0) {
       cellLabelNA.s = {
         font: {
           bold: true, 
@@ -591,13 +755,17 @@ import KategoriBarang from "./KategoriBarang";
       }
     });
 
-    rowsAsset.push([
-      "", "", "", "", "", "", "", "",
-      "SUB TOTAL: ", 
-      subTotalAsset, 
-      "", 
-      "",
-    ]);
+    if (subTotalAsset !== 0) {
+      rowsAsset.push([
+        "", "", "", "", "", "", "", "",
+        "SUB TOTAL: ", 
+        subTotalAsset, 
+        "", 
+        "",
+      ]);
+    } else {
+      ""
+    }
 
     Object.keys(dateFirstAsset).forEach((dateStr) => {
       const sRow = dateFirstAsset[dateStr];
@@ -670,7 +838,7 @@ import KategoriBarang from "./KategoriBarang";
     const cellLabelTotalA = XLSX.utils.encode_cell({r: labelTotalAsset, c: 8});
     const cellLabelA = wsAsset[cellLabelTotalA];
 
-    if(cellAsset) {
+    if(cellAsset && subTotalAsset !== 0) {
       cellAsset.s = {
         font: {
           bold: true, 
@@ -686,7 +854,7 @@ import KategoriBarang from "./KategoriBarang";
       }
     } 
     
-    if(cellLabelA) {
+    if(cellLabelA && subTotalAsset !== 0) {
       cellLabelA.s = {
         font: {
           bold: true, 
@@ -729,7 +897,7 @@ import KategoriBarang from "./KategoriBarang";
 
         const totalPerDayKelapa = Number(byDateKelapa[dateStr]?.totalPerDay) || 0;
         const showTotalPerDayKelapa = dateStr && dateFirstKelapa[dateStr] === sheetRowAmpasKelapa;
-        console.log("totalPerDayKelapa:", totalPerDayKelapa);
+        // console.log("totalPerDayKelapa:", totalPerDayKelapa);
 
         const hargaBarang = Number(item?.BarangDiajukan?.KategoriBarang?.harga_barang) || 0;
         const jumlah = Number(item?.total) || 0;
@@ -765,13 +933,17 @@ import KategoriBarang from "./KategoriBarang";
       }
     });
 
-    rowsAmpasKelapa.push([
-      "", "", "", "", "", "", "", "",
-      "SUB TOTAL: ", 
-      subTotalKelapa, 
-      "", 
-      "",
-    ]);
+    if (subTotalKelapa !== 0) {
+      rowsAmpasKelapa.push([
+        "", "", "", "", "", "", "", "",
+        "SUB TOTAL: ", 
+        subTotalKelapa, 
+        "", 
+        "",
+      ]);
+    } else {
+      ""
+    };
 
     Object.keys(dateFirstKelapa).forEach((dateStr) => {
       const sRow = dateFirstKelapa[dateStr];
@@ -844,7 +1016,7 @@ import KategoriBarang from "./KategoriBarang";
     const cellLabelTotalAK = XLSX.utils.encode_cell({r: labelGrandTotalAK, c: 8});
     const cellLabelAK = wsAmpasKelapa[cellLabelTotalAK];
 
-    if(cellKelapa) {
+    if(cellKelapa && subTotalKelapa !== 0) {
       cellKelapa.s = {
         font: {
           bold: true, 
@@ -860,7 +1032,7 @@ import KategoriBarang from "./KategoriBarang";
       }
     } 
     
-    if(cellLabelAK) {
+    if(cellLabelAK && subTotalKelapa !== 0) {
       cellLabelAK.s = {
         font: {
           bold: true, 
@@ -965,6 +1137,149 @@ import KategoriBarang from "./KategoriBarang";
     XLSX.utils.book_append_sheet(workbook, wsAmpasKelapa, 'Ampas Kelapa');
     XLSX.utils.book_append_sheet(workbook, wsGrandTotal, 'Grand Total');
     XLSX.writeFile(workbook, 'laporan_penjualan.xlsx');
+    setShowDownloadModal(false);
+  };
+
+  const exportToExcelScrap = () => {
+    const titleHeaders = ["LAPORAN SCRAPPING WASTE MATERIAL"];
+    const headers = ["TANGGAL","NO BPBB", "ID KATEGORI", "DESKRIPSI KATEGORI", "QTY", "UOM", "DIVISI", "KETERANGAN"];
+    let ScrapItem;
+
+    // const currentDate = related?.createdAt
+    // ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
+    // : "";
+
+    if (tanggal_akhir_scrapping !== "" && tanggal_awal_scrapping !== "") {
+      ScrapItem = detailPengajuan
+        .filter(item => String(item.jenis_pengajuan).toUpperCase() === "SCRAPPING")
+        .filter(item => item?.GeneratePengajuan?.status === "Selesai")
+        .filter(item => item.createdAt >= tanggal_awal_scrapping && item.createdAt <= tanggal_akhir_scrapping) //format item.createdAt nya ada time nya -- jadi data tidak muncul jika = tanggal akhir
+        .reduce((acc, item) => {
+          (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
+          return acc;
+      }, {});
+
+    } else {
+      ScrapItem = detailPengajuan
+        .filter(item => String(item.jenis_pengajuan).toUpperCase() === "SCRAPPING")
+        .filter(item => item?.GeneratePengajuan?.status === "Selesai")
+        .reduce((acc, item) => {
+          (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
+          return acc;
+      }, {});
+    }
+
+
+    const rowScrapItem = [];
+
+    const mergeScrapItem = [];
+
+    let sheetRowScrapItem = 2; 
+
+    const dateFirstScrapItem= {};
+
+    const dateLastScrapItem = {}; 
+
+    //Sheet 1 - Non Asset
+    Object.keys(ScrapItem).forEach((id_pengajuan) => {
+      const items = ScrapItem[id_pengajuan];
+      const firstRowScrapItem = sheetRowScrapItem;
+
+      items.forEach((item, index) => {
+        const isFirstRow = index === 0;
+        const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
+        const createdAtFull = related.createdAt
+          ? new Date(related.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
+          : "";
+        const dateStr = related?.createdAt
+          ? new Date(related.createdAt).toLocaleDateString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-')
+          : "";
+
+        if (dateStr) {
+          if (!dateFirstScrapItem[dateStr]) dateFirstScrapItem[dateStr] = sheetRowScrapItem;
+          dateLastScrapItem[dateStr] = sheetRowScrapItem;
+        }
+
+        const idTransaksi = related.id_transaksi || "";
+        const keterangan = related.keterangan || "";
+
+        rowScrapItem.push([
+          createdAtFull,
+          idTransaksi,
+          item.BarangDiajukan?.id_kategori || "",
+          item.BarangDiajukan?.KategoriBarang?.nama || "",
+          Number(item.jumlah_barang) || "",
+          item.BarangDiajukan?.KategoriBarang?.satuan || "",
+          item.Pemohon?.divisi || "",
+          keterangan,              
+        ]);
+
+        sheetRowScrapItem++;
+      });
+
+      const lastRowScrapItem = sheetRowScrapItem - 1;
+      if (items.length > 1) {
+        const colsToMerge = [0, 1];
+        colsToMerge.forEach((col) => {
+          mergeScrapItem.push({
+            s: { r: firstRowScrapItem, c: col },
+            e: { r: lastRowScrapItem, c: col }
+          });
+        });
+      }
+    });
+
+    const allScrapItem = [titleHeaders, headers, ...rowScrapItem];
+    const wsScrapItem = XLSX.utils.aoa_to_sheet(allScrapItem);
+
+    const borderStyle = {
+      style: "thin", 
+      color: { rgb: "FF000000" }
+    };
+
+    const titleMerge = { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } };
+    wsScrapItem['!merges'] = [titleMerge, ...mergeScrapItem];
+
+    headers.forEach((_, colIndex) => {
+      const cellTitle = XLSX.utils.encode_cell({ r: 0, c: colIndex });
+      const cellHeaders = XLSX.utils.encode_cell({ r: 1, c: colIndex });
+      if (wsScrapItem[cellHeaders]) {
+        wsScrapItem[cellHeaders].s = {
+          fill: {
+            fgColor: { rgb: "62f740" } 
+          }, 
+          alignment: {
+            horizontal: "center",
+          },
+          font: {
+            bold: true,
+          },
+          border: {
+            top: borderStyle, 
+            bottom: borderStyle, 
+            left: borderStyle, 
+            right: borderStyle,
+          },
+        };
+      }
+      if (wsScrapItem[cellTitle]) {
+        wsScrapItem[cellTitle].s = {
+          alignment: {
+            horizontal: "center",
+          }, 
+          font: {
+            bold: true,
+            sz: 14,
+          },
+        }
+      }
+    });
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, wsScrapItem, 'Scrapping');
+    XLSX.writeFile(workbook, 'laporan_scrapping.xlsx');
+    setShowDownloadScrapping(false);
   };
 
   const filteredPengajuan = pengajuan.filter((dataPengajuan) => 
@@ -1190,14 +1505,6 @@ import KategoriBarang from "./KategoriBarang";
     fetchSummaryData();
   });
 
-  const handleImportButtonClick = () => {
-    setShowImportModal(true);
-  }
-
-  const handleImportSuccess = () => {
-    getPengajuan();
-  };
-
   const handleDeletePengajuan = (id_pengajuan) => {
     setDeletedIDPengajuan(id_pengajuan);
     setShowModal(true);
@@ -1327,7 +1634,18 @@ import KategoriBarang from "./KategoriBarang";
               onClick={() => setShowDownloadModal(true)}
               >
               <FaFileExcel style={{ marginRight: '8px' }} />
-              Unduh Laporan
+              Laporan Penjualan
+            </Button>
+
+            <Button
+              className="btn-fill pull-right ml-lg-3 ml-md-4 ml-sm-3 mb-4"
+              type="button"
+              variant="primary"
+              // onClick={exportToExcel}
+              onClick={() => setShowDownloadScrapping(true)}
+              >
+              <FaFileExcel style={{ marginRight: '8px' }} />
+              Laporan Scrapping
             </Button>
             
             <SearchBar searchQuery={searchQuery} handleSearchChange={handleSearchChange} />
@@ -1463,7 +1781,7 @@ import KategoriBarang from "./KategoriBarang";
 
         <Modal show={showDownloadModal} onHide={() => setShowDownloadModal(false)} dialogClassName="modal-warning">
           <Modal.Header style={{borderBottom: "none"}}>
-            <FaExclamationTriangle style={{ width:"100%", height:"60px", position: "relative", textAlign:"center", marginTop:"20px"}} color="#ffca57ff"/>
+              <h3 style={{ width:"100%", position: "relative", textAlign:"center", fontWeight:350}}><strong>Unduh Laporan Penjualan</strong></h3>
               <button
                 type="button"
                 className="close"
@@ -1480,19 +1798,117 @@ import KategoriBarang from "./KategoriBarang";
                 &times; {/* Simbol 'x' */}
               </button>
           </Modal.Header>
-          <Modal.Body style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}} >Yakin ingin menghapus data pengajuan?</Modal.Body>
-          <Row className="mb-3">
-            <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
-              <Button variant="danger" onClick={() => setShowDownloadModal(false)}>
-                Tidak
-              </Button>
-            </Col>
-            <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
-              <Button variant="success" onClick={() => deletePengajuan(pengajuan.id_pengajuan)}>
-                Ya
-              </Button> 
-            </Col>
-          </Row>
+          
+          {/* <Modal.Body style={{ width:"100%", height:"60px", position: "relative", textAlign:"left"}} >Pilih rentang waktu:</Modal.Body> */}
+          <Form>
+            <label className="px-4">Pilih rentang waktu:</label>
+            <Row className="px-4 mb-4">
+              <Col md="6">
+                <Form.Group>
+                    <label>Tanggal Awal</label>
+                    <Form.Control
+                      type="date"
+                      value={tanggal_awal}
+                      onChange={(e) => setTanggalAwal(e.target.value)}
+                    />
+                </Form.Group>
+              </Col>
+              <Col md="6">
+              <Form.Group>
+                    <label>Tanggal Akhir</label>
+                    <Form.Control
+                      type="date"
+                      value={tanggal_akhir}
+                      onChange={(e) => {
+                        const selectedTglAkhir = e.target.value;
+                        setTanggalAkhir(e.target.value);
+
+                        if (tanggal_awal && selectedTglAkhir < tanggal_awal) {
+                          setTanggalError(true);
+                        } else {
+                          setTanggalError(false);
+                        }
+                      }}
+                      // isInvalid={tanggalError}
+                    />
+                    {tanggalError && <span className="text-danger required-select">Tanggal akhir tidak boleh kurang dari tanggal awal!</span>}
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="mb-3 px-4">
+              <Col md="12" style={{ width:"100%", height:"60px", position: "relative", textAlign:"right"}}>
+                <Button className="btn btn-fill" variant="success" onClick={exportToExcel} disabled={tanggal_akhir < tanggal_awal}>
+                  Unduh
+                </Button> 
+              </Col>
+            </Row>
+          </Form>
+        </Modal>
+
+        <Modal show={showDownloadScrap} onHide={() => setShowDownloadScrapping(false)} dialogClassName="modal-warning">
+          <Modal.Header style={{borderBottom: "none"}}>
+              <h3 style={{ width:"100%", position: "relative", textAlign:"center", fontWeight:350}}><strong>Unduh Laporan Scrapping</strong></h3>
+              <button
+                type="button"
+                className="close"
+                aria-label="Close"
+                onClick={() => setShowDownloadScrapping(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: "1.5rem",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+              >
+                &times; {/* Simbol 'x' */}
+              </button>
+          </Modal.Header>
+          
+          {/* <Modal.Body style={{ width:"100%", height:"60px", position: "relative", textAlign:"left"}} >Pilih rentang waktu:</Modal.Body> */}
+          <Form>
+            <label className="px-4">Pilih rentang waktu:</label>
+            <Row className="px-4 mb-4">
+              <Col md="6">
+                <Form.Group>
+                    <label>Tanggal Awal</label>
+                    <Form.Control
+                      type="date"
+                      value={tanggal_awal_scrapping}
+                      onChange={(e) => setTanggalAwalScrap(e.target.value)}
+                    />
+                </Form.Group>
+              </Col>
+              <Col md="6">
+              <Form.Group>
+                    <label>Tanggal Akhir</label>
+                    <Form.Control
+                      type="date"
+                      value={tanggal_akhir_scrapping}
+                      onChange={(e) => {
+                        const selectedTglAkhirScrap = e.target.value;
+                        setTanggalAkhirScrap(e.target.value);
+
+                        if (tanggal_awal_scrapping && selectedTglAkhirScrap < tanggal_awal_scrapping) {
+                          setTglScrapError(true);
+                        } else {
+                          setTglScrapError(false);
+                        }
+                      }}
+                      // isInvalid={tanggalError}
+                    />
+                    {tglScrapError && <span className="text-danger required-select">Tanggal akhir tidak boleh kurang dari tanggal awal!</span>}
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="mb-3 px-4">
+              <Col md="12" style={{ width:"100%", height:"60px", position: "relative", textAlign:"right"}}>
+                <Button className="btn btn-fill" variant="success" onClick={exportToExcelScrap} disabled={tanggal_akhir_scrapping < tanggal_awal_scrapping}>
+                  Unduh
+                </Button> 
+              </Col>
+            </Row>
+          </Form>
         </Modal>
       </div>
       ):
