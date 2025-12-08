@@ -152,7 +152,16 @@ import {
     // GROUP TOTAL BY ID PENGAJUAN - NON ASSET 
     penjualanNonAsset = detailPengajuan
     .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() !== "AMPAS KELAPA (N)" && item?.GeneratePengajuan?.status === "Selesai")
-    .filter(item => item.createdAt >= tanggal_awal && item.createdAt <= tanggal_akhir)
+    .filter(item => {
+      const dateObject = new Date(item.createdAt);
+      const year = dateObject.getFullYear();
+      const month = String(dateObject.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObject.getDate()).padStart(2, '0'); 
+      const formattedDate = `${year}-${month}-${day}`;
+
+      const checkDate = formattedDate >= tanggal_awal && formattedDate <= tanggal_akhir;
+      return checkDate;
+    })
     .reduce((acc, item) => {
       const id = item.id_pengajuan;
       if(!acc[id]) acc[id] = { totalPerID: 0 }; 
@@ -163,7 +172,20 @@ import {
     // GROUP TOTAL BY ID PENGAJUAN - ASSET 
     penjualanAsset = detailPengajuan
     .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "ASSET" && item?.GeneratePengajuan?.status === "Selesai")
-    .filter(item => item.createdAt >= tanggal_awal && item.createdAt <= tanggal_akhir)
+    .filter(item => {
+      const dateObject = new Date(item.createdAt);
+      //console.log("dateObject:", dateObject);
+
+      const year = dateObject.getFullYear();
+      const month = String(dateObject.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObject.getDate()).padStart(2, '0'); 
+      const formattedDate = `${year}-${month}-${day}`;
+
+      // console.log("formattedDate:", formattedDate);
+
+      const checkDate = formattedDate >= tanggal_awal && formattedDate <= tanggal_akhir;
+      return checkDate;
+    })
     .reduce((acc, item) => {
       const id = item.id_pengajuan;
       if(!acc[id]) acc[id] = { totalPerID: 0 }; 
@@ -174,7 +196,20 @@ import {
     // GROUP TOTAL BY ID PENGAJUAN - AMPAS KELAPA
     penjualanAmpasKelapa = detailPengajuan
     .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() === "AMPAS KELAPA (N)" && item?.GeneratePengajuan?.status === "Selesai")
-    .filter(item => item.createdAt >= tanggal_awal && item.createdAt <= tanggal_akhir)
+    .filter(item => {
+          const dateObject = new Date(item.createdAt);
+          //console.log("dateObject:", dateObject);
+
+          const year = dateObject.getFullYear();
+          const month = String(dateObject.getMonth() + 1).padStart(2, '0');
+          const day = String(dateObject.getDate()).padStart(2, '0'); 
+          const formattedDate = `${year}-${month}-${day}`;
+
+          // console.log("formattedDate:", formattedDate);
+
+          const checkDate = formattedDate >= tanggal_awal && formattedDate <= tanggal_akhir;
+          return checkDate;
+        })
     .reduce((acc, item) => {
       const id = item.id_pengajuan;
       if(!acc[id]) acc[id] = { totalPerID: 0 }; 
@@ -222,7 +257,17 @@ import {
     //GROUP TOTAL BY DATE - NON ASSET 
     byDateNonAsset = detailPengajuan
     .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() !== "AMPAS KELAPA (N)" && item?.GeneratePengajuan?.status === "Selesai")
-    .filter(item => item.createdAt >= tanggal_awal && item.createdAt <= tanggal_akhir)
+    .filter(item => {
+      const dateObject = new Date(item.createdAt);
+
+      const year = dateObject.getFullYear();
+      const month = String(dateObject.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObject.getDate()).padStart(2, '0'); 
+      const formattedDate = `${year}-${month}-${day}`;
+
+      const checkDate = formattedDate >= tanggal_awal && formattedDate <= tanggal_akhir;
+      return checkDate;
+    })
     .reduce((acc, item) => {
       if (String(item.jenis_pengajuan).toUpperCase() !== "PENJUALAN" ) return acc;
 
@@ -250,7 +295,20 @@ import {
     // GROUP TOTAL BY DATE - ASSET 
     byDateAsset = detailPengajuan
     .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "ASSET" && item?.GeneratePengajuan?.status === "Selesai")
-    .filter(item => item.createdAt >= tanggal_awal && item.createdAt <= tanggal_akhir)
+    .filter(item => {
+          const dateObject = new Date(item.createdAt);
+          //console.log("dateObject:", dateObject);
+
+          const year = dateObject.getFullYear();
+          const month = String(dateObject.getMonth() + 1).padStart(2, '0');
+          const day = String(dateObject.getDate()).padStart(2, '0'); 
+          const formattedDate = `${year}-${month}-${day}`;
+
+          // console.log("formattedDate:", formattedDate);
+
+          const checkDate = formattedDate >= tanggal_awal && formattedDate <= tanggal_akhir;
+          return checkDate;
+        })
     .reduce((acc, item) => {
       if (String(item.jenis_pengajuan).toUpperCase() !== "PENJUALAN" ) return acc;
 
@@ -278,7 +336,20 @@ import {
     //GROUP TOTAL BY DATE - AMPAS KELAPA 
     byDateKelapa = detailPengajuan
     .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() === "AMPAS KELAPA (N)" && item?.GeneratePengajuan?.status === "Selesai")
-    .filter(item => item.createdAt >= tanggal_awal && item.createdAt <= tanggal_akhir)
+    .filter(item => {
+      const dateObject = new Date(item.createdAt);
+      //console.log("dateObject:", dateObject);
+
+      const year = dateObject.getFullYear();
+      const month = String(dateObject.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObject.getDate()).padStart(2, '0'); 
+      const formattedDate = `${year}-${month}-${day}`;
+
+      // console.log("formattedDate:", formattedDate);
+
+      const checkDate = formattedDate >= tanggal_awal && formattedDate <= tanggal_akhir;
+      return checkDate;
+    })
     .reduce((acc, item) => {
       if (String(item.jenis_pengajuan).toUpperCase() !== "PENJUALAN" ) return acc;
 
@@ -413,7 +484,7 @@ import {
 
   const exportToExcel = () => {
     const titleHeaders = ["LAPORAN PENJUALAN WASTE MATERIAL"];
-    const headers = ["TANGGAL","NO BPBB", "ID KATEGORI", "DESKRIPSI KATEGORI", "QTY", "UOM", "HARGA PER UOM", "JUMLAH", "TOTAL", "TOTAL PER DAY", "DIVISI", "PEMBELI", "KETERANGAN"];
+    const headers = ["NO", "TANGGAL","NO BPBB", "ID KATEGORI", "DESKRIPSI KATEGORI", "QTY", "UOM", "HARGA PER UOM", "JUMLAH", "TOTAL", "TOTAL PER DAY", "DIVISI", "PEMBELI", "KETERANGAN"];
     let nonAssetGroups;
     let assetGroups;
     let ampasKelapaGroups;
@@ -434,7 +505,20 @@ import {
       nonAssetGroups = detailPengajuan
         .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
         .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() !== "AMPAS KELAPA (N)" && item?.GeneratePengajuan?.status === "Selesai")
-        .filter(item => item.createdAt >= tanggal_awal && item.createdAt <= tanggal_akhir) //format item.createdAt nya ada time nya -- jadi data tidak muncul jika = tanggal akhir
+        .filter(item => {
+          const dateObject = new Date(item.createdAt);
+          //console.log("dateObject:", dateObject);
+
+          const year = dateObject.getFullYear();
+          const month = String(dateObject.getMonth() + 1).padStart(2, '0');
+          const day = String(dateObject.getDate()).padStart(2, '0'); 
+          const formattedDate = `${year}-${month}-${day}`;
+
+          // console.log("formattedDate:", formattedDate);
+
+          const checkDate = formattedDate >= tanggal_awal && formattedDate <= tanggal_akhir;
+          return checkDate;
+        })
         .reduce((acc, item) => {
           (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
           return acc;
@@ -443,7 +527,20 @@ import {
       assetGroups = detailPengajuan
         .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
         .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "ASSET" && item?.GeneratePengajuan?.status === "Selesai")
-        .filter(item => item.createdAt >= tanggal_awal && item.createdAt <= tanggal_akhir)
+        .filter(item => {
+          const dateObject = new Date(item.createdAt);
+          //console.log("dateObject:", dateObject);
+
+          const year = dateObject.getFullYear();
+          const month = String(dateObject.getMonth() + 1).padStart(2, '0');
+          const day = String(dateObject.getDate()).padStart(2, '0'); 
+          const formattedDate = `${year}-${month}-${day}`;
+
+          // console.log("formattedDate:", formattedDate);
+
+          const checkDate = formattedDate >= tanggal_awal && formattedDate <= tanggal_akhir;
+          return checkDate;
+        })
         .reduce((acc, item) => {
           (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
           return acc;
@@ -453,7 +550,20 @@ import {
        ampasKelapaGroups = detailPengajuan
         .filter(item => String(item.jenis_pengajuan).toUpperCase() === "PENJUALAN")
         .filter(item => String(item?.BarangDiajukan?.KategoriBarang?.jenis_barang).toUpperCase() === "NON-ASSET" && String(item?.BarangDiajukan?.KategoriBarang?.nama).toUpperCase() === "AMPAS KELAPA (N)" && item?.GeneratePengajuan?.status === "Selesai")
-        .filter(item => item.createdAt >= tanggal_awal && item.createdAt <= tanggal_akhir)
+        .filter(item => {
+          const dateObject = new Date(item.createdAt);
+          //console.log("dateObject:", dateObject);
+
+          const year = dateObject.getFullYear();
+          const month = String(dateObject.getMonth() + 1).padStart(2, '0');
+          const day = String(dateObject.getDate()).padStart(2, '0'); 
+          const formattedDate = `${year}-${month}-${day}`;
+
+          // console.log("formattedDate:", formattedDate);
+
+          const checkDate = formattedDate >= tanggal_awal && formattedDate <= tanggal_akhir;
+          return checkDate;
+        })
         .reduce((acc, item) => {
           (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
           return acc;
@@ -512,7 +622,7 @@ import {
 
       items.forEach((item, index) => {
         const isFirstRow = index === 0;
-        const totalPerID = isFirstRow ? penjualanNonAsset[id_pengajuan].totalPerID : "";
+        const totalPerID = isFirstRow ? penjualanNonAsset[id_pengajuan]?.totalPerID : "";
         const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
         const createdAtFull = related.createdAt
           ? new Date(related.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
@@ -529,6 +639,7 @@ import {
         const idTransaksi = related.id_transaksi || "";
         const pembeli = related.VendorPenjualan?.nama || "";
         const keterangan = related.keterangan || "";
+        // const no = index + 1;
 
         const totalPerDay = Number(byDateNonAsset[dateStr]?.totalPerDay) || 0;
         const showTotalPerDay = dateStr && dateFirstNonAsset[dateStr] === sheetRowNonAsset;
@@ -538,6 +649,7 @@ import {
         const jumlah = Number(item?.total) || 0;
 
         rowsNonAsset.push([
+          // no,
           createdAtFull,
           idTransaksi,
           item.BarangDiajukan?.id_kategori || "",
@@ -558,7 +670,7 @@ import {
 
       const lastRowNonAsset = sheetRowNonAsset - 1;
       if (items.length > 1) {
-        const colsToMerge = [0, 1, 8, 10, 11];
+        const colsToMerge = [0, 1, 2, 9, 11, 12];
         colsToMerge.forEach((col) => {
           mergesNonAsset.push({
             s: { r: firstRowNonAsset, c: col },
@@ -570,7 +682,7 @@ import {
 
     if (subTotalNonAsset !== 0) {
       rowsNonAsset.push([
-        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "", "",
         "SUB TOTAL: ", 
         subTotalNonAsset, 
         "", 
@@ -585,8 +697,8 @@ import {
       const eRow = dateLastNonAsset[dateStr];
       if (sRow !== undefined && eRow !== undefined && eRow > sRow) {
         mergesNonAsset.push({
-          s: { r: sRow, c: 9 },
-          e: { r: eRow, c: 9 }
+          s: { r: sRow, c: 10 },
+          e: { r: eRow, c: 10 }
         });
       }
     });
@@ -652,10 +764,10 @@ import {
     });
 
     const grandTotalNAIndex = rowsNonAsset.length + 1;
-    const cellAddr = XLSX.utils.encode_cell({r: grandTotalNAIndex, c: 9});
+    const cellAddr = XLSX.utils.encode_cell({r: grandTotalNAIndex, c: 10});
     const cell = wsNonAsset[cellAddr];
     const labelGrandTotalNA = rowsNonAsset.length + 1;
-    const cellLabelTotalNA = XLSX.utils.encode_cell({r: labelGrandTotalNA, c: 8});
+    const cellLabelTotalNA = XLSX.utils.encode_cell({r: labelGrandTotalNA, c: 9});
     const cellLabelNA = wsNonAsset[cellLabelTotalNA];
 
     if(cell && subTotalNonAsset !== 0) {
@@ -698,7 +810,7 @@ import {
 
       items.forEach((item, index) => {
         const isFirstRow = index === 0;
-        const totalPerID = isFirstRow ? penjualanAsset[id_pengajuan].totalPerID : "";
+        const totalPerID = isFirstRow ? penjualanAsset[id_pengajuan]?.totalPerID : "";
         const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
         const createdAtFull = related.createdAt
           ? new Date(related.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
@@ -745,7 +857,7 @@ import {
 
       const lastRowAsset = sheetRowAsset - 1;
       if (items.length > 1) {
-        const colsToMerge = [0, 1, 8, 10, 11];
+        const colsToMerge = [0, 1, 2, 9, 11, 12];
         colsToMerge.forEach((col) => {
           mergesAsset.push({
             s: { r: firstRowAsset, c: col },
@@ -757,7 +869,7 @@ import {
 
     if (subTotalAsset !== 0) {
       rowsAsset.push([
-        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "", "", 
         "SUB TOTAL: ", 
         subTotalAsset, 
         "", 
@@ -772,8 +884,8 @@ import {
       const eRow = dateLastAsset[dateStr];
       if (sRow !== undefined && eRow !== undefined && eRow > sRow) {
         mergesAsset.push({
-          s: { r: sRow, c: 9 },
-          e: { r: eRow, c: 9 }
+          s: { r: sRow, c: 10 },
+          e: { r: eRow, c: 10 }
         });
       }
     });
@@ -832,10 +944,10 @@ import {
     });
 
     const grandTotalAIndex = rowsAsset.length + 1;
-    const cellAddrAsset = XLSX.utils.encode_cell({r: grandTotalAIndex, c: 9});
+    const cellAddrAsset = XLSX.utils.encode_cell({r: grandTotalAIndex, c: 10});
     const cellAsset = wsAsset[cellAddrAsset];
     const labelTotalAsset = rowsAsset.length + 1;
-    const cellLabelTotalA = XLSX.utils.encode_cell({r: labelTotalAsset, c: 8});
+    const cellLabelTotalA = XLSX.utils.encode_cell({r: labelTotalAsset, c: 9});
     const cellLabelA = wsAsset[cellLabelTotalA];
 
     if(cellAsset && subTotalAsset !== 0) {
@@ -877,7 +989,7 @@ import {
 
       items.forEach((item, index) => {
         const isFirstRow = index === 0;
-        const totalPerID = isFirstRow ? penjualanAmpasKelapa[id_pengajuan].totalPerID : "";
+        const totalPerID = isFirstRow ? penjualanAmpasKelapa[id_pengajuan]?.totalPerID : "";
         const related = detailTransaksi.find(dt => dt.PengajuanPenjualan?.id_pengajuan === item.id_pengajuan) || {};
         const createdAtFull = related.createdAt
           ? new Date(related.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')
@@ -923,7 +1035,7 @@ import {
 
       const lastRowKelapa = sheetRowAmpasKelapa - 1;
       if (items.length > 1) {
-        const colsToMerge = [0, 1, 8, 10, 11];
+        const colsToMerge = [0, 1, 2, 9, 11, 12];
         colsToMerge.forEach((col) => {
           mergesAmpasKelapa.push({
             s: { r: firstRowKelapa, c: col },
@@ -935,7 +1047,7 @@ import {
 
     if (subTotalKelapa !== 0) {
       rowsAmpasKelapa.push([
-        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "", "",
         "SUB TOTAL: ", 
         subTotalKelapa, 
         "", 
@@ -950,8 +1062,8 @@ import {
       const eRow = dateLastKelapa[dateStr];
       if (sRow !== undefined && eRow !== undefined && eRow > sRow) {
         mergesAmpasKelapa.push({
-          s: { r: sRow, c: 9 },
-          e: { r: eRow, c: 9 }
+          s: { r: sRow, c: 10 },
+          e: { r: eRow, c: 10 }
         });
       }
     });
@@ -1010,10 +1122,10 @@ import {
     });
 
     const grandTotalAKIndex = rowsAmpasKelapa.length + 1;
-    const cellAddrKelapa = XLSX.utils.encode_cell({r: grandTotalAKIndex, c: 9});
+    const cellAddrKelapa = XLSX.utils.encode_cell({r: grandTotalAKIndex, c: 10});
     const cellKelapa = wsAmpasKelapa[cellAddrKelapa];
     const labelGrandTotalAK = rowsAmpasKelapa.length + 1;
-    const cellLabelTotalAK = XLSX.utils.encode_cell({r: labelGrandTotalAK, c: 8});
+    const cellLabelTotalAK = XLSX.utils.encode_cell({r: labelGrandTotalAK, c: 9});
     const cellLabelAK = wsAmpasKelapa[cellLabelTotalAK];
 
     if(cellKelapa && subTotalKelapa !== 0) {
@@ -1153,7 +1265,17 @@ import {
       ScrapItem = detailPengajuan
         .filter(item => String(item.jenis_pengajuan).toUpperCase() === "SCRAPPING")
         .filter(item => item?.GeneratePengajuan?.status === "Selesai")
-        .filter(item => item.createdAt >= tanggal_awal_scrapping && item.createdAt <= tanggal_akhir_scrapping) //format item.createdAt nya ada time nya -- jadi data tidak muncul jika = tanggal akhir
+        .filter(item => {
+          const dateObject = new Date(item.createdAt);
+
+          const year = dateObject.getFullYear();
+          const month = String(dateObject.getMonth() + 1).padStart(2, '0');
+          const day = String(dateObject.getDate()).padStart(2, '0'); 
+          const formattedDate = `${year}-${month}-${day}`;
+
+          const checkDate = formattedDate >= tanggal_awal_scrapping && formattedDate <= tanggal_akhir_scrapping;
+          return checkDate;
+        })
         .reduce((acc, item) => {
           (acc[item.id_pengajuan] = acc[item.id_pengajuan] || []).push(item);
           return acc;
