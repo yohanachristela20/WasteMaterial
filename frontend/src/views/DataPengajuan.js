@@ -55,6 +55,70 @@ import {
   const [tglScrapError, setTglScrapError] = useState(false);
   const [showDownloadScrap, setShowDownloadScrapping] = useState(false);
 
+  let counter = 1;
+  let counterAsset = 1;
+  let counterKelapa = 1;
+  let counterScrap = 1;
+
+  // const tanggalAwalPenjualan = new Date(tanggal_awal);
+  // const formattedSDatePenjualan = tanggalAwalPenjualan.toLocaleString('id-ID', {
+  //   year: 'numeric', 
+  //   month: 'short', 
+  //   day: '2-digit',
+  // });
+
+  const formattedSDatePenjualan = (tanggal_awal) => {
+    if (tanggal_awal && !isNaN(new Date(tanggal_awal).getTime())) {
+      return new Date(tanggal_awal).toLocaleString('id-ID', {
+        year: 'numeric', 
+        month: 'short', 
+        day: '2-digit',
+      });
+    }
+    return '-';
+  };
+
+  const formattedSDateScrapping = (tanggal_awal_scrapping) => {
+    if (tanggal_awal_scrapping && !isNaN(new Date(tanggal_awal_scrapping).getTime())) {
+      return new Date(tanggal_awal_scrapping).toLocaleString('id-ID', {
+        year: 'numeric', 
+        month: 'short', 
+        day: '2-digit',
+      });
+    }
+    return '-';
+  };
+
+  // const tanggalAkhirPenjualan = new Date(tanggal_akhir);
+  // const formattedEDatePenjualan = tanggalAkhirPenjualan.toLocaleString('id-ID', {
+  //   year: 'numeric', 
+  //   month: 'short', 
+  //   day: '2-digit',
+  // });
+
+  const formattedEDatePenjualan = (tanggal_akhir) => {
+    if (tanggal_akhir && !isNaN(new Date(tanggal_akhir).getTime())) {
+      return new Date(tanggal_akhir).toLocaleString('id-ID', {
+        year: 'numeric', 
+        month: 'short', 
+        day: '2-digit',
+      });
+    }
+    return '-';
+  };
+
+
+  const formattedEDateScrapping = (tanggal_akhir_scrapping) => {
+    if (tanggal_akhir_scrapping && !isNaN(new Date(tanggal_akhir_scrapping).getTime())) {
+      return new Date(tanggal_akhir_scrapping).toLocaleString('id-ID', {
+        year: 'numeric', 
+        month: 'short', 
+        day: '2-digit',
+      });
+    }
+    return '-';
+  };
+
   const token = localStorage.getItem("token");
 
   const getPengajuan = async() => {
@@ -484,6 +548,7 @@ import {
 
   const exportToExcel = () => {
     const titleHeaders = ["LAPORAN PENJUALAN WASTE MATERIAL"];
+    const subTitleHeaders = [`PERIODE: ${formattedSDatePenjualan(tanggal_awal)} s/d ${formattedEDatePenjualan(tanggal_akhir)}`];
     const headers = ["NO", "TANGGAL","NO BPBB", "ID KATEGORI", "DESKRIPSI KATEGORI", "QTY", "UOM", "HARGA PER UOM", "JUMLAH", "TOTAL", "TOTAL PER DAY", "DIVISI", "PEMBELI", "KETERANGAN"];
     let nonAssetGroups;
     let assetGroups;
@@ -603,9 +668,9 @@ import {
     const mergesAsset = [];
     const mergesAmpasKelapa = [];
 
-    let sheetRowNonAsset = 2; 
-    let sheetRowAsset = 2;
-    let sheetRowAmpasKelapa = 2;
+    let sheetRowNonAsset = 3; 
+    let sheetRowAsset = 3;
+    let sheetRowAmpasKelapa = 3;
 
     const dateFirstNonAsset = {};
     const dateFirstAsset = {};
@@ -650,6 +715,7 @@ import {
 
         rowsNonAsset.push([
           // no,
+          isFirstRow ? counter : "",
           createdAtFull,
           idTransaksi,
           item.BarangDiajukan?.id_kategori || "",
@@ -666,7 +732,10 @@ import {
         ]);
 
         sheetRowNonAsset++;
+
+
       });
+
 
       const lastRowNonAsset = sheetRowNonAsset - 1;
       if (items.length > 1) {
@@ -678,6 +747,7 @@ import {
           });
         });
       }
+      counter++;
     });
 
     if (subTotalNonAsset !== 0) {
@@ -703,7 +773,7 @@ import {
       }
     });
 
-    const allNonAsset = [titleHeaders, headers, ...rowsNonAsset];
+    const allNonAsset = [titleHeaders, subTitleHeaders, headers, ...rowsNonAsset];
     const wsNonAsset = XLSX.utils.aoa_to_sheet(allNonAsset);
 
     const borderStyle = {
@@ -725,12 +795,15 @@ import {
     //   })
     // });
 
-    const titleMerge = { s: { r: 0, c: 0 }, e: { r: 0, c: 12 } };
-    wsNonAsset['!merges'] = [titleMerge, ...mergesNonAsset];
+    const titleMerge = { s: { r: 0, c: 0 }, e: { r: 0, c: 13 } };
+    const subTitleMerge = { s: { r: 1, c: 0 }, e: { r: 1, c: 13 } };
+
+    wsNonAsset['!merges'] = [titleMerge, subTitleMerge, ...mergesNonAsset];
 
     headers.forEach((_, colIndex) => {
       const cellTitle = XLSX.utils.encode_cell({ r: 0, c: colIndex });
-      const cellHeaders = XLSX.utils.encode_cell({ r: 1, c: colIndex });
+      const cellSubTitle = XLSX.utils.encode_cell({ r: 1, c: colIndex });
+      const cellHeaders = XLSX.utils.encode_cell({ r: 2, c: colIndex });
       if (wsNonAsset[cellHeaders]) {
         wsNonAsset[cellHeaders].s = {
           fill: {
@@ -761,12 +834,23 @@ import {
           },
         }
       }
+      if (wsNonAsset[cellSubTitle]) {
+        wsNonAsset[cellSubTitle].s = {
+          alignment: {
+            horizontal: "center",
+          }, 
+          font: {
+            bold: true,
+            sz: 12,
+          },
+        }
+      }
     });
 
-    const grandTotalNAIndex = rowsNonAsset.length + 1;
+    const grandTotalNAIndex = rowsNonAsset.length + 2;
     const cellAddr = XLSX.utils.encode_cell({r: grandTotalNAIndex, c: 10});
     const cell = wsNonAsset[cellAddr];
-    const labelGrandTotalNA = rowsNonAsset.length + 1;
+    const labelGrandTotalNA = rowsNonAsset.length + 2;
     const cellLabelTotalNA = XLSX.utils.encode_cell({r: labelGrandTotalNA, c: 9});
     const cellLabelNA = wsNonAsset[cellLabelTotalNA];
 
@@ -837,6 +921,7 @@ import {
         const jumlah = Number(item?.total) || 0;
 
         rowsAsset.push([
+          isFirstRow ? counterAsset : "",
           createdAtFull,
           idTransaksi,
           item.BarangDiajukan?.id_kategori || "",
@@ -865,6 +950,7 @@ import {
           });
         });
       }
+      counterAsset++;
     });
 
     if (subTotalAsset !== 0) {
@@ -890,7 +976,7 @@ import {
       }
     });
 
-    const allAsset = [titleHeaders, headers, ...rowsAsset];
+    const allAsset = [titleHeaders, subTitleHeaders, headers, ...rowsAsset];
     const wsAsset = XLSX.utils.aoa_to_sheet(allAsset);
 
     // rowsAsset.forEach((row, i) => {
@@ -906,11 +992,13 @@ import {
     //   })
     // });
 
-    wsAsset['!merges'] = [titleMerge, ...mergesAsset];
+
+    wsAsset['!merges'] = [titleMerge, subTitleMerge, ...mergesAsset];
 
     headers.forEach((_, colIndex) => {
       const cellTitle = XLSX.utils.encode_cell({ r: 0, c: colIndex });
-      const cellHeaders = XLSX.utils.encode_cell({ r: 1, c: colIndex });
+      const cellSubTitle = XLSX.utils.encode_cell({ r: 1, c: colIndex });
+      const cellHeaders = XLSX.utils.encode_cell({ r: 2, c: colIndex });
       if (wsAsset[cellHeaders]) {
         wsAsset[cellHeaders].s = {
           fill: {
@@ -941,12 +1029,23 @@ import {
           }
         }
       }
+      if (wsAsset[cellSubTitle]) {
+        wsAsset[cellSubTitle].s = {
+          alignment: {
+            horizontal: "center",
+          }, 
+          font: {
+            bold: true,
+            sz: 12,
+          }
+        }
+      }
     });
 
-    const grandTotalAIndex = rowsAsset.length + 1;
+    const grandTotalAIndex = rowsAsset.length + 2;
     const cellAddrAsset = XLSX.utils.encode_cell({r: grandTotalAIndex, c: 10});
     const cellAsset = wsAsset[cellAddrAsset];
-    const labelTotalAsset = rowsAsset.length + 1;
+    const labelTotalAsset = rowsAsset.length + 2;
     const cellLabelTotalA = XLSX.utils.encode_cell({r: labelTotalAsset, c: 9});
     const cellLabelA = wsAsset[cellLabelTotalA];
 
@@ -1015,6 +1114,7 @@ import {
         const jumlah = Number(item?.total) || 0;
 
         rowsAmpasKelapa.push([
+          isFirstRow ? counterKelapa : "",
           createdAtFull,
           idTransaksi,
           item.BarangDiajukan?.id_kategori || "",
@@ -1043,6 +1143,7 @@ import {
           });
         });
       }
+      counterKelapa++;
     });
 
     if (subTotalKelapa !== 0) {
@@ -1068,7 +1169,7 @@ import {
       }
     });
 
-    const allAmpasKelapa = [titleHeaders, headers, ...rowsAmpasKelapa];
+    const allAmpasKelapa = [titleHeaders, subTitleHeaders, headers, ...rowsAmpasKelapa];
     const wsAmpasKelapa = XLSX.utils.aoa_to_sheet(allAmpasKelapa);
 
     // rowsAmpasKelapa.forEach((row, i) => {
@@ -1084,11 +1185,12 @@ import {
     //   })
     // });
 
-    wsAmpasKelapa['!merges'] = [titleMerge, ...mergesAmpasKelapa];
+    wsAmpasKelapa['!merges'] = [titleMerge, subTitleMerge, ...mergesAmpasKelapa];
 
     headers.forEach((_, colIndex) => {
       const cellTitle = XLSX.utils.encode_cell({ r: 0, c: colIndex });
-      const cellHeaders = XLSX.utils.encode_cell({ r: 1, c: colIndex });
+      const cellSubTitle = XLSX.utils.encode_cell({ r: 1, c: colIndex });
+      const cellHeaders = XLSX.utils.encode_cell({ r: 2, c: colIndex });
       if (wsAmpasKelapa[cellHeaders]) {
         wsAmpasKelapa[cellHeaders].s = {
           fill: {
@@ -1119,12 +1221,23 @@ import {
           }
         }
       }
+      if (wsAmpasKelapa[cellSubTitle]) {
+        wsAmpasKelapa[cellSubTitle].s = {
+          alignment: {
+            horizontal: "center",
+          }, 
+          font: {
+            bold: true,
+            sz: 12,
+          }
+        }
+      }
     });
 
-    const grandTotalAKIndex = rowsAmpasKelapa.length + 1;
+    const grandTotalAKIndex = rowsAmpasKelapa.length + 2;
     const cellAddrKelapa = XLSX.utils.encode_cell({r: grandTotalAKIndex, c: 10});
     const cellKelapa = wsAmpasKelapa[cellAddrKelapa];
-    const labelGrandTotalAK = rowsAmpasKelapa.length + 1;
+    const labelGrandTotalAK = rowsAmpasKelapa.length + 2;
     const cellLabelTotalAK = XLSX.utils.encode_cell({r: labelGrandTotalAK, c: 9});
     const cellLabelAK = wsAmpasKelapa[cellLabelTotalAK];
 
@@ -1250,11 +1363,14 @@ import {
     XLSX.utils.book_append_sheet(workbook, wsGrandTotal, 'Grand Total');
     XLSX.writeFile(workbook, 'laporan_penjualan.xlsx');
     setShowDownloadModal(false);
+    setTanggalAwal("");
+    setTanggalAkhir("");
   };
 
   const exportToExcelScrap = () => {
     const titleHeaders = ["LAPORAN SCRAPPING WASTE MATERIAL"];
-    const headers = ["TANGGAL","NO BPBB", "ID KATEGORI", "DESKRIPSI KATEGORI", "QTY", "UOM", "DIVISI", "KETERANGAN"];
+    const subTitleHeaders = [`PERIODE: ${formattedSDateScrapping(tanggal_awal_scrapping)} s/d ${formattedEDateScrapping(tanggal_akhir_scrapping)}`];
+    const headers = ["NO","TANGGAL","NO BPBB", "ID KATEGORI", "DESKRIPSI KATEGORI", "QTY", "UOM", "DIVISI", "KETERANGAN"];
     let ScrapItem;
 
     // const currentDate = related?.createdAt
@@ -1296,7 +1412,7 @@ import {
 
     const mergeScrapItem = [];
 
-    let sheetRowScrapItem = 2; 
+    let sheetRowScrapItem = 3; 
 
     const dateFirstScrapItem= {};
 
@@ -1326,6 +1442,7 @@ import {
         const keterangan = related.keterangan || "";
 
         rowScrapItem.push([
+          isFirstRow ? counterScrap : "",
           createdAtFull,
           idTransaksi,
           item.BarangDiajukan?.id_kategori || "",
@@ -1341,7 +1458,7 @@ import {
 
       const lastRowScrapItem = sheetRowScrapItem - 1;
       if (items.length > 1) {
-        const colsToMerge = [0, 1];
+        const colsToMerge = [0, 1, 2];
         colsToMerge.forEach((col) => {
           mergeScrapItem.push({
             s: { r: firstRowScrapItem, c: col },
@@ -1349,9 +1466,10 @@ import {
           });
         });
       }
+      counterScrap++;
     });
 
-    const allScrapItem = [titleHeaders, headers, ...rowScrapItem];
+    const allScrapItem = [titleHeaders, subTitleHeaders, headers, ...rowScrapItem];
     const wsScrapItem = XLSX.utils.aoa_to_sheet(allScrapItem);
 
     const borderStyle = {
@@ -1359,12 +1477,14 @@ import {
       color: { rgb: "FF000000" }
     };
 
-    const titleMerge = { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } };
-    wsScrapItem['!merges'] = [titleMerge, ...mergeScrapItem];
+    const titleMerge = { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } };
+    const subTitleMerge = { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } };
+    wsScrapItem['!merges'] = [titleMerge, subTitleMerge, ...mergeScrapItem];
 
     headers.forEach((_, colIndex) => {
       const cellTitle = XLSX.utils.encode_cell({ r: 0, c: colIndex });
-      const cellHeaders = XLSX.utils.encode_cell({ r: 1, c: colIndex });
+      const cellSubTitle = XLSX.utils.encode_cell({ r: 1, c: colIndex });
+      const cellHeaders = XLSX.utils.encode_cell({ r: 2, c: colIndex });
       if (wsScrapItem[cellHeaders]) {
         wsScrapItem[cellHeaders].s = {
           fill: {
@@ -1395,6 +1515,17 @@ import {
           },
         }
       }
+      if (wsScrapItem[cellSubTitle]) {
+        wsScrapItem[cellSubTitle].s = {
+          alignment: {
+            horizontal: "center",
+          }, 
+          font: {
+            bold: true,
+            sz: 12,
+          },
+        }
+      }
     });
 
     const workbook = XLSX.utils.book_new();
@@ -1402,6 +1533,8 @@ import {
     XLSX.utils.book_append_sheet(workbook, wsScrapItem, 'Scrapping');
     XLSX.writeFile(workbook, 'laporan_scrapping.xlsx');
     setShowDownloadScrapping(false);
+    setTanggalAkhirScrap("");
+    setTanggalAwalScrap("");
   };
 
   const filteredPengajuan = pengajuan.filter((dataPengajuan) => 
@@ -1959,7 +2092,7 @@ import {
             </Row>
             <Row className="mb-3 px-4">
               <Col md="12" style={{ width:"100%", height:"60px", position: "relative", textAlign:"right"}}>
-                <Button className="btn btn-fill" variant="success" onClick={exportToExcel} disabled={tanggal_akhir < tanggal_awal}>
+                <Button className="btn btn-fill" variant="success" onClick={exportToExcel} disabled={tanggal_akhir < tanggal_awal || (tanggal_akhir !== '' && tanggal_awal === '')}>
                   Unduh
                 </Button> 
               </Col>
