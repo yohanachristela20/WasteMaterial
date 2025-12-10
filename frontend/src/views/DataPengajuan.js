@@ -33,7 +33,7 @@ import {
   const [pengajuan, setPengajuan] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("id_pengajuan");
-  const [sortOrder, setSortOrder] = useState("desc");
+  const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [loading, setLoading] = useState(true);
@@ -54,6 +54,9 @@ import {
   const [tanggal_akhir_scrapping, setTanggalAkhirScrap] = useState("");
   const [tglScrapError, setTglScrapError] = useState(false);
   const [showDownloadScrap, setShowDownloadScrapping] = useState(false);
+  const [antrean, setAntrean] = useState([]); 
+  const [error, setError] = useState("");
+    
 
   let counter = 1;
   let counterAsset = 1;
@@ -141,6 +144,7 @@ import {
 
   useEffect(() => {
     getPengajuan();
+
     setTimeout(() => setLoading(false), 1000);
   }, []);
   
@@ -1548,7 +1552,8 @@ import {
     (dataPengajuan.kondisi && String(dataPengajuan.kondisi).toLowerCase().includes(searchQuery)) ||
     (dataPengajuan.jenis_pengajuan && String(dataPengajuan.jenis_pengajuan).toLowerCase().includes(searchQuery)) ||
     (dataPengajuan.GeneratePengajuan?.status && String(dataPengajuan.GeneratePengajuan?.status).toLowerCase().includes(searchQuery)) ||
-    (dataPengajuan.createdAt && String(dataPengajuan.createdAt).toLowerCase().includes(searchQuery))
+    (dataPengajuan.createdAt && String(dataPengajuan.createdAt).toLowerCase().includes(searchQuery)) ||
+    (dataPengajuan.GeneratePengajuan?.Antrean?.nomor_antrean && String(dataPengajuan.GeneratePengajuan?.Antrean?.nomor_antrean).includes(searchQuery)) 
   );
 
   const handleSort = (key) => {
@@ -1765,6 +1770,46 @@ import {
     setShowModal(true);
   };
 
+  const findNomorAntrean = (id_pengajuan) => {
+    const antreanItem = pengajuan.find(item => item.id_pengajuan === id_pengajuan);
+    return antreanItem ? antreanItem?.GeneratePengajuan?.Antrean?.nomor_antrean : "-"; 
+  };
+
+  const getAntrean = async () => {
+    try {
+      // setLoading(true);
+      const response = await axios.get("http://10.70.10.131:5000/antrean-pengajuan", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+      },
+  
+      });
+      setAntrean(response.data); 
+    } catch (error) {
+      console.error("Error fetching antrean:", error.message);
+      setError("Gagal mengambil antrean. Silakan coba lagi.");
+    // } finally {
+    //   setLoading(false);
+    }
+  };
+  
+  useEffect(() => {
+    getAntrean();
+
+    setTimeout(() => setLoading(false), 3000)
+  }, []);
+
+  const isPreviousAccepted = (nomorAntrean) => {
+    for (let i = 1; i < nomorAntrean; i++) {
+      const prevItem = pengajuan.find(item => item.GeneratePengajuan?.Antrean?.nomor_antrean === i); 
+      if (prevItem && prevItem.GeneratePengajuan?.status !== "Selesai") {
+        return false;
+      }
+    }
+    return true;
+  };
+
+
 
   return (
     <>
@@ -1917,6 +1962,7 @@ import {
                         <table className="flex-table table table-striped table-hover">
                           <thead>
                             <tr>
+                              <th className="border-0" onClick={() => handleSort("GeneratePengajuan.Antrean.nomor_antrean")}>No. Antrean {sortBy === "GeneratePengajuan.Antrean.nomor_antrean" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                               <th className="border-0" onClick={() => handleSort("id_pengajuan")}>ID Pengajuan {sortBy === "id_pengajuan" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                               <th className="border-0"onClick={() => handleSort("Pemohon.nama")}>Pemohon {sortBy === "Pemohon.nama" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                               <th className="border-0" onClick={() => handleSort("Pemohon.divisi")}>Divisi {sortBy === "Pemohon.divisi" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
@@ -1929,6 +1975,7 @@ import {
                           <tbody className="scroll scroller-tbody">
                             {currentItems.map((pengajuan) => (
                               <tr key={pengajuan.id_pengajuan}>
+                                <td className="text_center">{pengajuan.GeneratePengajuan?.Antrean?.nomor_antrean || '-'}</td>
                                 <td className="text_center">{pengajuan.id_pengajuan}</td>
                                 <td className="text_center">{pengajuan.Pemohon?.nama}</td>
                                 <td className="text_center">{pengajuan.Pemohon?.divisi}</td>
@@ -1942,7 +1989,12 @@ import {
                                 </td>
                                 <td className="text_center">{new Date(pengajuan.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
                                 <td className="text-center">
-                                  <Button className="btn-fill pull-right warning mt-2 btn-reset" variant="warning" onClick={() => handleProses(pengajuan)} style={{ width: 103, fontSize: 14 }} hidden={pengajuan.GeneratePengajuan?.status === "Selesai"}>
+                                  <Button className="btn-fill pull-right warning mt-2 btn-reset" variant="warning" onClick={() => handleProses(pengajuan)}
+                                    style={{ width: 103, fontSize: 14 }} 
+                                    disabled={pengajuan.GeneratePengajuan?.status === "Selesai"||
+                                      !isPreviousAccepted(findNomorAntrean(pengajuan.id_pengajuan))
+                                    }
+                                    hidden={pengajuan.GeneratePengajuan?.status === "Selesai"}>
                                     <FaRecycle style={{ marginRight: '8px' }} />
                                     Proses
                                   </Button>

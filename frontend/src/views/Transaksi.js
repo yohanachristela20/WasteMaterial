@@ -46,6 +46,8 @@ function Transaksi() {
   const [selectedValue, setSelectedValue] = useState("");
   const [show, setShow] = useState(true);
   const [vendorError, setVendorError] = useState(false);
+  const [antrean, setAntrean] = useState([]); 
+  const [error, setError] = useState("");
   
   const token = localStorage.getItem("token");
 
@@ -280,6 +282,7 @@ function Transaksi() {
 
       toast.success("Transaksi penjualan berhasil.");
       history.push("/admin/data-pengajuan");
+
     } catch (error) {
       toast.error("Transaksi penjualan gagal.");
       console.log(error.message);
@@ -374,6 +377,46 @@ const updateSopirVendor = async (id_vendor, sopir) => {
   };
 
   if (!show) return null;
+
+  
+  const findNomorAntrean = (idPengajuan) => {
+    const antreanItem = antrean.find(item => item.id_pengajuan === idPengajuan);
+    return antreanItem ? antreanItem.nomor_antrean : "-"; 
+  };
+
+  const getAntrean = async () => {
+    try {
+      // setLoading(true);
+      const response = await axios.get("http://10.70.10.131:5000/antrean-pengajuan", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+      },
+  
+      });
+      setAntrean(response.data); 
+    } catch (error) {
+      console.error("Error fetching antrean:", error.message);
+      setError("Gagal mengambil antrean. Silakan coba lagi.");
+    // } finally {
+    //   setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getAntrean();
+
+    setTimeout(() => setLoading(false), 3000)
+  }, []);
+
+  const isPreviousAccepted = (nomorAntrean) => {
+    for (let i = 1; i < nomorAntrean; i++) {
+      const prevItem = antrean.find(item => item.nomor_antrean === i); 
+      if (prevItem && prevItem.status !== "Selesai") {
+        return false;
+      }
+    }
+    return true;
+  };
 
   return (
     <>
@@ -615,7 +658,8 @@ const updateSopirVendor = async (id_vendor, sopir) => {
                   <Row>
                     <Col md="12" className="my-2 d-flex gap-2">
                       {selectedPengajuan?.jenis_pengajuan === "PENJUALAN" ? (
-                        <Button variant="primary" type="submit" className="btn-fill px-4">Jual</Button>
+                        <Button variant="primary" type="submit" className="btn-fill px-4"
+                        >Jual</Button>
                       ) : (
                         <Button variant="primary" type="submit" className="btn-fill px-4">Scrapping</Button>
                       )}

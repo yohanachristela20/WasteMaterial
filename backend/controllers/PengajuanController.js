@@ -11,6 +11,7 @@ import Karyawan from "../models/KaryawanModel.js";
 import Kategori from "../models/KategoriModel.js";
 import { Sequelize, Op } from "sequelize";
 import Transaksi from "../models/TransaksiModel.js";
+import AntreanPengajuan from "../models/AntreanModel.js";
 
 const router = express.Router(); 
 
@@ -47,9 +48,12 @@ export const getLastPengajuanID = async (req, res) => {
 
 export const createPengajuan = async (req, res) => {
   let transaction;
+  transaction = await db.transaction();
+
   try {
     const dataPengajuan = Array.isArray(req.body.items) ? req.body.items : [req.body];
     const defaultKaryawan = req.body.id_karyawan || (req.user && req.user.id_karyawan) || null;
+
 
     if (!dataPengajuan.length) {
       return res.status(400).json({ message: "No items provided" });
@@ -67,11 +71,71 @@ export const createPengajuan = async (req, res) => {
       if (it.total !== undefined) it.total = Number(it.total) || 0;
     }
 
-    transaction = await db.transaction();
     await Pengajuan.bulkCreate(dataPengajuan, { transaction, individualHooks: true });
+
+    const lastAntrean = await AntreanPengajuan.findOne({
+      order: [["nomor_antrean", "DESC"]], 
+      transaction,
+    });
+
+    // console.log("idPengajuan:", dataPengajuan.id_pengajuan);
+
+    let newNomorAntrean = 1;
+    let newIDAntrean;
+    if (lastAntrean) {
+      newNomorAntrean = lastAntrean.nomor_antrean + 1;
+    };
+
+    // console.log("newNomorAntrean:", newNomorAntrean);
+
+    const today = new Date().toISOString().split("T")[0].replace(/-/g, "");
+    newIDAntrean = `${today}_${newNomorAntrean}`;
+
+    // console.log("newIDAntrean:", newIDAntrean);
+
+    // let idPengajuan = dataPengajuan.map(item => item.id_pengajuan);
+    // console.log("ID PENGAJUAN:", idPengajuan);
+    // idPengajuan = JSON.stringify(idPengajuan);
+
+    let antreanBaru = lastAntrean?.nomor_antrean || newNomorAntrean;
+
+
+    let existingAntrean;
+    do{
+      existingAntrean = await AntreanPengajuan.findOne({
+        where: {id_antrean: newIDAntrean},
+        transaction,
+      });
+
+      // console.log("existingAntrean:", existingAntrean);
+
+      if (existingAntrean){
+        antreanBaru++;
+        newIDAntrean = `${today}_${antreanBaru}`;
+      }
+    } while(existingAntrean);
+
+    
+    let dataAntrean = dataPengajuan.map(item => ({
+      id_antrean: newIDAntrean,
+      nomor_antrean: newNomorAntrean,
+      id_pengajuan: item.id_pengajuan,
+    }));
+    // console.log("ID PENGAJUAN:", idPengajuan);
+
+    const newAntrean = await AntreanPengajuan.bulkCreate(
+      dataAntrean,
+      {transaction, ignoreDuplicates: true}
+    );
+
     await transaction.commit();
 
-    return res.status(201).json({ success: true, message: "Pengajuan berhasil dibuat", imported: dataPengajuan.length });
+    return res.status(201).json({ 
+      success: true,
+      message: "Pengajuan berhasil dibuat",
+      imported: dataPengajuan.length,
+      data: newAntrean,
+    });
   } catch (error) {
     if (transaction) await transaction.rollback();
     console.error("Failed to create new Pengajuan:", error);
@@ -128,6 +192,13 @@ export const getPengajuan = async(req, res) => {
                     model: GenPengajuan,
                     as: 'GeneratePengajuan', 
                     attributes: ['id_pengajuan', 'status'],
+                    include: [
+                      {
+                        model: AntreanPengajuan,
+                        as: 'Antrean', 
+                        attributes: ['id_antrean', 'nomor_antrean']
+                      }
+                    ]
                 },
                 {
                     model: Karyawan,
@@ -194,6 +265,7 @@ export const deletePengajuan = async(req, res) => {
     }
 
 
+    await AntreanPengajuan.destroy({where: {id_pengajuan: pengajuanId}});
     await Transaksi.destroy({where: {id_pengajuan: pengajuanId}});
     await GenPengajuan.destroy({where: {id_pengajuan: pengajuanId}});
     res.status(200).json({msg: "Data Pengajuan berhasil dihapus."});

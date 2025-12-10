@@ -6,6 +6,7 @@ import GenPengajuan from "./GenPengajuan.js";
 import Transaksi from "./TransaksiModel.js";
 import Vendor from "./VendorModel.js";
 import Pengajuan from "./PengajuanModel.js";
+import AntreanPengajuan from "./AntreanModel.js";
 
 User.belongsTo(Karyawan, { foreignKey: 'id_karyawan', as: 'KaryawanPengguna' });
 Barang.belongsTo(Kategori, {foreignKey: 'id_kategori', as: 'KategoriBarang'});
@@ -15,6 +16,7 @@ Pengajuan.belongsTo(Barang, {foreignKey: 'id_barang', as: 'BarangDiajukan'});
 Pengajuan.belongsTo(Karyawan, {foreignKey: 'id_karyawan', as:'Pemohon'});
 Pengajuan.belongsTo(GenPengajuan, {foreignKey: 'id_pengajuan', as:'GeneratePengajuan'});
 Transaksi.belongsTo(Karyawan, {foreignKey: 'id_petugas', as:'Petugas'});
+AntreanPengajuan.belongsTo(GenPengajuan, {foreignKey: 'id_pengajuan', as: 'Antrean'});
 
 Karyawan.hasMany(User, { foreignKey: 'id_karyawan', as:'KaryawanPengguna'});
 Kategori.hasMany(Barang, {foreignKey: 'id_kategori', as: 'KategoriBarang'});
@@ -24,3 +26,4 @@ Barang.hasMany(Pengajuan, {foreignKey: 'id_barang', as: 'BarangDiajukan'});
 Karyawan.hasMany(Pengajuan, {foreignKey: 'id_karyawan', as:'Pemohon'});
 GenPengajuan.hasMany(Pengajuan, {foreignKey: 'id_pengajuan', as:'GeneratePengajuan'});
 Karyawan.hasMany(Transaksi, {foreignKey: 'id_petugas', as:'Petugas'});
+GenPengajuan.hasOne(AntreanPengajuan, {foreignKey: 'id_pengajuan', as: 'Antrean'});

@@ -92,7 +92,8 @@ function Beranda() {
     (dataPengajuan.kondisi && String(dataPengajuan.kondisi).toLowerCase().includes(searchQuery)) ||
     (dataPengajuan.jenis_pengajuan && String(dataPengajuan.jenis_pengajuan).toLowerCase().includes(searchQuery)) ||
     (dataPengajuan.GeneratePengajuan?.status && String(dataPengajuan.GeneratePengajuan?.status).toLowerCase().includes(searchQuery)) ||
-    (dataPengajuan.createdAt && String(dataPengajuan.createdAt).toLowerCase().includes(searchQuery))
+    (dataPengajuan.createdAt && String(dataPengajuan.createdAt).toLowerCase().includes(searchQuery)) ||
+    (dataPengajuan.GeneratePengajuan?.Antrean?.nomor_antrean && String(dataPengajuan.GeneratePengajuan?.Antrean?.nomor_antrean).includes(searchQuery)) 
   );
 
   const handleSort = (key) => {
@@ -442,6 +443,22 @@ function Beranda() {
       }
   };
 
+  const findNomorAntrean = (id_pengajuan) => {
+    const antreanItem = pengajuan.find(item => item.id_pengajuan === id_pengajuan);
+    return antreanItem ? antreanItem?.GeneratePengajuan?.Antrean?.nomor_antrean : "-"; 
+  };
+
+  const isPreviousAccepted = (nomorAntrean) => {
+    for (let i = 1; i < nomorAntrean; i++) {
+      const prevItem = pengajuan.find(item => item.GeneratePengajuan?.Antrean?.nomor_antrean === i); 
+      if (prevItem && prevItem.GeneratePengajuan?.status !== "Selesai") {
+        return false;
+      }
+    }
+    return true;
+  };
+
+
 
   return (
     <>
@@ -666,6 +683,7 @@ function Beranda() {
                         <table className="flex-table table table-striped table-hover">
                           <thead>
                             <tr>
+                              <th className="border-0" onClick={() => handleSort("GeneratePengajuan.Antrean.nomor_antrean")}>No. Antrean {sortBy === "GeneratePengajuan.Antrean.nomor_antrean" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                               <th className="border-0" onClick={() => handleSort("id_pengajuan")}>ID Pengajuan {sortBy === "id_pengajuan" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                               <th className="border-0"onClick={() => handleSort("Pemohon.nama")}>Pemohon {sortBy === "Pemohon.nama" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                               <th className="border-0" onClick={() => handleSort("Pemohon.divisi")}>Divisi {sortBy === "Pemohon.divisi" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
@@ -677,9 +695,9 @@ function Beranda() {
                           </thead>
                           <tbody className="scroll scroller-tbody">
                             {currentItems
-                            
                             .map((pengajuan) => (
                               <tr key={pengajuan.id_pengajuan}>
+                                <td className="text_center">{pengajuan.GeneratePengajuan?.Antrean?.nomor_antrean}</td>
                                 <td className="text_center">{pengajuan.id_pengajuan}</td>
                                 <td className="text_center">{pengajuan.Pemohon?.nama}</td>
                                 <td className="text_center">{pengajuan.Pemohon?.divisi}</td>
@@ -693,7 +711,16 @@ function Beranda() {
                                 </td>
                                 <td className="text_center">{new Date(pengajuan.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '-').replace(',', '')}</td>
                                 <td className="text-center">
-                                  <Button className="btn-fill pull-right mt-2 warning btn-reset" variant="warning" onClick={() => handleProses(pengajuan)} style={{ width: 103, fontSize: 14 }} hidden={pengajuan.GeneratePengajuan?.status === "Selesai"}>
+                                  <Button 
+                                    className="btn-fill pull-right mt-2 warning btn-reset" 
+                                    variant="warning" 
+                                    onClick={() => handleProses(pengajuan)} 
+                                    style={{ width: 103, fontSize: 14 }} 
+                                    disabled={pengajuan.GeneratePengajuan?.status === "Selesai"||
+                                      !isPreviousAccepted(findNomorAntrean(pengajuan.id_pengajuan))
+                                    }
+                                    hidden={pengajuan.GeneratePengajuan?.status === "Selesai"}
+                                  >
                                     <FaRecycle style={{ marginRight: '8px' }} />
                                     Proses
                                   </Button>

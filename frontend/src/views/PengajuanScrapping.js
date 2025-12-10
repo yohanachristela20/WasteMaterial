@@ -43,6 +43,7 @@ function PengajuanScrapping() {
   const [hargaList, setHargaList] = useState([]);
   const [kondisiList, setKondisiList] = useState([]);
   const [lainnyaList, setLainnyaList] = useState([]);
+  const [antrean, setAntrean] = useState([]);
   
   const token = localStorage.getItem("token");
 
@@ -79,6 +80,21 @@ function PengajuanScrapping() {
     IDPengajuan();
     tujuanPengajuan();
   }, []);
+
+  const findNomorAntrean = (IDPengajuan) => {
+    const antreanItem = antrean.find(item => item.id_pengajuan === IDPengajuan);
+    return antreanItem ? antreanItem.nomor_antrean : "-"; 
+  };
+
+  const isPreviousAccepted = (nomorAntrean) => {
+    for (let i = 1; i < nomorAntrean; i++) {
+      const prevItem = antrean.find(item => item.nomor_antrean === i); 
+      if (prevItem && prevItem.status !== "Selesai") {
+        return false;
+      }
+    }
+    return true;
+  };
 
   useEffect(() => {
     if (id_pengajuan && typeof id_pengajuan === "string" && id_pengajuan.length >= 8) {
@@ -223,10 +239,25 @@ function PengajuanScrapping() {
       }
   };
 
+  const fetchAntrean = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5001/antrean`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      });
+      setAntrean(response.data);
+    } catch (error) {
+      console.error("Error fetching antrean:", error.message);
+    }
+  };
+
   useEffect(() => {
       getNamaKategori();
       getNamaBarang();
       getDetailPengajuan();
+      fetchAntrean();
+
       setTimeout(() => setLoading(false), 1000);
   }, []);
 
@@ -381,7 +412,7 @@ function PengajuanScrapping() {
     <>
       <Container fluid>
         <Form onSubmit={handleSubmit}>
-          <Row>
+          {/* <Row>
             <Col md="12">
               {uniqueStatus.map((s) => (
                 <div key={s?.prevId} >
@@ -389,7 +420,7 @@ function PengajuanScrapping() {
                 </div>
               ))}
             </Col>
-          </Row>
+          </Row> */}
           <Row>
             <Col className="card-screening">
               <Card className="card-screening p-4">
@@ -512,10 +543,10 @@ function PengajuanScrapping() {
                   
                   <Row>
                     <Col md="12" className="mt-2 d-flex gap-2">
-                      <Button variant="success" type="button" className="mr-3 btn-fill" onClick={handleAddCard} disabled={uniqueStatus.some((s) => s?.status === "Belum Diproses")}>
+                      <Button variant="success" type="button" className="mr-3 btn-fill" onClick={handleAddCard}>
                         <FaPlusCircle className="mb-1" /> Tambah Pengajuan
                       </Button>
-                      <Button variant="primary" type="submit" className="btn-fill" disabled={uniqueStatus.some((s) => s?.status === "Belum Diproses")}>Simpan</Button>
+                      <Button variant="primary" type="submit" className="btn-fill">Simpan</Button>
                     </Col>
                   </Row>
 

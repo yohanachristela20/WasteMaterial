@@ -13,6 +13,7 @@ import verifyToken from "./middlewares/authMiddleware.js";
 import PengajuanRoute from "./routes/PengajuanRoute.js";
 import GenPengajuanRoute from "./routes/GenPengajuanRoute.js";
 import TransaksiRoute from "./routes/TransaksiRoute.js";
+import AntreanRoute from "./routes/AntreanRoute.js";
 import dotenv from 'dotenv';
 
 import './models/KaryawanModel.js';
@@ -24,10 +25,9 @@ import './models/BarangModel.js';
 import './models/PengajuanModel.js';
 import './models/GenPengajuan.js';
 import './models/TransaksiModel.js';
+import './models/AntreanModel.js';
 import jwt from 'jsonwebtoken';
 import Vendor from "./models/VendorModel.js";
-
-
 
 dotenv.config();
 
@@ -67,6 +67,7 @@ const protectedRoutes = [
     PengajuanRoute,
     GenPengajuanRoute,
     TransaksiRoute,
+    AntreanRoute,
 ];
 
 protectedRoutes.forEach(route => {
