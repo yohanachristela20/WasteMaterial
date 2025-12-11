@@ -1,30 +1,23 @@
 import React from "react";
 import { Bar } from "react-chartjs-2";
 
-const ChartComponent = ({ chartData }) => {
+const BarChartComponent = ({ chartData }) => {
 
-  const formatRupiah = (angka) => {
-    let pinjamanString = angka.toString().replace(".00");
-    let sisa = pinjamanString.length % 3;
-    let rupiah = pinjamanString.substr(0, sisa);
-    let ribuan = pinjamanString.substr(sisa).match(/\d{3}/g);
-
-    if (ribuan) {
-        let separator = sisa ? "." : "";
-        rupiah += separator + ribuan.join(".");
-    }
-    
-    return rupiah;
-  };
-  
   const data = {
     labels: chartData.labels, // Labels untuk sumbu X
     datasets: [
       {
-        label: "Divisi", 
+        label: "ASSET", 
         data: chartData.series[0], // Data pada sumbu Y
-        backgroundColor: "rgba(250,124,114, 0.5)",
-        borderColor: "rgba(250,124,114, 1)",
+        backgroundColor: "rgba(191,251,255,0.5)",
+        borderColor: "rgba(68, 132, 143, 1)", 
+        borderWidth: 1,
+      },
+      {
+        label: "NON-ASSET", 
+        data: chartData.seriesNA[0], // Data pada sumbu Y
+        backgroundColor: "rgba(255,99,132,0.3)",
+        borderColor: "rgba(255,99,132,1)", 
         borderWidth: 1,
       },
     ],
@@ -49,7 +42,7 @@ const ChartComponent = ({ chartData }) => {
         },
             title: {
             display: true,
-            text: "Jumlah Penjualan (Rp)", 
+            text: "Jumlah Barang", 
         },
       },
     },
@@ -57,7 +50,7 @@ const ChartComponent = ({ chartData }) => {
       tooltip: {
         callbacks: {
           label: function (tooltipItem) {
-            return 'Rp '+ formatRupiah(tooltipItem.raw); 
+            return (tooltipItem.raw); 
           },
         },
       },
@@ -75,4 +68,4 @@ const ChartComponent = ({ chartData }) => {
   );
 };
 
-export default ChartComponent;
+export default BarChartComponent;

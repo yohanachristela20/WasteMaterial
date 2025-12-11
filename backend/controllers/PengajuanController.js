@@ -481,10 +481,23 @@ export const getScrappingPerDivisi = async (req, res) => {
                 as: "Pemohon",
                 attributes: ["divisi"],
               },
+              {
+                model: Barang,
+                as: "BarangDiajukan",
+                attributes: ["id_barang", "id_kategori"], 
+                include: [
+                  {
+                    model: Kategori, 
+                    as: "KategoriBarang", 
+                    attributes: ["jenis_barang"]
+                  }
+                ]
+              }
           ],
           attributes: [
               [Sequelize.col("Pemohon.divisi"), "divisi"],
-              [Sequelize.fn("SUM", Sequelize.col("total")), "total"],
+              [Sequelize.col("BarangDiajukan.KategoriBarang.jenis_barang"), "jenis_barang"],
+              [Sequelize.fn("SUM", Sequelize.col("jumlah_barang")), "jumlah_barang"],
           ],
           group: ["Pemohon.divisi"],
           raw: true,
@@ -492,7 +505,7 @@ export const getScrappingPerDivisi = async (req, res) => {
 
       const formattedData = dataPemohon.map((item) => ({
           ...item,
-          total: parseFloat(item.total),
+          jumlah_barang: parseFloat(item.jumlah_barang),
       }));
 
       // console.log("Formatted Data:", formattedData);

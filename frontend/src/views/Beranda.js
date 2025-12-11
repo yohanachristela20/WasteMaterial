@@ -3,6 +3,7 @@ import {FaSortDown, FaSortUp, FaRecycle, FaRegFileAlt, FaFolder, FaTrashAlt} fro
 import ChartComponent from "components/Chart/BarChart.js";
 import LineComponent from "components/Chart/LineChart";
 import LineComponent2 from "components/Chart/LineChart2";
+import BarChartComponent from "components/Chart/BarChart2";
 import axios from "axios";
 import { useHistory } from "react-router-dom"; 
 import {toast } from 'react-toastify';
@@ -44,7 +45,7 @@ function Beranda() {
   const [selectedDivisi, setSelectedDivisi] = useState("");
   const [chartDataTahunan, setChartDataTahunan] = useState({ labels: [], series: [[]] });
   const [chartDataBulanan, setChartDataBulanan] = useState({ labels: [], series: [[]] });
-  const [chartScrappingBulanan, setChartScrappingBulanan] = useState({ labels: [], series: [[]] });
+  const [chartScrappingBulanan, setChartScrappingBulanan] = useState({ labels: [], series: [[]], seriesNA: [[]] });
   const [userData, setUserData] = useState({id_karyawan: "", nama: "", divisi: ""}); 
   const [totalPenjualan, setTotalPenjualan] = useState(0);
   const [totalScrapping, setTotalScrapping] = useState(0);
@@ -56,6 +57,8 @@ function Beranda() {
   const [sortBy, setSortBy] = useState("id_pinjaman");
   const [sortOrder, setSortOrder] = useState("asc");
   const [pengajuan, setPengajuan] = useState([]);
+  const [penjualan, setPenjualan] = useState([]);
+  const [penjualanData, setPenjualanData] = useState([]);
 
   const getPengajuan = async() => {
     try {
@@ -358,20 +361,60 @@ function Beranda() {
         });
 
         const data = response.data;
+        // console.log("DATA:", data);
 
         const labels = [];
-        const seriesPenjualan = [];
+        const seriesAsset = [];
+        const seriesNonAsset = [];
+
+        // if (Array.isArray(data)) {
+        //   data.forEach((item) => {
+        //     console.log("JENIS BARANG:", item.jenis_barang);
+        //   })
+        // }
+
+        // const groupAsset = data.reduce((acc, item) => {
+        //   // const categoryDiv = item.divisi;
+        //   // const categoryJenis = item.jenis_barang;
+        //   if (!acc[item.divisi]) {
+        //     acc[item.divisi] = {};
+        //   }
+
+        //   if (!acc[item.divisi][item.jenis_barang]) {
+        //     acc[item.divisi][item.jenis_barang] = [];
+        //   }
+
+        //   acc[item.divisi][item.jenis_barang].push(item);
+        //   return acc;
+        // }, {});
+
+        const groupDivisi = Object.groupBy(data, (item) => {
+          return item.divisi;
+        });
+
+        console.log("groupDivisi:", groupDivisi);
+
+        const groupJenisBarang = Object.fromEntries(
+          Object.entries(groupDivisi).map(([divisi, items]) => {
+            const groupJenis = Object.groupBy(items, (item) => item.type);
+            return[divisi, groupJenis];
+          })
+        );
+
+        console.log("groupJenisBarang:", groupJenisBarang);
 
         if (Array.isArray(data)) {
           data.forEach((item) => {
             labels.push(item.divisi);
-            seriesPenjualan.push(Math.floor(item.total));
+            seriesAsset.push(Math.floor(item.jumlah_barang)) ;
+            seriesNonAsset.push(Math.floor(item.jumlah_barang));
           });
         }
 
         setChartScrappingBulanan({
           labels: labels.length ? labels : [],
-          series: [seriesPenjualan.length ? seriesPenjualan : []],
+          series: [seriesAsset.length ? seriesAsset : []],
+          seriesNA: [seriesNonAsset.length ? seriesNonAsset : []],
         });
 
     } catch (error) {
@@ -379,9 +422,12 @@ function Beranda() {
         setChartScrappingBulanan({
             labels: [],
             series: [[]],
+            seriesNA: [[]],
         });
     }
   };
+
+  // console.log("chartScrappingBulanan:", chartScrappingBulanan);
 
   const handleProses = (pengajuan) => {
     history.push({
@@ -594,7 +640,7 @@ function Beranda() {
             <Col md="6">
               <Card className="mb-2 mb-lg-4">
               <Card.Header>
-                <Card.Title as="h4">Pengeluaran (Scrapping)</Card.Title>
+                <Card.Title as="h4">Scrapping</Card.Title>
               </Card.Header>
               <Card.Body className="mb-5">
                 <div className="ct-chart" id="chartHours">
@@ -663,7 +709,7 @@ function Beranda() {
                     </select>
                   </div>
 
-                  <LineComponent2 chartData={chartScrappingBulanan}/>
+                  <BarChartComponent chartData={chartScrappingBulanan}/>
                 </div>
               </Card.Body>
               </Card>
