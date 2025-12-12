@@ -54,7 +54,7 @@ const EditKategori = ({ showEditModal, setShowEditModal, onSuccess, detailBarang
             setShowEditModal(false);
             toast.success('Kategori barang berhasil diperbarui.', {
                 position: "top-right",
-                autoClose: 3001,
+                autoClose: 3000,
                 hideProgressBar: true,
             });
             window.location.reload();

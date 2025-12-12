@@ -120,28 +120,28 @@ function DokumenPengajuan() {
         <Row>
           <Col className="card-screening">
             <Card className="card-screening p-4">
-              <div ref={contentRef} style={{padding: '50px'}}>
+              <div ref={contentRef} style={{padding: '20px',transform: 'scale(1)'}}>
                 <Card.Body className="table-responsive px-3">
                     <Row style={{ border: '1px solid grey' }}>
                         <Col md="2" className="py-0">
                             <div className="left-column ml-4 mt-4">
-                                <img src={require("assets/img/campina-logo.png")} alt="company-logo" style={{width: 170, height:170, marginTop: -30}}/>
+                                <img src={require("assets/img/campina-logo.png")} alt="company-logo" style={{width: 100, height:100, marginTop: -20, marginLeft: -20}}/>
                             </div>
                         </Col>
-                        <Col md="6" className="py-0">
-                            <h3 style={{fontWeight: 800, marginTop: "60px"}}>PT. CAMPINA ICE CREAM INDUSTRY</h3>
+                        <Col md="5" className="py-0">
+                            <h3 style={{fontWeight: 800, fontSize: 19, marginTop: 40, marginLeft: -20}}>PT. CAMPINA ICE CREAM INDUSTRY</h3>
                         </Col>
-                        <Col md="4" style={{ borderLeft: '1px solid grey'}}>
+                        <Col md="5" style={{ borderLeft: '1px solid grey'}}>
                             <Row>
                                 <Col md="6" className="mt-4">
-                                    <p className="mb-1" style={{fontSize: 20}}>NO. DOKUMEN</p>
-                                    <p className="mb-1" style={{fontSize: 20}}>TGL. DIKELUARKAN</p>
-                                    <p className="mb-1" style={{fontSize: 20}}>NO. REVISI</p>
+                                    <p className="mb-1" style={{fontSize: 13}}>NO. DOKUMEN</p>
+                                    <p className="mb-1" style={{fontSize: 13}}>TGL. DIKELUARKAN</p>
+                                    <p className="mb-1" style={{fontSize: 13}}>NO. REVISI</p>
                                 </Col>
-                                <Col className="mt-4">
-                                  <p className="mb-1" style={{fontSize: 20}}>: F.CMPI.LOG.02.00.04</p>
-                                  <p className="mb-1" style={{fontSize: 20}}>: 10 JANUARI 2014</p>
-                                  <p className="mb-1" style={{fontSize: 20}}>: 2 - 0</p>
+                                <Col md="6" className="mt-4">
+                                  <p className="mb-1" style={{fontSize: 13}}>: F.CMPI.LOG.02.00.04</p>
+                                  <p className="mb-1" style={{fontSize: 13}}>: 10 JANUARI 2014</p>
+                                  <p className="mb-1" style={{fontSize: 13}}>: 2 - 0</p>
                                 </Col>
                             </Row>
                         </Col>

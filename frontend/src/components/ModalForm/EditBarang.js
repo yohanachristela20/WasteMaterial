@@ -48,7 +48,7 @@ const EditBarang = ({showEditModal, setShowEditModal, dataBarang, onSuccess}) =>
             setShowEditModal(false);
             toast.success('Master barang berhasil diperbarui.', {
                 position: "top-right",
-                autoClose: 3001,
+                autoClose: 3000,
                 hideProgressBar: true,
             });
             window.location.reload();

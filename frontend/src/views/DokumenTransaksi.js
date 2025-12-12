@@ -53,7 +53,7 @@ function DokumenTransaksi() {
         try {
             const resp = await axios.get(`http://localhost:5001/detail-transaksi/${selectedPengajuan?.id_pengajuan}`, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                  Authorization: `Bearer ${token}`,
                 }
             });
             setDetailTransaksi(resp.data || []);

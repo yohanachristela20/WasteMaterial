@@ -5,5 +5,5 @@ authtoken: 2grReWzlVkR37uLR4RcunkPIQC3_6LrdjdKWKDfpjUiXvew17
 #     addr: 5001
 #     proto: http
 #   second:
-#     addr: 3001
+#     addr: 3000
 #     proto: http

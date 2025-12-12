@@ -9,15 +9,22 @@ const BarChartComponent = ({ chartData }) => {
       {
         label: "ASSET", 
         data: chartData.series[0], // Data pada sumbu Y
+        backgroundColor: "rgba(255,99,132,0.3)",
+        borderColor: "rgba(255,99,132,1)", 
+        borderWidth: 1,
+      },
+      {
+        label: "NON-ASSET", 
+        data: chartData.seriesNA[0], 
         backgroundColor: "rgba(191,251,255,0.5)",
         borderColor: "rgba(68, 132, 143, 1)", 
         borderWidth: 1,
       },
       {
-        label: "NON-ASSET", 
-        data: chartData.seriesNA[0], // Data pada sumbu Y
-        backgroundColor: "rgba(255,99,132,0.3)",
-        borderColor: "rgba(255,99,132,1)", 
+        label: "AMPAS KELAPA", 
+        data: chartData.seriesAK[0],
+        backgroundColor: "rgba(255, 156, 99, 0.3)",
+        borderColor: "rgba(255, 161, 99, 1)", 
         borderWidth: 1,
       },
     ],
@@ -49,6 +56,10 @@ const BarChartComponent = ({ chartData }) => {
     plugins: {
       tooltip: {
         callbacks: {
+          title: function (tooltipItem) {
+            const tooltipTitle = tooltipItem[0].dataset.label;
+            return tooltipTitle; 
+          },
           label: function (tooltipItem) {
             return (tooltipItem.raw); 
           },

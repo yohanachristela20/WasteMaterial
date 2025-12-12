@@ -489,7 +489,7 @@ export const getScrappingPerDivisi = async (req, res) => {
                   {
                     model: Kategori, 
                     as: "KategoriBarang", 
-                    attributes: ["jenis_barang"]
+                    attributes: ["jenis_barang", "nama"]
                   }
                 ]
               }
@@ -497,9 +497,10 @@ export const getScrappingPerDivisi = async (req, res) => {
           attributes: [
               [Sequelize.col("Pemohon.divisi"), "divisi"],
               [Sequelize.col("BarangDiajukan.KategoriBarang.jenis_barang"), "jenis_barang"],
+              [Sequelize.col("BarangDiajukan.KategoriBarang.nama"), "nama"],
               [Sequelize.fn("SUM", Sequelize.col("jumlah_barang")), "jumlah_barang"],
           ],
-          group: ["Pemohon.divisi"],
+          group: ["Pemohon.divisi", "BarangDiajukan.KategoriBarang.jenis_barang", "BarangDiajukan.KategoriBarang.nama"],
           raw: true,
       });
 

@@ -42,10 +42,16 @@ function Beranda() {
   const [years, setYears] = useState([]); 
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedMonthJual, setSelectedMonthJual] = useState("");
+  const [selectedMonthScrap, setSelectedMonthScrap] = useState("");
+
   const [selectedDivisi, setSelectedDivisi] = useState("");
+  const [selectedDivisiJual, setSelectedDivisiJual] = useState("");
+  const [selectedDivisiScrap, setSelectedDivisiScrap] = useState("");
+
   const [chartDataTahunan, setChartDataTahunan] = useState({ labels: [], series: [[]] });
   const [chartDataBulanan, setChartDataBulanan] = useState({ labels: [], series: [[]] });
-  const [chartScrappingBulanan, setChartScrappingBulanan] = useState({ labels: [], series: [[]], seriesNA: [[]] });
+  const [chartScrappingBulanan, setChartScrappingBulanan] = useState({ labels: [], series: [[]], seriesNA: [[]], seriesAK: [[]] });
   const [userData, setUserData] = useState({id_karyawan: "", nama: "", divisi: ""}); 
   const [totalPenjualan, setTotalPenjualan] = useState(0);
   const [totalScrapping, setTotalScrapping] = useState(0);
@@ -144,7 +150,7 @@ function Beranda() {
   useEffect(() => {
     getPenjualan();
     getPenjualanData();
-    setTimeout(() => setLoading(false), 3001)
+    setTimeout(() => setLoading(false), 3000)
   }, []);
 
 
@@ -346,88 +352,75 @@ function Beranda() {
     }
   };
 
+  const groupBy = require("lodash/groupBy");
+
   const dataScrappingPerDivisi = async (selectedDivisi, selectedMonth = "", selectedYear = "") => {
     try {
-        const tahun = selectedYear || new Date().getFullYear();
-        const bulan = selectedMonth ? selectedMonth.padStart(2, '0') : "";
-        const divisi = selectedDivisi || "";
-        const isAllSelected = divisi === "" && bulan === "";
+      const tahun = selectedYear || new Date().getFullYear();
+      const bulan = selectedMonth ? selectedMonth.padStart(2, '0') : "";
+      const divisi = selectedDivisi || "";
+      const isAllSelected = divisi === "" && bulan === "";
 
-        const response = await axios.get("http://localhost:5001/data-scrapping-divisi", {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-            params: isAllSelected ? {tahun} : {divisi, bulan, tahun},
-        });
+      const response = await axios.get("http://localhost:5001/data-scrapping-divisi", {
+          headers: {
+              Authorization: `Bearer ${token}`,
+          },
+          params: isAllSelected ? {tahun} : {divisi, bulan, tahun},
+      });
 
-        const data = response.data;
-        // console.log("DATA:", data);
+      const data = response.data;
 
-        const labels = [];
-        const seriesAsset = [];
-        const seriesNonAsset = [];
+      if (!Array.isArray(data) || data.length === 0) {
+        setChartScrappingBulanan({ labels: [], series: [[]], seriesNA: [[]], seriesAK: [[]] });
+        return;
+      }
 
-        // if (Array.isArray(data)) {
-        //   data.forEach((item) => {
-        //     console.log("JENIS BARANG:", item.jenis_barang);
-        //   })
-        // }
+      const grouped = groupBy(data, (x) => x.divisi);
 
-        // const groupAsset = data.reduce((acc, item) => {
-        //   // const categoryDiv = item.divisi;
-        //   // const categoryJenis = item.jenis_barang;
-        //   if (!acc[item.divisi]) {
-        //     acc[item.divisi] = {};
-        //   }
+      const labels = Object.keys(grouped); 
+      const seriesAsset = [];
+      const seriesNonAsset = [];
+      const seriesKelapa = [];
 
-        //   if (!acc[item.divisi][item.jenis_barang]) {
-        //     acc[item.divisi][item.jenis_barang] = [];
-        //   }
+      labels.forEach((div) => {
+        const items = grouped[div];
 
-        //   acc[item.divisi][item.jenis_barang].push(item);
-        //   return acc;
-        // }, {});
+        const asset = items
+        .filter((x) => x.jenis_barang === "ASSET")
+        .reduce((sum, x) => sum + x.jumlah_barang, 0);
 
-        const groupDivisi = Object.groupBy(data, (item) => {
-          return item.divisi;
-        });
+        const nonAsset = items
+        .filter((x) => x.jenis_barang === "NON-ASSET" && x.nama !== "AMPAS KELAPA (N)")
+        .reduce((sum, x) => sum + x.jumlah_barang, 0);
 
-        console.log("groupDivisi:", groupDivisi);
+        const ampasKelapa = items
+        .filter((x) => x.jenis_barang === "NON-ASSET" && x.nama === "AMPAS KELAPA (N)")
+        .reduce((sum, x) => sum + x.jumlah_barang, 0);
 
-        const groupJenisBarang = Object.fromEntries(
-          Object.entries(groupDivisi).map(([divisi, items]) => {
-            const groupJenis = Object.groupBy(items, (item) => item.type);
-            return[divisi, groupJenis];
-          })
-        );
+        
+        seriesAsset.push(asset);
+        seriesNonAsset.push(nonAsset);
+        seriesKelapa.push(ampasKelapa);
+      });
 
-        console.log("groupJenisBarang:", groupJenisBarang);
+      setChartScrappingBulanan({
+        labels: labels.length ? labels : [],
+        series: [seriesAsset.length ? seriesAsset : []],
+        seriesNA: [seriesNonAsset.length ? seriesNonAsset : []],
+        seriesAK: [seriesKelapa.length ? seriesKelapa : []],
+      });
 
-        if (Array.isArray(data)) {
-          data.forEach((item) => {
-            labels.push(item.divisi);
-            seriesAsset.push(Math.floor(item.jumlah_barang)) ;
-            seriesNonAsset.push(Math.floor(item.jumlah_barang));
-          });
-        }
-
-        setChartScrappingBulanan({
-          labels: labels.length ? labels : [],
-          series: [seriesAsset.length ? seriesAsset : []],
-          seriesNA: [seriesNonAsset.length ? seriesNonAsset : []],
-        });
-
+       
     } catch (error) {
         console.error("Error fetching dataScrappingPerDivisi:", error.message);
         setChartScrappingBulanan({
             labels: [],
             series: [[]],
             seriesNA: [[]],
+            seriesAK: [[]],
         });
     }
   };
-
-  // console.log("chartScrappingBulanan:", chartScrappingBulanan);
 
   const handleProses = (pengajuan) => {
     history.push({
@@ -572,7 +565,7 @@ function Beranda() {
                   <span className="year-label ml-2" onClick={() => {
                     const currentYear = new Date().getFullYear();
                     setSelectedYear(currentYear);
-                    dataPerDivisi(selectedDivisi, selectedMonth, currentYear);
+                    dataPerDivisi(selectedDivisiJual, selectedMonthJual, currentYear);
                   }}>
                     {new Date().getFullYear()}
                   </span>
@@ -582,9 +575,9 @@ function Beranda() {
                   <label htmlFor="monthSelect" className="mb-3">Pilih Bulan:</label>
                   <select
                     id="monthSelect"
-                    value={selectedMonth}
+                    value={selectedMonthJual}
                     onChange={(e) => {
-                      setSelectedMonth(e.target.value);
+                      setSelectedMonthJual(e.target.value);
                       dataPerDivisi(selectedDivisi, e.target.value, selectedYear);
                     }}
                     className="mx-2"
@@ -602,9 +595,9 @@ function Beranda() {
                     <label htmlFor="divisiSelect">Pilih Divisi:</label>
                     <select
                       id="divisiSelect"
-                      value={selectedDivisi}
+                      value={selectedDivisiJual}
                       onChange={(e) => {
-                        setSelectedDivisi(e.target.value);
+                        setSelectedDivisiJual(e.target.value);
                         dataPerDivisi(e.target.value); 
                       }}
                       className="mx-2"
@@ -649,7 +642,7 @@ function Beranda() {
                   <span className="year-label ml-2" onClick={() => {
                     const currentYear = new Date().getFullYear();
                     setSelectedYear(currentYear);
-                    dataScrappingPerDivisi(selectedDivisi, selectedMonth, currentYear);
+                    dataScrappingPerDivisi(selectedDivisiScrap, selectedMonthScrap, currentYear);
                   }}>
                     {new Date().getFullYear()}
                   </span>
@@ -659,9 +652,9 @@ function Beranda() {
                   <label htmlFor="monthSelect" className="mb-3">Pilih Bulan:</label>
                   <select
                     id="monthSelect"
-                    value={selectedMonth}
+                    value={selectedMonthScrap}
                     onChange={(e) => {
-                      setSelectedMonth(e.target.value);
+                      setSelectedMonthScrap(e.target.value);
                       dataScrappingPerDivisi(selectedDivisi, e.target.value, selectedYear);
                     }}
                     className="mx-2"
@@ -679,9 +672,9 @@ function Beranda() {
                     <label htmlFor="divisiSelect">Pilih Divisi:</label>
                     <select
                       id="divisiSelect"
-                      value={selectedDivisi}
+                      value={selectedDivisiScrap}
                       onChange={(e) => {
-                        setSelectedDivisi(e.target.value);
+                        setSelectedDivisiScrap(e.target.value);
                         dataScrappingPerDivisi(e.target.value); 
                       }}
                       className="mx-2"
