@@ -40,13 +40,13 @@ export const processAntreanAutomatically = async () => {
     try {
         const antrean = await Antrean.findOne({
             include: [
-                {
-                    model: GenPengajuan,
-                    as: "Antrean",
-                    where: {
-                        status: "Selesai",
-                    },
-                },
+							{
+								model: GenPengajuan,
+								as: "Antrean",
+								where: {
+										status: "Selesai",
+								},
+							},
             ],
             order: [["nomor_antrean", "ASC"]],
             transaction, 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {FaSortDown, FaSortUp, FaRecycle, FaRegFileAlt, FaFolder, FaTrashAlt} from 'react-icons/fa'; 
+import {FaSortDown, FaSortUp, FaRecycle, FaRegFileAlt, FaFolder, FaTrashAlt, FaExclamationTriangle} from 'react-icons/fa'; 
 import ChartComponent from "components/Chart/BarChart.js";
 import LineComponent from "components/Chart/LineChart";
 import LineComponent2 from "components/Chart/LineChart2";
@@ -32,6 +32,7 @@ import {
   Dropdown, 
   ButtonGroup,
   DropdownButton,
+  Modal,
 } from "react-bootstrap";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -65,6 +66,10 @@ function Beranda() {
   const [pengajuan, setPengajuan] = useState([]);
   const [penjualan, setPenjualan] = useState([]);
   const [penjualanData, setPenjualanData] = useState([]);
+  const [deletedIDPengajuan, setDeletedIDPengajuan] = useState(null);
+  const [showModal, setShowModal] = useState(false); 
+  
+  
 
   const getPengajuan = async() => {
     try {
@@ -464,13 +469,19 @@ function Beranda() {
     });
   }
 
-  const deletePengajuan = async(id_pengajuan) =>{
+   const handleDeletePengajuan = (id_pengajuan) => {
+    setDeletedIDPengajuan(id_pengajuan);
+    setShowModal(true);
+  };
+
+  const deletePengajuan = async() =>{
       try {
-        await axios.delete(`http://localhost:5001/delete-pengajuan/${id_pengajuan}`,
+        await axios.delete(`http://localhost:5001/delete-pengajuan/${deletedIDPengajuan}`,
         {
           headers: {Authorization: `Bearer ${token}`}
         }
         ); 
+        setShowModal(false);
         toast.success("Data Pengajuan berhasil dihapus.", {
           position: "top-right",
           autoClose: 5001,
@@ -787,7 +798,7 @@ function Beranda() {
                                     }
                                     </DropdownButton>
                                   </ButtonGroup>
-                                  <Button className="btn-fill pull-right danger mt-2 btn-reset" variant="danger" onClick={() => deletePengajuan(pengajuan.id_pengajuan)} style={{ width: 100, fontSize: 13 }}>
+                                  <Button className="btn-fill pull-right danger mt-2 btn-reset" variant="danger" onClick={() => handleDeletePengajuan(pengajuan.id_pengajuan)} style={{ width: 100, fontSize: 13 }}>
                                     <FaTrashAlt style={{ marginRight: '8px' }} />
                                     Hapus
                                   </Button>
@@ -816,6 +827,40 @@ function Beranda() {
           </Row>
 
         </Container>
+
+        <Modal show={showModal} onHide={() => setShowModal(false)} dialogClassName="modal-warning">
+          <Modal.Header style={{borderBottom: "none"}}>
+            <FaExclamationTriangle style={{ width:"100%", height:"60px", position: "relative", textAlign:"center", marginTop:"20px"}} color="#ffca57ff"/>
+              <button
+                type="button"
+                className="close"
+                aria-label="Close"
+                onClick={() => setShowModal(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: "1.5rem",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+              >
+                &times; {/* Simbol 'x' */}
+              </button>
+          </Modal.Header>
+          <Modal.Body style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}} >Yakin ingin menghapus data pengajuan?</Modal.Body>
+          <Row className="mb-3">
+            <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
+              <Button variant="danger" onClick={() => setShowModal(false)}>
+                Tidak
+              </Button>
+            </Col>
+            <Col md="6" style={{ width:"100%", height:"60px", position: "relative", textAlign:"center"}}>
+              <Button variant="success" onClick={() => deletePengajuan(pengajuan.id_pengajuan)}>
+                Ya
+              </Button> 
+            </Col>
+          </Row>
+        </Modal>
         </div>
         ):
         ( <>

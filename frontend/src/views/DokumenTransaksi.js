@@ -125,7 +125,7 @@ function DokumenTransaksi() {
                     <Row style={{ border: '1px solid grey' }}>
                         <Col md="2" className="py-0">
                             <div className="left-column ml-4 mt-4">
-                                <img src={require("assets/img/campina-logo.png")} alt="company-logo" style={{width: 170, height:170, marginTop: -30}}/>
+                                <img src={require("assets/img/campina-logo.png")} alt="company-logo" className="dok-logo"/>
                             </div>
                         </Col>
                         <Col md="6" className="py-0">

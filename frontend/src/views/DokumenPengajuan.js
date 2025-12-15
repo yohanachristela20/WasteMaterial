@@ -120,28 +120,28 @@ function DokumenPengajuan() {
         <Row>
           <Col className="card-screening">
             <Card className="card-screening p-4">
-              <div ref={contentRef} style={{padding: '20px',transform: 'scale(1)'}}>
+              <div ref={contentRef} className="card-padding">
                 <Card.Body className="table-responsive px-3">
                     <Row style={{ border: '1px solid grey' }}>
                         <Col md="2" className="py-0">
                             <div className="left-column ml-4 mt-4">
-                                <img src={require("assets/img/campina-logo.png")} alt="company-logo" style={{width: 100, height:100, marginTop: -20, marginLeft: -20}}/>
+                                <img src={require("assets/img/campina-logo.png")} alt="company-logo" className="dok-logo"/>
                             </div>
                         </Col>
                         <Col md="5" className="py-0">
-                            <h3 style={{fontWeight: 800, fontSize: 19, marginTop: 40, marginLeft: -20}}>PT. CAMPINA ICE CREAM INDUSTRY</h3>
+                            <h3 className="font-title-header">PT. CAMPINA ICE CREAM INDUSTRY</h3>
                         </Col>
                         <Col md="5" style={{ borderLeft: '1px solid grey'}}>
                             <Row>
                                 <Col md="6" className="mt-4">
-                                    <p className="mb-1" style={{fontSize: 13}}>NO. DOKUMEN</p>
-                                    <p className="mb-1" style={{fontSize: 13}}>TGL. DIKELUARKAN</p>
-                                    <p className="mb-1" style={{fontSize: 13}}>NO. REVISI</p>
+                                    <p className="mb-1 font-desc-header">NO. DOKUMEN</p>
+                                    <p className="mb-1 font-desc-header">TGL. DIKELUARKAN</p>
+                                    <p className="mb-1 font-desc-header">NO. REVISI</p>
                                 </Col>
                                 <Col md="6" className="mt-4">
-                                  <p className="mb-1" style={{fontSize: 13}}>: F.CMPI.LOG.02.00.04</p>
-                                  <p className="mb-1" style={{fontSize: 13}}>: 10 JANUARI 2014</p>
-                                  <p className="mb-1" style={{fontSize: 13}}>: 2 - 0</p>
+                                  <p className="mb-1 font-desc-header">: F.CMPI.LOG.02.00.04</p>
+                                  <p className="mb-1 font-desc-header">: 10 JANUARI 2014</p>
+                                  <p className="mb-1 font-desc-header">: 2 - 0</p>
                                 </Col>
                             </Row>
                         </Col>
@@ -157,13 +157,13 @@ function DokumenPengajuan() {
                                         <th className="text-center align-middle p-0" scope="col" colSpan="7" style={{ border: '1px solid grey' }}>
                                           <h3 className="d-flex justify-content-center align-items-center mt-3" style={{fontWeight: 800, marginTop: "50px"}}>
                                           {uniqueID.map((p) => (
-                                            <div key={p?.id_pengajuan} className="ml-3">
+                                            <div key={p?.id_pengajuan} className="ml-3 font-sub-title">
                                             {p?.jenis_pengajuan === "PENJUALAN" || p?.jenis_pengajuan === "Penjualan" ? "PENGAJUAN WASTE MATERIAL" : " PENGAJUAN SCRAPPING WASTE MATERIAL"}
                                             </div>
                                             ))}
                                           </h3>
-                                          <p className="d-flex justify-content-center align-items-center" style={{fontSize: 20}}>NO. :{uniqueID.map((p) => (
-                                            <div key={p?.id_pengajuan} className="ml-3">
+                                          <p className="d-flex justify-content-center align-items-center font-sub-desc">NO. :{uniqueID.map((p) => (
+                                            <div key={p?.id_pengajuan} className="ml-3 font-sub-desc">
                                             {p?.id_pengajuan}
                                             </div>
                                             ))}/CMPI-RKT/{uniquePemohon.map((p) => (
@@ -172,8 +172,8 @@ function DokumenPengajuan() {
                                             </div>
                                           ))}
                                           </p>
-                                          <p className="d-flex justify-content-center align-items-center" style={{fontSize: 20}}>TANGGAL : {uniqueID.map((p) => (
-                                            <div key={p?.id_pengajuan} className="ml-3">
+                                          <p className="d-flex justify-content-center align-items-center font-sub-desc">TANGGAL : {uniqueID.map((p) => (
+                                            <div key={p?.id_pengajuan} className="ml-3 font-sub-desc">
                                               {new Date(p?.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '/').replace(',', '')}
                                             </div>
                                           ))}</p>
@@ -186,41 +186,41 @@ function DokumenPengajuan() {
                                         <React.Fragment>
                                           <tr>
                                             <th className="text-center align-middle p-0" scope="col" colSpan="7" style={{ border: '1px solid grey' }}>
-                                              <h4 className="d-flex justify-content-center align-items-center mt-3" style={{fontWeight: 800, marginTop: "50px"}}>
+                                              <h4 className="d-flex justify-content-center align-items-center mt-3 font-title-table">
                                                 {j?.jenis_barang === "ASSET" ? "ASSET" : "NON-ASSET"}
                                               </h4>
                                             </th>
                                           </tr>
 
                                           <tr>
-                                            <th className="text-center align-middle w-50" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>DESKRIPSI</th>
-                                            <th className="text-center align-middle" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>QTY</th>
-                                            <th className="text-center align-middle" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>SATUAN</th>
-                                            <th className="text-center align-middle" scope="col" colSpan="4" style={{ border: '1px solid grey', fontSize: 20 }}>KETERANGAN</th>
+                                            <th className="text-center align-middle w-50 font-table-header" scope="row" rowSpan="2">DESKRIPSI</th>
+                                            <th className="text-center align-middle font-table-header" scope="row" rowSpan="2">QTY</th>
+                                            <th className="text-center align-middle font-table-header" scope="row" rowSpan="2">SATUAN</th>
+                                            <th className="text-center align-middle font-table-header" scope="col" colSpan="4">KETERANGAN</th>
                                           </tr>
                                           <tr>
-                                            <th className="text-center align-middle" scope="col" style={{ border: '1px solid grey', fontSize: 20 }}>RUSAK</th>
-                                            <th className="text-center align-middle" scope="col" style={{ border: '1px solid grey', fontSize: 20 }}>TIDAK DIGUNAKAN</th>
-                                            <th className="text-center align-middle" scope="col" style={{ border: '1px solid grey', fontSize: 20 }}>SISA PRODUKSI</th>
-                                            <th className="text-center align-middle" scope="col" style={{ border: '1px solid grey', fontSize: 20 }}>LAINNYA</th>
+                                            <th className="text-center align-middle font-table-header" scope="col">RUSAK</th>
+                                            <th className="text-center align-middle font-table-header" scope="col">TIDAK DIGUNAKAN</th>
+                                            <th className="text-center align-middle font-table-header" scope="col">SISA PRODUKSI</th>
+                                            <th className="text-center align-middle font-table-header" scope="col">LAINNYA</th>
                                           </tr>
 
                                           <tbody style={{ border: '1px solid grey' }}>
                                             {detailPengajuan.length === 0 ? (
-                                              <tr><td colSpan={8} className="text-center" style={{ border: '1px solid grey', fontSize: 20 }}>Tidak ada data pengajuan</td></tr>
+                                              <tr><td colSpan={8} className="text-center" style={{ border: '1px solid grey', fontSize: 17 }}>Tidak ada data pengajuan</td></tr>
                                             ) : (
                                               detailPengajuan
                                               .filter((d) => d?.BarangDiajukan?.KategoriBarang?.jenis_barang === j?.jenis_barang)
                                               .map((d, index) => (
                                                 <tr key={d.id_parent_pengajuan || d.id_pengajuan || Math.random()}>
-                                                  <td className="border-bottom-0 border-top-0 " style={{ border: '1px solid grey', fontSize: 20 }}>{d?.BarangDiajukan?.KategoriBarang?.nama}</td>
-                                                  <td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>{d?.jumlah_barang}</td>
-                                                  <td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>{d?.BarangDiajukan?.KategoriBarang?.satuan}</td>
+                                                  <td className="border-bottom-0 border-top-0 font-table-body">{d?.BarangDiajukan?.KategoriBarang?.nama}</td>
+                                                  <td className="text-center border-bottom-0 border-top-0 font-table-body">{d?.jumlah_barang}</td>
+                                                  <td className="text-center border-bottom-0 border-top-0 font-table-body">{d?.BarangDiajukan?.KategoriBarang?.satuan}</td>
 
-                                                  <td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>{(d?.kondisi).toUpperCase() === "RUSAK" ? '\u2713' : ""}</td>
-                                                  <td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>{(d?.kondisi).toUpperCase() === "TIDAK DIGUNAKAN" ? '\u2713' : ""}</td>
-                                                  <td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>{(d?.kondisi).toUpperCase() === "SISA PRODUKSI" ? '\u2713' : ""}</td>
-                                                  <td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>{(d?.kondisi).toUpperCase() === "LAINNYA" || (d?.kondisi).toUpperCase() !== "RUSAK" && (d?.kondisi).toUpperCase() !== "TIDAK DIGUNAKAN" && (d?.kondisi).toUpperCase() !== "SISA PRODUKSI" ? (d?.kondisi).toUpperCase() : ""}</td>
+                                                  <td className="text-center border-bottom-0 border-top-0 font-table-body">{(d?.kondisi).toUpperCase() === "RUSAK" ? '\u2713' : ""}</td>
+                                                  <td className="text-center border-bottom-0 border-top-0 font-table-body">{(d?.kondisi).toUpperCase() === "TIDAK DIGUNAKAN" ? '\u2713' : ""}</td>
+                                                  <td className="text-center border-bottom-0 border-top-0 font-table-body">{(d?.kondisi).toUpperCase() === "SISA PRODUKSI" ? '\u2713' : ""}</td>
+                                                  <td className="text-center border-bottom-0 border-top-0 font-table-body">{(d?.kondisi).toUpperCase() === "LAINNYA" || (d?.kondisi).toUpperCase() !== "RUSAK" && (d?.kondisi).toUpperCase() !== "TIDAK DIGUNAKAN" && (d?.kondisi).toUpperCase() !== "SISA PRODUKSI" ? (d?.kondisi).toUpperCase() : ""}</td>
                                                 </tr>
                                               ))
                                             )}
@@ -232,38 +232,38 @@ function DokumenPengajuan() {
                                       <>
                                         <tr>
                                             <th className="text-center align-middle p-0" scope="col" colSpan="7" style={{ border: '1px solid grey' }}>
-                                              <h4 className="d-flex justify-content-center align-items-center mt-3" style={{fontWeight: 800, marginTop: "50px"}}>
+                                              <h4 className="d-flex justify-content-center align-items-center mt-3 font-title-table">
                                                 {uniqueJenisBarang[0]?.jenis_barang}
                                               </h4>
                                             </th>
                                         </tr>
                                         <tr>
-                                          <th className="text-center align-middle w-50" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>DESKRIPSI</th>
-                                          <th className="text-center align-middle" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>QTY</th>
-                                          <th className="text-center align-middle" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>SATUAN</th>
-                                          <th className="text-center align-middle" scope="col" colSpan="4" style={{ border: '1px solid grey', fontSize: 20 }}>KETERANGAN</th>
+                                          <th className="text-center align-middle w-50 font-table-header" scope="row" rowSpan="2">DESKRIPSI</th>
+                                          <th className="text-center align-middle font-table-header" scope="row" rowSpan="2">QTY</th>
+                                          <th className="text-center align-middle font-table-header" scope="row" rowSpan="2">SATUAN</th>
+                                          <th className="text-center align-middle font-table-header" scope="col" colSpan="4">KETERANGAN</th>
                                         </tr>
                                         <tr>
-                                          <th className="text-center align-middle" scope="col" style={{ border: '1px solid grey', fontSize: 20 }}>RUSAK</th>
-                                          <th className="text-center align-middle" scope="col" style={{ border: '1px solid grey', fontSize: 20 }}>TIDAK DIGUNAKAN</th>
-                                          <th className="text-center align-middle" scope="col" style={{ border: '1px solid grey', fontSize: 20 }}>SISA PRODUKSI</th>
-                                          <th className="text-center align-middle" scope="col" style={{ border: '1px solid grey', fontSize: 20 }}>LAINNYA</th>
+                                          <th className="text-center align-middle font-table-header" scope="col">RUSAK</th>
+                                          <th className="text-center align-middle font-table-header" scope="col">TIDAK DIGUNAKAN</th>
+                                          <th className="text-center align-middle font-table-header" scope="col">SISA PRODUKSI</th>
+                                          <th className="text-center align-middle font-table-header" scope="col">LAINNYA</th>
                                         </tr>
 
                                         <tbody style={{ border: '1px solid grey' }}>
                                             {detailPengajuan.length === 0 ? (
-                                              <tr><td colSpan={8} className="text-center" style={{ border: '1px solid grey', fontSize: 20 }}>Tidak ada data pengajuan</td></tr>
+                                              <tr><td colSpan={8} className="text-center" style={{ border: '1px solid grey', fontSize: 17 }}>Tidak ada data pengajuan</td></tr>
                                             ) : (
                                               detailPengajuan.map((d, index) => (
                                                 <tr key={d.id_parent_pengajuan || d.id_pengajuan || Math.random()}>
-                                                  <td className="border-bottom-0 border-top-0 " style={{ border: '1px solid grey', fontSize: 20 }}>{d?.BarangDiajukan?.KategoriBarang?.nama}</td>
-                                                  <td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>{d?.jumlah_barang}</td>
-                                                  <td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>{d?.BarangDiajukan?.KategoriBarang?.satuan}</td>
+                                                  <td className="border-bottom-0 border-top-0 font-table-body">{d?.BarangDiajukan?.KategoriBarang?.nama}</td>
+                                                  <td className="text-center border-bottom-0 border-top-0 font-table-body">{d?.jumlah_barang}</td>
+                                                  <td className="text-center border-bottom-0 border-top-0 font-table-body">{d?.BarangDiajukan?.KategoriBarang?.satuan}</td>
 
-                                                  <td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>{(d?.kondisi).toUpperCase() === "RUSAK" ? '\u2713' : ""}</td>
-                                                  <td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>{(d?.kondisi).toUpperCase() === "TIDAK DIGUNAKAN" ? '\u2713' : ""}</td>
-                                                  <td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>{(d?.kondisi).toUpperCase() === "SISA PRODUKSI" ? '\u2713' : ""}</td>
-                                                  <td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>{(d?.kondisi).toUpperCase() === "LAINNYA" || (d?.kondisi).toUpperCase() !== "RUSAK" && (d?.kondisi).toUpperCase() !== "TIDAK DIGUNAKAN" && (d?.kondisi).toUpperCase() !== "SISA PRODUKSI" ? (d?.kondisi).toUpperCase() : ""}</td>
+                                                  <td className="text-center border-bottom-0 border-top-0 font-table-body">{(d?.kondisi).toUpperCase() === "RUSAK" ? '\u2713' : ""}</td>
+                                                  <td className="text-center border-bottom-0 border-top-0 font-table-body">{(d?.kondisi).toUpperCase() === "TIDAK DIGUNAKAN" ? '\u2713' : ""}</td>
+                                                  <td className="text-center border-bottom-0 border-top-0 font-table-body">{(d?.kondisi).toUpperCase() === "SISA PRODUKSI" ? '\u2713' : ""}</td>
+                                                  <td className="text-center border-bottom-0 border-top-0 font-table-body">{(d?.kondisi).toUpperCase() === "LAINNYA" || (d?.kondisi).toUpperCase() !== "RUSAK" && (d?.kondisi).toUpperCase() !== "TIDAK DIGUNAKAN" && (d?.kondisi).toUpperCase() !== "SISA PRODUKSI" ? (d?.kondisi).toUpperCase() : ""}</td>
                                                 </tr>
                                               ))
                                             )}
@@ -273,16 +273,16 @@ function DokumenPengajuan() {
                                     )}
 
                                     <tr>
-                                      <th className="text-center align-middle p-0" scope="col" colSpan="7" style={{ border: '1px solid grey' }}>
+                                      <th className="text-center align-middle p-0" scope="col" colSpan="7" style={{ border: '1px solid gray' }}>
                                         <h4 className="d-flex justify-content-center align-items-center mt-3" style={{fontWeight: 800, marginTop: "50px"}}></h4>
                                       </th>
                                     </tr>
                                     <tr>
-                                      <th className="text-center align-middle p-0" scope="col" colSpan="7" style={{ border: '1px solid grey' }}>
+                                      <th className="text-center align-middle p-0" scope="col" colSpan="7" style={{ border: '1px solid gray' }}>
                                         <Row>
                                           <Col md="6">
-                                            <p style={{fontSize: 20, marginTop: 20}}>PEMOHON</p>
-                                            <p style={{fontSize: 20, marginTop: 70}}>
+                                            <p className="font-header-sign">PEMOHON</p>
+                                            <p className="font-body-sign">
                                               {uniquePemohon.map((p) => (
                                                 <div key={p?.id_karyawan}>
                                                   ({p?.nama})
@@ -290,8 +290,8 @@ function DokumenPengajuan() {
                                             </p>
                                           </Col>
                                           <Col md="6">
-                                            <p style={{fontSize: 20, marginTop: 20}}>MENYETUJUI</p>
-                                            <p style={{fontSize: 20, marginTop: 70}}>
+                                            <p className="font-header-sign">MENYETUJUI</p>
+                                            <p className="font-body-sign">
                                               {uniquePemohon.map((p) => 
                                                 (<div key={p?.id_karyawan}>
                                                   {p?.divisi === "PRODUCTION" ? "(IMELDA)" : p?.divisi === "LOGISTIC" ? "(R.WIJIANTI)" :  p?.divisi === "TEKNIK & ADM. MEKANIK" ? "(ABDUL GOFUR)" : "(SRI LESTARI)" }

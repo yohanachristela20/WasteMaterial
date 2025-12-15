@@ -251,6 +251,7 @@ export const getPengajuanById = async(req, res) => {
 export const deletePengajuan = async(req, res) => {
   try {
     const {id_pengajuan} = req.params;
+    const transaction = await db.transaction();
 
     const genPengajuan = await GenPengajuan.findOne({where: {id_pengajuan}});
     if (!genPengajuan) {
@@ -264,8 +265,53 @@ export const deletePengajuan = async(req, res) => {
       await Pengajuan.destroy({where: {id_pengajuan: pengajuanId}});
     }
 
+    // await AntreanPengajuan.destroy({where: {id_pengajuan: pengajuanId}});
 
-    await AntreanPengajuan.destroy({where: {id_pengajuan: pengajuanId}});
+    // const antreanSisa = await AntreanPengajuan.findAll({
+    //   order: [['nomor_antrean', 'ASC']],
+    // });
+    
+    // console.log("antreanSisa:", antreanSisa);
+
+    const antrean = await AntreanPengajuan.findOne({
+      where: {id_pengajuan: pengajuanId}, 
+      // transaction,
+    });
+
+    console.log("antrean:", antrean);
+
+    if (antrean) {
+      const nomorAntreanToDelete = antrean.nomor_antrean;
+
+      await AntreanPengajuan.destroy({
+        where: { id_pengajuan: pengajuanId },
+        // transaction,
+      });
+
+      const remainingAntrean = await AntreanPengajuan.findAll({
+        where: { nomor_antrean: { [Op.gt]: nomorAntreanToDelete } },
+        order: [[ "nomor_antrean", "ASC" ]], 
+        transaction,
+      });
+
+      console.log("remainingAntrean:", remainingAntrean);
+
+      let newNomorAntrean = nomorAntreanToDelete;
+      for (const antreanItem of remainingAntrean) {
+        await antreanItem.update(
+          { nomor_antrean: newNomorAntrean }, 
+          { transaction }
+        );
+        newNomorAntrean++;
+      };
+
+      console.log("newNomorAntrean:", newNomorAntrean);
+    };
+
+    console.log("antrean updated:", antrean);
+
+    await transaction.commit();
+
     await Transaksi.destroy({where: {id_pengajuan: pengajuanId}});
     await GenPengajuan.destroy({where: {id_pengajuan: pengajuanId}});
     res.status(200).json({msg: "Data Pengajuan berhasil dihapus."});
