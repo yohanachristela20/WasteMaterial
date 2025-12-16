@@ -71,14 +71,11 @@ export const getLastDataBarangId = async (req, res) => {
             order: [['id_barang', 'DESC']]
         });
 
-        let nextId = '1-B';
-        if (latestBarang && latestBarang.id_barang) {
-            const lastNumeric = parseInt(latestBarang.id_barang.split('-')[0], 10);
-            const incremented = lastNumeric + 1;
-            nextId = `${incremented}-B`;
+        // let nextId = '1-B';
+        if (latestBarang) {
+					return res.status(200).json({ nextId: latestBarang.id_barang });
         }
-        console.log("getLastBarangId: ", nextId);
-        return res.status(200).json({nextId});
+        return res.status(200).json({nextId: null});
 
 
     } catch (error) {

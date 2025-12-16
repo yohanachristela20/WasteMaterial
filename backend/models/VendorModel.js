@@ -19,14 +19,14 @@ const Vendor = db.define('vendor', {
     hooks: {
         beforeCreate: async (vendor, options) => {
             const lastRecord = await Vendor.findOne({
-                order: [['id_vendor', 'DESC']]
+            	order: [['id_vendor', 'DESC']]
             }); 
-            let newId = "1-V"; //default id
+            let newId = "V00001"; //default id -- format diubah dari 1-V ke V00001 karena format id sebelumnya tidak support di mysql & tidak sesuai dengan arsitektur sistem
 
             if (lastRecord && lastRecord.id_vendor) {
-                const lastIdNumber = parseInt(lastRecord.id_vendor); 
-                const incrementedIdNumber = (lastIdNumber + 1).toString();
-                newId = `${incrementedIdNumber}-V`;
+                const lastIdNumber = parseInt(lastRecord.id_vendor.substring(1), 10); 
+                const incrementedIdNumber = (lastIdNumber + 1).toString().padStart(5, '0');
+                newId = `V${incrementedIdNumber}`;
             }
             vendor.id_vendor = newId;
         },

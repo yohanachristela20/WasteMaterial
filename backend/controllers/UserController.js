@@ -110,14 +110,14 @@ const { username } = req.params;
 
 export const getLastUserId = async (req, res) => {
     try {
-        const lastRecord = await User.findOne({
-            order: [['id_user', 'DESC']],
-        });
+			const lastRecord = await User.findOne({
+					order: [['id_user', 'DESC']],
+			});
 
-        if (lastRecord) {
-            return res.status(200).json({ lastId: lastRecord.id_user });
-        }
-        return res.status(200).json({ lastId: null });
+			if (lastRecord) {
+			return res.status(200).json({ lastId: lastRecord.id_user });
+			}
+		return res.status(200).json({ lastId: null });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Error retrieving last user ID.' });

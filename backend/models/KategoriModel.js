@@ -19,14 +19,16 @@ const Kategori = db.define('kategori', {
     hooks: {
         beforeCreate: async (kategori, options) => {
             const lastRecord = await Kategori.findOne({
-                order: [['id_kategori', 'DESC']]
+							order: [['id_kategori', 'DESC']]
             }); 
-            let newId = "1-K"; //default id
+
+						//spare data up to 100.000 data 
+            let newId = "K00001"; //default id -- format diubah dari 1-K ke K0001 karena format id sebelumnya tidak support di mysql & tidak sesuai dengan arsitektur sistem 
 
             if (lastRecord && lastRecord.id_kategori) {
-                const lastIdNumber = parseInt(lastRecord.id_kategori); 
-                const incrementedIdNumber = (lastIdNumber + 1).toString();
-                newId = `${incrementedIdNumber}-K`;
+							const lastIdNumber = parseInt(lastRecord.id_kategori.substring(1), 10); 
+							const incrementedIdNumber = (lastIdNumber + 1).toString().padStart(5, '0');
+							newId = `K${incrementedIdNumber}`;
             }
             kategori.id_kategori = newId;
         },

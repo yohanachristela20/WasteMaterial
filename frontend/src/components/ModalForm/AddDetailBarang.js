@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { FaExclamationCircle, FaSearch, FaWindowClose } from "react-icons/fa";
 
 const AddDetailBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
-	const [id_kategori, setIdDetailBarang] = useState("");
+	const [id_kategori, setIdKategori] = useState("");
 	const [namaBaru, setNamaBaru] = useState("");
 	const [tanggal_penetapan, setTanggalPenetapan] = useState("");
 	const [satuan, setSatuan] = useState("");
@@ -101,16 +101,20 @@ const AddDetailBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
 	}, []); 
 
 	const IdBarang = async(e) => {
-			const response = await axios.get('http://localhost:5001/getLastBarangId', {
-				headers: {
-						Authorization: `Bearer ${token}`,
-				}
-			});
+		const response = await axios.get('http://localhost:5001/getLastBarangId', {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			}
+		});
 
-			const newId = response.data?.nextId || "1-K";
-			setIdDetailBarang(newId);
+		let newId = "K00001"; //spare data up to 100.000 data 
+		if (response.data?.nextId) {
+			const lastIdNumber = parseInt(response.data.nextId.substring(1), 10);
+			const incrementedIdNumber = (lastIdNumber + 1).toString().padStart(5, '0');
+			newId= `K${incrementedIdNumber}`;
+		}
 
-			console.log("newId: ", newId);
+		setIdKategori(newId);
 	};
 
 	useEffect(() => {

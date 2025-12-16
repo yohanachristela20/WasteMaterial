@@ -82,10 +82,16 @@ const AddDataBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
 					}
 			});
 
-			const newId = response.data?.nextId || "1-B";
+			let newId = "B00001";
+			if(response.data?.nextId) {
+				const lastIdNumber = parseInt(response.data.nextId.substring(1), 10);
+				const incrementedIdNumber = (lastIdNumber + 1).toString().padStart(5, '0');
+				newId= `B${incrementedIdNumber}`;
+			}
+
 			setIdBarang(newId);
 
-			console.log("newId: ", newId);
+			// console.log("newId: ", newId);
 	};
 
 	useEffect(() => {

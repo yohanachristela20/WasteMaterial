@@ -62,25 +62,21 @@ export const deleteVendor = async(req, res) => {
 
 
 export const getLastVendorId = async (req, res) => {
-    try {
-        const latestIdVendor = await Vendor.findOne({
-            order: [['id_vendor', 'DESC']]
-        });
+	try {
+	const latestIdVendor = await Vendor.findOne({
+		order: [['id_vendor', 'DESC']]
+	});
 
-        let nextId = '1-V';
-        if (latestIdVendor && latestIdVendor.id_vendor) {
-            const lastNumeric = parseInt(latestIdVendor.id_vendor.split('-')[0], 10);
-            const incremented = lastNumeric + 1;
-            nextId = `${incremented}-V`;
-        }
-        console.log("getLastIdVendor: ", nextId);
-        return res.status(200).json({nextId});
+	// let nextId = '1-V';
+	if (latestIdVendor) {
+		return res.status(200).json({ nextId: latestIdVendor.id_vendor });
+	}
+	return res.status(200).json({nextId: null});
 
-
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({message: 'error retrieving last id detail barang'});
-    }
+	} catch (error) {
+		console.error(error);
+		return res.status(500).json({message: 'error retrieving last id detail barang'});
+	}
 };
 
 // export const detailVendor = async(req, res) => {

@@ -35,19 +35,17 @@ export const createDetailBarang = async(req, res) => {
 
 export const getLastBarangId = async (req, res) => {
     try {
-        const latestBarang = await Kategori.findOne({
-            order: [['id_kategori', 'DESC']]
-        });
+			const latestBarang = await Kategori.findOne({
+				order: [['id_kategori', 'DESC']]
+			});
 
-        let nextId = '1-K';
-        if (latestBarang && latestBarang.id_kategori) {
-            const lastNumeric = parseInt(latestBarang.id_kategori.split('-')[0], 10);
-            const incremented = lastNumeric + 1;
-            nextId = `${incremented}-K`;
-        }
-        console.log("getLastBarangId: ", nextId);
-        return res.status(200).json({nextId});
+			// let nextId = 'K0001';
 
+			// console.log("latestBarang ID:", latestBarang.id_kategori);
+			if (latestBarang) {
+				return res.status(200).json({ nextId: latestBarang.id_kategori });
+			}
+		return res.status(200).json({nextId: null});
 
     } catch (error) {
         console.error(error);

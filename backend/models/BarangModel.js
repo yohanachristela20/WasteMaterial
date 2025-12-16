@@ -27,12 +27,14 @@ const Barang = db.define('barang', {
             const lastRecord = await Barang.findOne({
                 order: [['id_barang', 'DESC']]
             }); 
-            let newId = "1-B"; //default id
+
+            //spare data up to 100.000 data 
+            let newId = "B00001"; //default id -- format diubah dari 1-B ke B00001 karena format id sebelumnya tidak support di mysql & tidak sesuai dengan arsitektur sistem 
 
             if (lastRecord && lastRecord.id_barang) {
-                const lastIdNumber = parseInt(lastRecord.id_barang); 
-                const incrementedIdNumber = (lastIdNumber + 1).toString();
-                newId = `${incrementedIdNumber}-B`;
+                const lastIdNumber = parseInt(lastRecord.id_barang.substring(1), 10); 
+                const incrementedIdNumber = (lastIdNumber + 1).toString().padStart(5, '0');
+                newId = `B${incrementedIdNumber}`;
             }
             barang.id_barang = newId;
         },
