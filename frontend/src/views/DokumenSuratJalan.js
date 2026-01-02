@@ -114,40 +114,40 @@ function DokumenSuratJalan() {
         <Row>
           <Col className="card-screening">
             <Card className="card-screening p-4">
-              <div ref={contentRef} style={{padding: '50px'}}>
+              <div ref={contentRef} className="card-padding">
                 <Card.Body className="table-responsive px-3">
                     <Row style={{ border: '1px solid grey' }}>
                         <Col md="2" className="py-0">
                             <div className="left-column ml-4 mt-4">
-                                <img src={require("assets/img/campina-logo.png")} alt="company-logo" style={{width: 170, height:170, marginTop: -30}}/>
+                                <img src={require("assets/img/campina-logo.png")} alt="company-logo" className="dok-logo" />
                             </div>
                         </Col>
-                        <Col md="6" className="py-0">
-                            <h3 style={{fontWeight: 800, marginTop: "60px"}}>PT. CAMPINA ICE CREAM INDUSTRY</h3>
+                        <Col md="5" className="py-0">
+                          <h3 className="font-title-header">PT. CAMPINA ICE CREAM INDUSTRY</h3>
                         </Col>
-                        <Col md="4" style={{ borderLeft: '1px solid grey'}}>
+                        <Col md="5" style={{ borderLeft: '1px solid grey'}}>
                             <Row>
                                 <Col md="6" className="mt-4">
-                                    <p className="mb-1" style={{fontSize: 20}}>NO. DOKUMEN</p>
-                                    <p className="mb-1" style={{fontSize: 20}}>TGL. DIKELUARKAN</p>
-                                    <p className="mb-1" style={{fontSize: 20}}>NO. REVISI</p>
+                                    <p className="mb-1 font-desc-header">NO. DOKUMEN</p>
+                                    <p className="mb-1 font-desc-header">TGL. DIKELUARKAN</p>
+                                    <p className="mb-1 font-desc-header">NO. REVISI</p>
                                 </Col>
-                                <Col className="mt-4">
-                                  <p className="mb-1" style={{fontSize: 20}}>
+                                <Col md="6" className="mt-4">
+                                  <p className="mb-1 font-desc-header">
                                     {uniquePengajuan.map((p) => (
                                         <div key={p?.id_pengajuan} >
                                             : F.CMPI.LOG.02.00.12 
                                         </div>
                                     ))}
                                   </p>
-                                  <p className="mb-1" style={{fontSize: 20}}>
+                                  <p className="mb-1 font-desc-header">
                                     {uniquePengajuan.map((p) => (
                                         <div key={p?.id_pengajuan} >
                                             : 10 JANUARI 2019
                                         </div>
                                     ))}
                                   </p>
-                                  <p className="mb-1" style={{fontSize: 20}}>
+                                  <p className="mb-1 font-desc-header">
                                      {uniquePengajuan.map((p) => (
                                         <div key={p?.id_pengajuan} >
                                             : 1 - 0
@@ -169,8 +169,8 @@ function DokumenSuratJalan() {
                                     <th className="text-center align-middle p-0" scope="col" colSpan="3" style={{ border: '1px solid grey' }}>
                                     <h3 className="d-flex justify-content-center align-items-center mt-3" style={{fontWeight: 800, marginTop: "50px"}}>
                                         {uniquePengajuan.map((p) => (
-                                            <div key={p?.id_pengajuan} className="ml-3">
-                                                SURAT IJIN KELUAR WASTE MATERIAL
+                                            <div key={p?.id_pengajuan} className="ml-3 font-sub-title">
+                                                SURAT IZIN KELUAR WASTE MATERIAL
                                             </div>
                                         ))}
                                     </h3>      
@@ -182,19 +182,19 @@ function DokumenSuratJalan() {
 																	<tr>
 																			<th className="align-middle p-0" scope="col" colSpan="3" style={{ border: '1px solid grey' }}>
 																				<Row>
-																					<Col md="6" className="text-left ml-2" style={{fontWeight: 500, fontSize: 20}}>
-																						<td className="border-bottom-0 border-top-0"><strong>DIBERIKAN IZIN KEPADA</strong></td>
+																					<Col md="6" className="text-left ml-2 font-sub-desc" style={{fontWeight: 500}}>
+																						<td className="border-bottom-0 border-top-0"><strong>DIBERIKAN IZIN KEPADA:</strong></td>
 																					</Col>
-																					<Col md="6" className="text-right pb-2 " style={{fontWeight: 500, fontSize: 20, marginLeft: -20, marginTop: 12}}>
+																					<Col md="6" className="text-right font-sub-desc" style={{fontWeight: 500, marginLeft: -20, marginTop: 12}}>
 																						{uniqueID.map((p) => (
-																								<div key={p?.id_transaksi}>
+																								<div key={p?.id_transaksi} className="font-sub-desc">
 																									SURABAYA, {new Date(p?.createdAt).toLocaleString("en-GB", { day: '2-digit', month: '2-digit', year: 'numeric' })}
 																								</div>
 																						))}
 																					</Col>
 																				</Row>
 																				<Row>
-																					<Col md="6" className="text-left ml-2 " style={{fontWeight: 500, fontSize: 20}}>
+																					<Col md="6" className="text-left ml-2 font-sub-desc" style={{fontWeight: 500}}>
 																						<td className="border-bottom-0 border-top-0 py-1">
 																							{uniqueID.map((t) => (
 																									<div key={t?.id_transaksi}>
@@ -209,7 +209,7 @@ function DokumenSuratJalan() {
 																					</Col>
 																				</Row>
 																				<Row>
-																					<Col md="6" className="text-left ml-2" style={{fontWeight: 500, fontSize: 20}}>
+																					<Col md="6" className="text-left ml-2 font-sub-desc" style={{fontWeight: 500}}>
 																						<td className="border-bottom-0 border-top-0 py-2">
 																							{uniqueID.map((t) => (
 																									<div key={t?.id_transaksi}>
@@ -224,28 +224,28 @@ function DokumenSuratJalan() {
 																					</Col>
 																				</Row>
 																				<Row>
-																					<Col md="6" className="text-left ml-2" style={{fontWeight: 500, fontSize: 20}}>
+																					<Col md="6" className="text-left ml-2 font-sub-desc" style={{fontWeight: 500}}>
 																						<td className="border-bottom-0 border-top-0 pt-2 pb-4"><strong>MEMBAWA BARANG SEBAGAI BERIKUT :</strong></td>
 																					</Col>
 																				</Row>
 																			</th>
 																	</tr>
 																	<tr>
-																			<th className="text-center align-middle" scope="col" style={{ border: '1px solid grey', fontSize: 20 }}>KATEGORI BARANG</th>
-																			<th className="text-center align-middle" scope="col"  style={{ border: '1px solid grey', fontSize: 20 }}>SATUAN</th>
-																			<th className="text-center align-middle" scope="col" style={{ border: '1px solid grey', fontSize: 20 }}>KUANTITAS</th>
+																			<th className="text-center align-middle font-table-header" scope="col" style={{ border: '1px solid grey'}}>KATEGORI BARANG</th>
+																			<th className="text-center align-middle font-table-header" scope="col"  style={{ border: '1px solid grey'}}>SATUAN</th>
+																			<th className="text-center align-middle font-table-header" scope="col" style={{ border: '1px solid grey'}}>KUANTITAS</th>
 																	</tr>
 
 																	<tbody style={{ border: '1px solid grey' }}>
 																		{detailPengajuan.length === 0 ? (
-																		<tr><td colSpan={3} className="text-center" style={{ border: '1px solid grey', fontSize: 20 }}>Tidak ada data pengajuan</td></tr>
+																		<tr><td colSpan={3} className="text-center" style={{ border: '1px solid grey', fontSize: 17 }}>Tidak ada data pengajuan</td></tr>
 																		) : (
 																		detailPengajuan
 																		.map((d, index) => (
 																				<tr key={d.id_parent_pengajuan || d.id_pengajuan || Math.random()}>
-																					<td className="border-bottom-0 border-top-0 " style={{ border: '1px solid grey', fontSize: 20 }}>{d?.BarangDiajukan?.KategoriBarang?.nama}</td>
-																					<td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>{d?.BarangDiajukan?.KategoriBarang?.satuan}</td>
-																					<td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>{d?.jumlah_barang}</td>
+																					<td className="border-bottom-0 border-top-0 font-table-header" style={{ border: '1px solid grey'}}>{d?.BarangDiajukan?.KategoriBarang?.nama}</td>
+																					<td className="text-center border-bottom-0 border-top-0 font-table-header" style={{ border: '1px solid grey'}}>{d?.BarangDiajukan?.KategoriBarang?.satuan}</td>
+																					<td className="text-center border-bottom-0 border-top-0 font-table-header" style={{ border: '1px solid grey'}}>{d?.jumlah_barang}</td>
 																				</tr>
 																		))
 																		)}
@@ -254,7 +254,7 @@ function DokumenSuratJalan() {
 
                                 <tr>
 																	<th className="text-center align-middle p-0" scope="col" colSpan="3" style={{ border: '1px solid grey' }}>
-																			<p className="mt-3 text-left ml-3" style={{fontSize: 20}}>
+																			<p className="mt-3 text-left ml-3 font-sub-desc">
 																			{uniqueID.map((t) => (
 																					<div key={t?.id_transaksi}>
 																							{uniquePengajuan.map((p) => (
@@ -272,16 +272,16 @@ function DokumenSuratJalan() {
                                 <th className="text-center align-middle p-0" scope="col" colSpan="3" style={{ border: '1px solid grey' }}>
                                     <Row>
                                     <Col md="4">
-                                        <p style={{fontSize: 20, marginTop: 20}}>LOGISTIK</p>
-																				<p style={{fontSize: 20, marginTop: 150}}></p>
+                                        <p className="font-header-sign">LOGISTIK</p>
+																				<p className="font-body-sign" style={{marginTop: 150}}></p>
                                     </Col>
                                     <Col md="4">
-                                        <p style={{fontSize: 20, marginTop: 20}}>HRD</p>
-																				<p style={{fontSize: 20, marginTop: 150}}></p>
+                                        <p className="font-header-sign">HRD</p>
+																				<p className="font-body-sign" style={{marginTop: 150}}></p>
                                     </Col>
                                     <Col md="4">
-                                        <p style={{fontSize: 20, marginTop: 20}}>SATPAM</p>
-                                        <p style={{fontSize: 20, marginTop: 150}}></p>
+                                        <p className="font-header-sign">SATPAM</p>
+                                        <p className="font-body-sign" style={{marginTop: 150}}></p>
                                     </Col>
                                     </Row>
                                 </th>

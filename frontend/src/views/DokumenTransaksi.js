@@ -120,7 +120,7 @@ function DokumenTransaksi() {
         <Row>
           <Col className="card-screening">
             <Card className="card-screening p-4">
-              <div ref={contentRef} style={{padding: '50px'}}>
+              <div ref={contentRef} className="card-padding">
                 <Card.Body className="table-responsive px-3">
                     <Row style={{ border: '1px solid grey' }}>
                         <Col md="2" className="py-0">
@@ -128,32 +128,32 @@ function DokumenTransaksi() {
                                 <img src={require("assets/img/campina-logo.png")} alt="company-logo" className="dok-logo"/>
                             </div>
                         </Col>
-                        <Col md="6" className="py-0">
-                            <h3 style={{fontWeight: 800, marginTop: "60px"}}>PT. CAMPINA ICE CREAM INDUSTRY</h3>
+                        <Col md="5" className="py-0">
+                            <h3 className="font-title-header">PT. CAMPINA ICE CREAM INDUSTRY</h3>
                         </Col>
-                        <Col md="4" style={{ borderLeft: '1px solid grey'}}>
+                        <Col md="5" style={{ borderLeft: '1px solid grey'}}>
                             <Row>
                                 <Col md="6" className="mt-4">
-                                    <p className="mb-1" style={{fontSize: 20}}>NO. DOKUMEN</p>
-                                    <p className="mb-1" style={{fontSize: 20}}>TGL. DIKELUARKAN</p>
-                                    <p className="mb-1" style={{fontSize: 20}}>NO. REVISI</p>
+                                    <p className="mb-1 font-desc-header">NO. DOKUMEN</p>
+                                    <p className="mb-1 font-desc-header">TGL. DIKELUARKAN</p>
+                                    <p className="mb-1 font-desc-header">NO. REVISI</p>
                                 </Col>
-                                <Col className="mt-4">
-                                  <p className="mb-1" style={{fontSize: 20}}>
+                                <Col md="6" className="mt-4">
+                                  <p className="mb-1 font-desc-header">
                                     {uniquePengajuan.map((p) => (
                                         <div key={p?.id_pengajuan} >
                                         {p?.jenis_pengajuan === "PENJUALAN" || p?.jenis_pengajuan === "Penjualan" ? ": F.CMPI.LOG.02.00.13" : ": F.CMPI.LOG.02.00.06"}
                                         </div>
                                     ))}
                                   </p>
-                                  <p className="mb-1" style={{fontSize: 20}}>
+                                  <p className="mb-1 font-desc-header">
                                     {uniquePengajuan.map((p) => (
                                         <div key={p?.id_pengajuan} >
                                         {p?.jenis_pengajuan === "PENJUALAN" || p?.jenis_pengajuan === "Penjualan" ? ": 10 JANUARI 2014" : ":  30 MARET 2015"}
                                         </div>
                                     ))}
                                   </p>
-                                  <p className="mb-1" style={{fontSize: 20}}>
+                                  <p className="mb-1 font-desc-header">
                                      {uniquePengajuan.map((p) => (
                                         <div key={p?.id_pengajuan} >
                                         {p?.jenis_pengajuan === "PENJUALAN" || p?.jenis_pengajuan === "Penjualan" ? ": 0 - 0" : ":  2 - 0"}
@@ -175,21 +175,21 @@ function DokumenTransaksi() {
                                       <th className="text-center align-middle p-0" scope="col" colSpan="7" style={{ border: '1px solid grey' }}>
                                         <h3 className="d-flex justify-content-center align-items-center mt-3" style={{fontWeight: 800, marginTop: "50px"}}>
                                             {uniquePengajuan.map((p) => (
-                                                <div key={p?.id_pengajuan} className="ml-3">
+                                                <div key={p?.id_pengajuan} className="ml-3 font-sub-title">
                                                 {p?.jenis_pengajuan === "PENJUALAN" || p?.jenis_pengajuan === "Penjualan" ? "PENJUALAN WASTE MATERIAL" : "FORMULIR APPROVAL SCRAPPING WASTE MATERIAL"}
                                                 </div>
                                             ))}
                                         </h3>
-                                        <p className="d-flex justify-content-center align-items-center" style={{fontSize: 20}}>NO. :
+                                        <p className="d-flex justify-content-center align-items-center font-sub-desc">NO. :
                                             {uniqueID.map((p) => (
-                                                <div key={p?.id_transaksi} className="ml-3">
+                                                <div key={p?.id_transaksi} className="ml-3 font-sub-desc">
                                                 {p?.id_transaksi}
                                                 </div>
                                             ))}
                                         </p>
-                                        <p className="d-flex justify-content-center align-items-center" style={{fontSize: 20}}>TANGGAL : 
+                                        <p className="d-flex justify-content-center align-items-center font-sub-desc">TANGGAL : 
                                             {uniqueID.map((p) => (
-                                                <div key={p?.id_transaksi} className="ml-3">
+                                                <div key={p?.id_transaksi} className="ml-3 font-sub-desc">
                                                     {new Date(p?.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '/').replace(',', '')}
                                                 </div>
                                             ))}
@@ -203,36 +203,36 @@ function DokumenTransaksi() {
                                       <React.Fragment>
                                         <tr>
                                           <th className="text-center align-middle p-0" scope="col" colSpan="6" style={{ border: '1px solid grey' }}>
-                                            <h4 className="d-flex justify-content-center align-items-center mt-3" style={{fontWeight: 800, marginTop: "50px"}}>
+                                            <h4 className="d-flex justify-content-center align-items-center mt-3 font-title-table">
                                               {j?.jenis_barang === "ASSET" ? "ASSET" : "NON-ASSET"}
                                             </h4>
                                           </th>
                                         </tr>
 
                                         <tr>
-                                            <th className="text-center align-middle w-25" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>NAMA BARANG</th>
-                                            <th className="text-center align-middle" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>ID KATEGORI</th>
-                                            <th className="text-center align-middle" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>DIVISI</th>
-                                            <th className="text-center align-middle" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>QTY</th>
-                                            <th className="text-center align-middle" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>SATUAN</th>
-                                            <th className="text-center align-middle w-25" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>KETERANGAN</th>
+                                            <th className="text-center align-middle w-25 font-table-header" scope="row" rowSpan="2">NAMA BARANG</th>
+                                            <th className="text-center align-middle font-table-header" scope="row" rowSpan="2">ID KATEGORI</th>
+                                            <th className="text-center align-middle font-table-header" scope="row" rowSpan="2">DIVISI</th>
+                                            <th className="text-center align-middle font-table-header" scope="row" rowSpan="2">QTY</th>
+                                            <th className="text-center align-middle font-table-header" scope="row" rowSpan="2">SATUAN</th>
+                                            <th className="text-center align-middle w-25 font-table-header" scope="row" rowSpan="2">KETERANGAN</th>
                                         </tr>
                                        
 
                                         <tbody style={{ border: '1px solid grey' }}>
                                           {detailPengajuan.length === 0 ? (
-                                            <tr><td colSpan={6} className="text-center" style={{ border: '1px solid grey', fontSize: 20 }}>Tidak ada data pengajuan</td></tr>
+                                            <tr><td colSpan={6} className="text-center" style={{ border: '1px solid grey', fontSize: 17 }}>Tidak ada data pengajuan</td></tr>
                                           ) : (
                                             detailPengajuan
                                             .filter((d) => d?.BarangDiajukan?.KategoriBarang?.jenis_barang === j?.jenis_barang)
                                             .map((d, index) => (
                                               <tr key={d.id_parent_pengajuan || d.id_pengajuan || Math.random()}>
-                                                <td className="border-bottom-0 border-top-0 " style={{ border: '1px solid grey', fontSize: 20 }}>{d?.BarangDiajukan?.KategoriBarang?.nama}</td>
-                                                <td className="text-center border-bottom-0 border-top-0 " style={{ border: '1px solid grey', fontSize: 20 }}>{d?.BarangDiajukan?.id_kategori}</td>
-                                                <td className="text-center border-bottom-0 border-top-0 " style={{ border: '1px solid grey', fontSize: 20 }}>{d?.Pemohon?.divisi}</td>
-                                                <td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>{d?.jumlah_barang}</td>
-                                                <td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>{d?.BarangDiajukan?.KategoriBarang?.satuan}</td>
-                                                <td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>
+                                                <td className="border-bottom-0 border-top-0 font-table-body">{d?.BarangDiajukan?.KategoriBarang?.nama}</td>
+                                                <td className="text-center border-bottom-0 border-top-0 font-table-body">{d?.BarangDiajukan?.id_kategori}</td>
+                                                <td className="text-center border-bottom-0 border-top-0 font-table-body">{d?.Pemohon?.divisi}</td>
+                                                <td className="text-center border-bottom-0 border-top-0 font-table-body">{d?.jumlah_barang}</td>
+                                                <td className="text-center border-bottom-0 border-top-0 font-table-body">{d?.BarangDiajukan?.KategoriBarang?.satuan}</td>
+                                                <td className="text-center border-bottom-0 border-top-0 font-table-body">
                                                     {uniqueID.map((p) => (
                                                         <div key={p?.id_transaksi} className="ml-3">
                                                         {p?.keterangan}
@@ -250,33 +250,33 @@ function DokumenTransaksi() {
                                     <>
                                       <tr>
                                           <th className="text-center align-middle p-0" scope="col" colSpan="6" style={{ border: '1px solid grey' }}>
-                                            <h4 className="d-flex justify-content-center align-items-center mt-3" style={{fontWeight: 800, marginTop: "50px"}}>
+                                            <h4 className="d-flex justify-content-center align-items-center mt-3 font-title-table">
                                               {uniqueJenisBarang[0]?.jenis_barang}
                                             </h4>
                                           </th>
                                       </tr>
                                      <tr>
-                                        <th className="text-center align-middle w-25" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>NAMA BARANG</th>
-                                        <th className="text-center align-middle" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>ID KATEGORI</th>
-                                        <th className="text-center align-middle" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>DIVISI</th>
-                                        <th className="text-center align-middle" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>QTY</th>
-                                        <th className="text-center align-middle" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>SATUAN</th>
-                                        <th className="text-center align-middle w-25" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>KETERANGAN</th>
+                                        <th className="text-center align-middle w-25 font-table-header" scope="row" rowSpan="2">NAMA BARANG</th>
+                                        <th className="text-center align-middle font-table-header" scope="row" rowSpan="2">ID KATEGORI</th>
+                                        <th className="text-center align-middle font-table-header" scope="row" rowSpan="2">DIVISI</th>
+                                        <th className="text-center align-middle font-table-header" scope="row" rowSpan="2">QTY</th>
+                                        <th className="text-center align-middle font-table-header" scope="row" rowSpan="2">SATUAN</th>
+                                        <th className="text-center align-middle w-25 font-table-header" scope="row" rowSpan="2">KETERANGAN</th>
                                     </tr>
 
                                       <tbody style={{ border: '1px solid grey' }}>
                                           {detailPengajuan.length === 0 ? (
-                                            <tr><td colSpan={8} className="text-center" style={{ border: '1px solid grey', fontSize: 20 }}>Tidak ada data pengajuan</td></tr>
+                                            <tr><td colSpan={8} className="text-center" style={{ border: '1px solid grey', fontSize: 17 }}>Tidak ada data pengajuan</td></tr>
                                           ) : (
                                             detailPengajuan
                                             .map((d, index) => (
                                               <tr key={d.id_parent_pengajuan || d.id_pengajuan || Math.random()}>
-                                                <td className="border-bottom-0 border-top-0 " style={{ border: '1px solid grey', fontSize: 20 }}>{d?.BarangDiajukan?.KategoriBarang?.nama}</td>
-                                                <td className="text-center border-bottom-0 border-top-0 " style={{ border: '1px solid grey', fontSize: 20 }}>{d?.BarangDiajukan?.id_kategori}</td>
-                                                <td className="text-center border-bottom-0 border-top-0 " style={{ border: '1px solid grey', fontSize: 20 }}>{d?.Pemohon?.divisi}</td>
-                                                <td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>{d?.jumlah_barang}</td>
-                                                <td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>{d?.BarangDiajukan?.KategoriBarang?.satuan}</td>
-                                                <td className="text-center border-bottom-0 border-top-0" style={{ border: '1px solid grey', fontSize: 20 }}>
+                                                <td className="border-bottom-0 border-top-0 font-table-body">{d?.BarangDiajukan?.KategoriBarang?.nama}</td>
+                                                <td className="text-center border-bottom-0 border-top-0 font-table-body">{d?.BarangDiajukan?.id_kategori}</td>
+                                                <td className="text-center border-bottom-0 border-top-0 font-table-body">{d?.Pemohon?.divisi}</td>
+                                                <td className="text-center border-bottom-0 border-top-0 font-table-body">{d?.jumlah_barang}</td>
+                                                <td className="text-center border-bottom-0 border-top-0 font-table-body">{d?.BarangDiajukan?.KategoriBarang?.satuan}</td>
+                                                <td className="text-center border-bottom-0 border-top-0 font-table-body">
                                                     {uniqueID.map((p) => (
                                                         <div key={p?.id_transaksi} className="ml-3">
                                                         {p?.keterangan}
@@ -294,7 +294,7 @@ function DokumenTransaksi() {
 
                                   <tr>
                                     <th className="text-center align-middle p-0" scope="col" colSpan="6" style={{ border: '1px solid grey' }}>
-                                      <p className="mt-3 text-left ml-3" style={{fontSize: 20}}>
+                                      <p className="mt-3 text-left ml-3">
                                         {uniqueID.map((t) => (
                                             <div key={t?.id_transaksi}>
                                                  {uniquePengajuan.map((p) => (
@@ -312,8 +312,8 @@ function DokumenTransaksi() {
                                     <th className="text-center align-middle p-0" scope="col" colSpan="6" style={{ border: '1px solid grey' }}>
                                       <Row>
                                         <Col md="4">
-                                          <p style={{fontSize: 20, marginTop: 20}}>PEMOHON</p>
-                                          <p style={{fontSize: 20, marginTop: 70}}>
+                                          <p className="font-header-sign">PEMOHON</p>
+                                          <p className="font-body-sign">
                                             {uniqueID.map((p) => (
                                               <div key={p?.id_transaksi}>
                                                 ({p?.Petugas?.nama})
@@ -322,12 +322,21 @@ function DokumenTransaksi() {
                                           </p>
                                         </Col>
                                         <Col md="4">
-                                          <p style={{fontSize: 20, marginTop: 20}}>PENERIMA</p>
-                                          <p style={{fontSize: 20, marginTop: 70}}>(MUJIONO)</p>
+                                          {/* <p className="font-header-sign">PENERIMA</p> */}
+                                          {uniqueID.map((t) => (
+                                            <div key={t?.id_transaksi}>
+                                                 {uniquePengajuan.map((p) => (
+                                                    <div key={p?.id_pengajuan} >
+                                                     <p className="font-header-sign">{p?.jenis_pengajuan === "SCRAPPING" || p?.jenis_pengajuan === "Scrapping" ? "PENERIMA" : ""}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                          ))}
+                                          {/* <p className="font-body-sign">(MUJIONO)</p> */}
                                         </Col>
                                         <Col md="4">
-                                          <p style={{fontSize: 20, marginTop: 20}}>MENYETUJUI</p>
-                                          <p style={{fontSize: 20, marginTop: 70}}>(R. WIJIANTI)</p>
+                                          <p className="font-header-sign">MENYETUJUI</p>
+                                          <p className="font-body-sign">(R. WIJIANTI)</p>
                                         </Col>
                                       </Row>
                                     </th>

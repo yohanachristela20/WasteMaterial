@@ -45,20 +45,19 @@ router.get('/detail-vendor/:id_vendor', detailVendor);
 
 router.post('/vendor/import-csv', upload.single("csvfile"), async(req,res) => {
   const latestVendor = await Vendor.findOne({
-      order: [['id_vendor', 'DESC']]
+    order: [['id_vendor', 'DESC']]
   });
 
-  let nextId = '1-V';
-  if (latestVendor && latestVendor.id_vendor) {
-      const lastNumeric = parseInt(latestVendor.id_vendor.split('-')[0], 10);
-      const incremented = lastNumeric + 1;
-      nextId = `${incremented}-V`;
-  }
+  // let nextId = 'V00001';
+  // if (latestVendor && latestVendor.id_vendor) {
+  //     const lastNumeric = parseInt(latestVendor.id_vendor.split('-')[0], 10);
+  //     const incremented = lastNumeric + 1;
+  //     nextId = `${incremented}-V`;
+  // }
 
   const lastNumeric = latestVendor && latestVendor.id_vendor 
-  ? parseInt(String(latestVendor.id_vendor).split('-')[0], 10) || 0
+  ? parseInt(latestVendor.id_vendor.substring(1), 10)
   : 0;
-  const startNumeric = lastNumeric + 1;
 
   if (!req.file) {
     return res.status(400).json({ success: false, message: 'No file uploaded' });
@@ -68,14 +67,14 @@ router.post('/vendor/import-csv', upload.single("csvfile"), async(req,res) => {
   const data_vendor = [];
   
   if (!fs.existsSync('./uploads/vendor')) {
-          fs.mkdirSync('./uploads/vendor');
+    fs.mkdirSync('./uploads/vendor', {recursive: true});
   }    
   
   fs.createReadStream(filePath)
   .pipe(csvParser())
   .on("data", (row) => {
     data_vendor.push({
-      id_vendor: nextId,
+      // id_vendor: nextId,
       nama: row.nama,
       alamat: row.alamat,
       no_telepon: row.no_telepon,
@@ -90,14 +89,17 @@ router.post('/vendor/import-csv', upload.single("csvfile"), async(req,res) => {
         throw new Error("Tidak ada data untuk diimpor");
       }
   
-      const payload = data_vendor.map((r, idx) => ({
-        id_vendor: `${startNumeric + idx}-V`,
-        nama: r.nama,
-        alamat: r.alamat,
-        no_telepon: r.no_telepon,
-        no_kendaraan: r.no_kendaraan,
-        sopir: r.sopir,
-      }));
+      const payload = data_vendor.map((r, idx) => {
+        const numeric = lastNumeric + idx + 1;
+        return{
+          id_vendor: `V${numeric.toString().padStart(5, '0')}`,
+          nama: r.nama,
+          alamat: r.alamat,
+          no_telepon: r.no_telepon,
+          no_kendaraan: r.no_kendaraan,
+          sopir: r.sopir,
+        }        
+      });
 
       transaction = await db.transaction();
       await Vendor.bulkCreate(payload, { transaction });

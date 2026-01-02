@@ -48,23 +48,21 @@ router.get('/detail-barang', detailBarang);
 router.get('/namaBarang', namaBarang);
 router.get('/detail-kategori/:id_barang', getDetailBarangById);
 
-
 router.post('/data-barang/import-csv', upload.single("csvfile"), async(req,res) => {
   const latestBarang = await Barang.findOne({
-      order: [['id_barang', 'DESC']]
+    order: [['id_barang', 'DESC']]
   });
 
-  let nextId = '1-B';
-  if (latestBarang && latestBarang.id_barang) {
-      const lastNumeric = parseInt(latestBarang.id_barang.split('-')[0], 10);
-      const incremented = lastNumeric + 1;
-      nextId = `${incremented}-B`;
-  }
+  // let nextId = 'B00001';
+  // if (latestBarang && latestBarang.id_barang) {
+  //     const lastNumeric = parseInt(latestBarang.id_barang.split('-')[0], 10);
+  //     const incremented = lastNumeric + 1;
+  //     nextId = `${incremented}-B`;
+  // }
 
   const lastNumeric = latestBarang && latestBarang.id_barang 
-  ? parseInt(String(latestBarang.id_barang).split('-')[0], 10) || 0
+  ? parseInt(latestBarang.id_barang.substring(1), 10)
   : 0;
-  const startNumeric = lastNumeric + 1;
 
   if (!req.file) {
     return res.status(400).json({ success: false, message: 'No file uploaded' });
@@ -74,14 +72,14 @@ router.post('/data-barang/import-csv', upload.single("csvfile"), async(req,res) 
   const data_barang = [];
   
   if (!fs.existsSync('./uploads/data-barang')) {
-    fs.mkdirSync('./uploads/data-barang');
+    fs.mkdirSync('./uploads/data-barang', {recursive: true});
   }    
   
   fs.createReadStream(filePath)
   .pipe(csvParser())
   .on("data", (row) => {
     data_barang.push({
-      id_barang: nextId,
+      // id_barang: nextId,
       nama: row.nama,
       id_sap: row.id_sap,
       id_kategori: row.id_kategori,
@@ -94,12 +92,15 @@ router.post('/data-barang/import-csv', upload.single("csvfile"), async(req,res) 
         throw new Error("Tidak ada data untuk diimpor");
       }
   
-      const payload = data_barang.map((r, idx) => ({
-        id_barang: `${startNumeric + idx}-B`,
-        nama: r.nama,
-        id_sap: r.id_sap,
-        id_kategori: r.id_kategori,
-      }));
+      const payload = data_barang.map((r, idx) => {
+       const numeric = lastNumeric + idx + 1;
+       return{
+          id_barang: `B${numeric.toString().padStart(5, '0')}`,
+          nama: r.nama,
+          id_sap: r.id_sap,
+          id_kategori: r.id_kategori, 
+       }
+      });
 
       transaction = await db.transaction();
       await Barang.bulkCreate(payload, { transaction });

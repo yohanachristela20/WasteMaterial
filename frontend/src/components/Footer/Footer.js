@@ -8,7 +8,7 @@ class Footer extends Component {
         <Container fluid>
           <nav>
             <p className="copyright text-center">
-              © Campina Dev Team, 2025
+              ©2025 Accounting Dev - PT Campina Ice Cream Industry, Tbk.
               {/* {new Date().getFullYear()}{" "} */}
             </p>
           </nav>

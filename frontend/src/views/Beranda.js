@@ -202,85 +202,8 @@ function Beranda() {
     ];
   };
   
-   useEffect(() => {
-    const fetchYears = async () => {
-      try {
-        const response = await axios.get("http://localhost:5001/filter-penjualan-tahunan", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-  
-        const data = response.data;
-        const uniqueYears = [
-          ...new Set(data.map((item) => new Date(item.createdAt).getFullYear())),
-        ];
-        setYears(uniqueYears.sort()); 
-      } catch (error) {
-        console.error("Error fetching years:", error.message);
-      }
-    };
-  
-    const fetchUserData = async () => {
-      const token = localStorage.getItem("token");
-      const username = localStorage.getItem("username");
-      if (!token || !username) return;
-      try {
-        const response = await axios.get(
-          `http://localhost:5001/user-details/${username}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-  
-        if (response.data) {
-          setUserData({
-            id_karyawan: response.data.id_karyawan,
-            nama: response.data.nama,
-            divisi: response.data.divisi,
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-  
-    const fetchSummaryData = async () => {
-      try {
-        const [resTotalPenjualan, resTotalScrapping, resJumlahBelumDiproses, resPengajuanSelesai] = await Promise.all([
-          axios.get("http://localhost:5001/total-penjualan", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get("http://localhost:5001/total-scrapping", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get("http://localhost:5001/jumlah-belum-diproses", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get("http://localhost:5001/jumlah-pengajuan-selesai", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
 
-        setTotalPenjualan(resTotalPenjualan.data.totalPenjualan || 0);
-        setTotalScrapping(resTotalScrapping.data.totalScrapping || 0);
-        setJumlahBelumDiproses(resJumlahBelumDiproses.data.jumlahBelumDiproses || 0);
-        setJumlahPengajuanSelesai(resPengajuanSelesai.data.jumlahPengajuanSelesai || 0);
-      } catch (error) {
-        console.error("Error fetching summary data:", error);
-      }
-    };
-  
-    fetchYears();
-    fetchUserData();
-    fetchSummaryData();
-
-    dataPenjualan(selectedYear);
-    dataPerDivisi();
-    dataScrappingPerDivisi();
-  }, [selectedYear]); 
-
-  const dataPenjualan = async (selectedYear) => {
+  const dataPenjualan = async (selectedYear = "") => {
     try {
       const response = await axios.get("http://localhost:5001/data-penjualan", {
         headers: {
@@ -290,15 +213,20 @@ function Beranda() {
           year: selectedYear, 
         },
       });
+
+      console.log("selectedYear:", selectedYear);
   
       const data = response.data;
       const labels = [];
       const seriesPenjualan = [];
+
       data.forEach((item) => {
         labels.push(item.divisi);
         const jumlahPenjualanScaled = Math.floor(item.total);
         seriesPenjualan.push(jumlahPenjualanScaled);
       });
+
+      console.log("seriesPenjualan:", seriesPenjualan);
   
       if (labels.length > 0 && seriesPenjualan.length > 0) {
         setChartDataTahunan({
@@ -426,6 +354,86 @@ function Beranda() {
         });
     }
   };
+
+  useEffect(() => {
+    const fetchYears = async () => {
+      try {
+        const response = await axios.get("http://localhost:5001/filter-penjualan-tahunan", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
+        const data = response.data;
+        const uniqueYears = [
+          ...new Set(data.map((item) => new Date(item.createdAt).getFullYear())),
+        ];
+        setYears(uniqueYears.sort()); 
+        // console.log("Fetched years:", uniqueYears);
+      } catch (error) {
+        console.error("Error fetching years:", error.message);
+      }
+    };
+  
+    const fetchUserData = async () => {
+      const token = localStorage.getItem("token");
+      const username = localStorage.getItem("username");
+      if (!token || !username) return;
+      try {
+        const response = await axios.get(
+          `http://localhost:5001/user-details/${username}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+  
+        if (response.data) {
+          setUserData({
+            id_karyawan: response.data.id_karyawan,
+            nama: response.data.nama,
+            divisi: response.data.divisi,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+  
+    const fetchSummaryData = async () => {
+      try {
+        const [resTotalPenjualan, resTotalScrapping, resJumlahBelumDiproses, resPengajuanSelesai] = await Promise.all([
+          axios.get("http://localhost:5001/total-penjualan", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get("http://localhost:5001/total-scrapping", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get("http://localhost:5001/jumlah-belum-diproses", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get("http://localhost:5001/jumlah-pengajuan-selesai", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        setTotalPenjualan(resTotalPenjualan.data.totalPenjualan || 0);
+        setTotalScrapping(resTotalScrapping.data.totalScrapping || 0);
+        setJumlahBelumDiproses(resJumlahBelumDiproses.data.jumlahBelumDiproses || 0);
+        setJumlahPengajuanSelesai(resPengajuanSelesai.data.jumlahPengajuanSelesai || 0);
+      } catch (error) {
+        console.error("Error fetching summary data:", error);
+      }
+    };
+  
+    fetchYears();
+    fetchUserData();
+    fetchSummaryData();
+
+    console.log("SELECTED YEAR:", selectedYear);
+    dataPenjualan(selectedYear);
+    dataPerDivisi();
+    dataScrappingPerDivisi();
+  }, [selectedYear]); 
 
   const handleProses = (pengajuan) => {
     history.push({

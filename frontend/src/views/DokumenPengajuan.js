@@ -129,7 +129,7 @@ function DokumenPengajuan() {
                             </div>
                         </Col>
                         <Col md="5" className="py-0">
-                            <h3 className="font-title-header">PT. CAMPINA ICE CREAM INDUSTRY</h3>
+                          <h3 className="font-title-header">PT. CAMPINA ICE CREAM INDUSTRY</h3>
                         </Col>
                         <Col md="5" style={{ borderLeft: '1px solid grey'}}>
                             <Row>

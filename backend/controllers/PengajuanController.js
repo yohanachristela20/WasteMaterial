@@ -321,7 +321,6 @@ export const deletePengajuan = async(req, res) => {
   }
 }
 
-
 export const getPenjualan = async (req, res) => {
   try {
     const { year } = req.query; 
@@ -332,7 +331,8 @@ export const getPenjualan = async (req, res) => {
 
    if (year) {
       whereCondition["createdAt"] = {
-        [Op.between] : [`${year}-01-01`, `${year}-12-31`],
+        [Op.gte]: new Date(`${year}-01-01`),
+        [Op.lt]: new Date(`${parseInt(year) + 1}-01-01`),
       }
    }
 

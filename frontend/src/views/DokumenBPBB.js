@@ -129,34 +129,34 @@ function DokumenBPBB() {
     <>
       <Container fluid >
         <Row>
-          <Col className="card-screening" >
-            <Card className="card-screening p-4" >
-              <div ref={contentRef} style={{padding: '50px'}}>
+          <Col className="card-screening">
+            <Card className="card-screening p-4">
+              <div ref={contentRef} className="card-padding">
                 <Card.Body className="table-responsive px-3">
                     <Row style={{ border: '1px solid grey' }}>
                         <Col md="2" className="py-0">
                             <div className="left-column ml-4 mt-4">
-                                <img src={require("assets/img/campina-logo.png")} alt="company-logo" style={{width: 170, height:170, marginTop: -30}}/>
+                                <img src={require("assets/img/campina-logo.png")} alt="company-logo" className="dok-logo"/>
                             </div>
                         </Col>
-                        <Col md="6" className="py-0">
-                            <h3 style={{fontWeight: 800, marginTop: "60px"}}>PT. CAMPINA ICE CREAM INDUSTRY</h3>
+                        <Col md="5" className="py-0">
+                            <h3 className="font-title-header">PT. CAMPINA ICE CREAM INDUSTRY</h3>
                         </Col>
-                        <Col md="4" style={{ borderLeft: '1px solid grey'}}>
+                        <Col md="5" style={{ borderLeft: '1px solid grey'}}>
                             <Row>
                                 <Col md="6" className="mt-4">
-                                    <p className="mb-1" style={{fontSize: 20}}>NO. DOKUMEN</p>
-                                    <p className="mb-1" style={{fontSize: 20}}>TGL. DIKELUARKAN</p>
-                                    <p className="mb-1" style={{fontSize: 20}}>NO. REVISI</p>
+                                    <p className="mb-1 font-desc-header">NO. DOKUMEN</p>
+                                    <p className="mb-1 font-desc-header">TGL. DIKELUARKAN</p>
+                                    <p className="mb-1 font-desc-header">NO. REVISI</p>
                                 </Col>
-                                <Col className="mt-4">
-                                  <p className="mb-1" style={{fontSize: 20}}>
+                                <Col md="6" className="mt-4">
+                                  <p className="mb-1 font-desc-header">
                                     : F.CMPI.LOG.02.00.07
                                   </p>
-                                  <p className="mb-1" style={{fontSize: 20}}>
+                                  <p className="mb-1 font-desc-header">
                                     : 04 OKTOBER 2013
                                   </p>
-                                  <p className="mb-1" style={{fontSize: 20}}>
+                                  <p className="mb-1 font-desc-header">
                                     : 1 - 0
                                   </p>
                                 </Col>
@@ -173,38 +173,40 @@ function DokumenBPBB() {
                                 <tr>
                                   <th className="text-center align-middle p-0" scope="col" colSpan="6" style={{ border: '1px solid grey' }}>
                                     <h3 className="d-flex justify-content-center align-items-center mt-3" style={{fontWeight: 800, marginTop: "50px"}}>
+                                      <div className="ml-3 font-sub-title">
                                         BUKTI PENERIMAAN BARANG BEKAS
+                                      </div>
                                     </h3>
                                   </th>
                                 </tr>
 
                                 <tr>
-                                  <th className="align-middle" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>
+                                  <th className="align-middle font-sub-desc" scope="row" rowSpan="2" colSpan="2" style={{ border: '1px solid grey' }}>
                                     {uniquePengajuan.map((p) => (
-                                        <div key={p?.id_pengajuan} style={{fontWeight: 500}}>
+                                        <div key={p?.id_pengajuan} style={{fontWeight: 500}} className="ml-3 font-sub-desc">
                                           <strong>DITERIMA DARI BAGIAN</strong> : {p?.Pemohon?.divisi}
                                         </div>
                                     ))}
                                   </th>
-                                  <th className="align-middle" style={{ border: '1px solid grey', fontSize: 20 }}>
+                                  <th className="align-middle font-sub-desc" colSpan="2" style={{ border: '1px solid grey'}}>
                                     {uniqueID.map((p) => (
-                                        <div key={p?.id_transaksi} style={{fontWeight: 500}}>
+                                        <div key={p?.id_transaksi} style={{fontWeight: 500}} className="ml-3 font-sub-desc">
                                           <strong>NO. :</strong>  {p?.id_transaksi}
                                         </div>
                                     ))}
                                   </th>
-                                  <th className="align-middle" scope="col" colSpan="4" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20}}>
+                                  <th className="align-middle font-sub-desc" scope="col" colSpan="2" rowSpan="2" style={{ border: '1px solid grey'}}>
                                     {uniqueID.map((p) => (
-                                        <div key={p?.id_transaksi} style={{fontWeight: 500}}>
+                                        <div key={p?.id_transaksi} style={{fontWeight: 500}} className="ml-3 font-sub-desc">
                                           <strong>SYARAT PEMBAYARAN :</strong>  {p?.cara_bayar}
                                         </div>
                                     ))}
                                   </th>
                                 </tr>
                                 <tr>
-                                  <th className="align-middle" style={{ border: '1px solid grey', fontSize: 20 }}>
+                                  <th className="align-middle" colSpan="2" style={{ border: '1px solid grey'}}>
                                     {uniqueID.map((p) => (
-                                        <div key={p?.id_transaksi} style={{fontWeight: 500}}>
+                                        <div key={p?.id_transaksi} style={{fontWeight: 500}} className="ml-3 font-sub-desc">
                                           <strong style={{marginLeft: -2}}>TANGGAL :</strong> {new Date(p?.createdAt).toLocaleString("en-GB", { timeZone: "Asia/Jakarta" }).replace(/\//g, '/').replace(',', '')}
                                         </div>
                                     ))}
@@ -213,35 +215,35 @@ function DokumenBPBB() {
                               </thead>
 
                               <tr>
-                                <th className="text-center align-middle" scope="row" rowSpan="2" colSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>NAMA KATEGORI</th>
-                                <th className="text-center align-middle" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>SATUAN</th>
-                                <th className="text-center align-middle" scope="row" rowSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>QTY</th>
-                                <th className="text-center align-middle" scope="col" colSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>DIISI BAGIAN PENJUALAN</th>
+                                <th className="text-center align-middle font-table-header" scope="row" rowSpan="2" colSpan="2">NAMA KATEGORI</th>
+                                <th className="text-center align-middle font-table-header" scope="row" rowSpan="2">SATUAN</th>
+                                <th className="text-center align-middle font-table-header" scope="row" rowSpan="2">QTY</th>
+                                <th className="text-center align-middle font-table-header" scope="col" colSpan="2">DIISI BAGIAN PENJUALAN</th>
                               </tr>
                               <tr>
-                                <th className="text-center align-middle" scope="col" style={{ border: '1px solid grey', fontSize: 20 }}>HARGA JUAL</th>
-                                <th className="text-center align-middle" scope="col"style={{ border: '1px solid grey', fontSize: 20 }}>JUMLAH</th>
+                                <th className="text-center align-middle font-table-header" scope="col">HARGA JUAL</th>
+                                <th className="text-center align-middle font-table-header" scope="col">JUMLAH</th>
                               </tr>
 
                               <tbody style={{ border: '1px solid grey' }}>
                                 {detailPengajuan.length === 0 ? (
-                                  <tr><td colSpan="5" className="text-center" style={{ border: '1px solid grey', fontSize: 20 }}>Tidak ada data pengajuan</td></tr>
+                                  <tr><td colSpan={5} className="text-center" style={{ border: '1px solid grey', fontSize: 17 }}>Tidak ada data pengajuan</td></tr>
                                 ) : (
                                   detailPengajuan
                                   .map((d, index) => (
                                     <tr key={d.id_parent_pengajuan || d.id_pengajuan || Math.random()}>
-                                      <td className="border-bottom-0 border-top-0 p-2" colSpan="2" style={{ border: '1px solid grey', fontSize: 20 }}>{d?.BarangDiajukan?.KategoriBarang?.nama}</td>
-                                      <td className="text-center border-bottom-0 border-top-0 p-2" style={{ border: '1px solid grey', fontSize: 20 }}>{d?.BarangDiajukan?.KategoriBarang?.satuan}</td>
-                                      <td className="text-center border-bottom-0 border-top-0 p-2" style={{ border: '1px solid grey', fontSize: 20 }}>{d?.jumlah_barang}</td>
+                                      <td className="border-bottom-0 border-top-0 font-table-body" colSpan="2">{d?.BarangDiajukan?.KategoriBarang?.nama}</td>
+                                      <td className="text-center border-bottom-0 border-top-0 font-table-body">{d?.BarangDiajukan?.KategoriBarang?.satuan}</td>
+                                      <td className="text-center border-bottom-0 border-top-0 font-table-body">{d?.jumlah_barang}</td>
 
-                                      <td className="text-center border-bottom-0 border-top-0 p-2" style={{border: '1px solid grey', fontSize: 20 }}>
+                                      <td className="text-center border-bottom-0 border-top-0 font-table-body">
                                         <div className="d-flex justify-content-between">
                                           <span>Rp.</span>
                                           <span>{formatRupiah(d?.BarangDiajukan?.KategoriBarang?.harga_barang)}</span>
                                         </div>
                                       </td>
 
-                                      <td className="text-center border-bottom-0 border-top-0 p-2" style={{border: '1px solid grey', fontSize: 20 }}>
+                                      <td className="text-center border-bottom-0 border-top-0 font-table-body">
                                         <div className="d-flex justify-content-between">
                                           <span>Rp.</span>
                                           <span>{formatRupiah(d?.total)}</span>
@@ -253,7 +255,7 @@ function DokumenBPBB() {
                               </tbody>
 
                               <tr>
-                                <th scope="col" colSpan="5" className="p-2" style={{ border: '1px solid grey', fontSize: 20, fontWeight: 500 }}>
+                                <th scope="col" colSpan="5" className="font-table-body" style={{ border: '1px solid grey', fontWeight: 500 }}>
                                     {uniqueID.map((t) => (
                                       <div key={t?.id_transaksi}>
                                           {uniquePengajuan.map((p) => (
@@ -264,7 +266,7 @@ function DokumenBPBB() {
                                       </div>
                                   ))}
                                 </th>
-                               <td className="text-center p-2" style={{border: '1px solid grey', fontSize: 20, fontWeight: 700 }}>
+                               <td className="text-center font-table-body" style={{border: '1px solid grey', fontWeight: 700 }}>
                                   <div className="d-flex justify-content-between">
                                     <span>Rp.</span>
                                     <span>{formatRupiah(jumlahTotal)}</span>
@@ -278,19 +280,19 @@ function DokumenBPBB() {
                                 <th className="text-center align-middle p-0" scope="col" colSpan="6" style={{ border: '1px solid grey' }}>
                                   <Row>
                                     <Col md="3">
-                                      <p style={{fontSize: 20, marginTop: 20}}>MENYERAHKAN</p>
+                                      <p className="font-header-sign">MENYERAHKAN</p>
                                     </Col>
                                     <Col md="3">
-                                      <p style={{fontSize: 20, marginTop: 20}}>MENERIMA</p>
+                                      <p className="font-header-sign">MENERIMA</p>
                                     </Col>
                                     <Col md="6">
-                                      <p style={{fontSize: 20, marginTop: 20}}>MENGETAHUI</p>
+                                      <p className="font-header-sign">MENGETAHUI</p>
                                     </Col>
                                   </Row>
 
                                   <Row>
                                     <Col md="3">
-                                      <p style={{fontSize: 20, marginTop: 70}}>
+                                      <p className="font-body-sign">
                                         {uniqueID.map((p) => (
                                           <div key={p?.id_transaksi}>
                                             ({p?.Petugas?.nama})
@@ -299,13 +301,13 @@ function DokumenBPBB() {
                                       </p>
                                     </Col>
                                     <Col md="3">
-                                      <p style={{fontSize: 20, marginTop: 70}}></p>
+                                      <p className="font-body-sign"></p>
                                     </Col>
                                     <Col md="3">
-                                      <p style={{fontSize: 20, marginTop: 70}}>(FINANCE)</p>
+                                      <p className="font-body-sign">(FINANCE)</p>
                                     </Col>
                                     <Col md="3">
-                                      <p style={{fontSize: 20, marginTop: 70}}>(KASIR)</p>
+                                      <p className="font-body-sign">(KASIR)</p>
                                     </Col>
                                   </Row>
                                 </th>
