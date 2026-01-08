@@ -1778,7 +1778,7 @@ import {
   const getAntrean = async () => {
     try {
       // setLoading(true);
-      const response = await axios.get("http://10.70.10.131:5001/antrean-pengajuan", {
+      const response = await axios.get("http://localhost:5001/antrean-pengajuan", {
         headers: {
           Authorization: `Bearer ${token}`,
       },

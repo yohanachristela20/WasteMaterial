@@ -351,7 +351,7 @@ function MasterUser() {
             variant="info"
             onClick={handleImportButtonClick}>
             <FaFileImport style={{ marginRight: '8px' }} />
-            Import Data
+            Impor Data
           </Button>
 
           <ImportUser showImportModal={showImportModal} setShowImportModal={setShowImportModal} onSuccess={handleImportSuccess} />

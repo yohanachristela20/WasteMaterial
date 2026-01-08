@@ -77,11 +77,11 @@ const ImportVendor = ({showImportModal, setShowImportModal, onSuccess}) => {
       show={showImportModal}
       onHide={() => setShowImportModal(false)}>
       <Modal.Header>
-        <h3 className="mt-2 mb-0"><strong>Import Vendor</strong></h3>
+        <h3 className="mt-2 mb-0"><strong>Impor Vendor</strong></h3>
       </Modal.Header>
       <Modal.Body className="text-left pt-0 mt-3 mb-1">
         <div>
-        <span className="text-danger required-select">*Gunakan format CSV di bawah ini untuk mengimport vendor.</span>
+        <span className="text-danger required-select">*Gunakan format CSV di bawah ini untuk mengimpor vendor.</span>
         <p>Unduh format CSV disini.</p>
         <Button
           className="btn-fill pull-right mb-4"
@@ -103,7 +103,7 @@ const ImportVendor = ({showImportModal, setShowImportModal, onSuccess}) => {
               disabled={!file}
             >
               <FaFileImport style={{ marginRight: "8px" }} />
-              Import Data
+              Impor Data
             </Button>
           </div>
         </div>

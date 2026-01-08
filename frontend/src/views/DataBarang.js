@@ -310,7 +310,7 @@ function Barang() {
               hidden={role !== "Super Admin"}
               onClick={handleImportButtonClick}>
               <FaFileImport style={{ marginRight: '8px' }} />
-              Import Data
+              Impor Data
             </Button>
             <ImportBarang showImportModal={showImportModal} setShowImportModal={setShowImportModal} onSuccess={handleImportSuccess} />
 

@@ -155,7 +155,7 @@ function Transaksi() {
       }
   };
 
-  console.log("Sopir:", sopir);
+  // console.log("Sopir:", sopir);
 
   
   useEffect(() => {
@@ -250,6 +250,25 @@ function Transaksi() {
     if (items.length === 0) setItems([blankItem()]);
   }, []);
 
+  const updateSopirVendor = async (id_vendor, sopir) => {
+    if (!id_vendor || !sopir) return;
+    try {
+      await axios.patch(
+        `http://localhost:5001/vendor/${id_vendor}`,
+        { sopir }, 
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Gagal update sopir:", error);
+      toast.error("Gagal memperbarui nama sopir di database.");
+    }
+  };
+
+
 
   const handleSubmit = async(e) => {
     e.preventDefault();
@@ -281,6 +300,14 @@ function Transaksi() {
       });
 
       toast.success("Transaksi penjualan berhasil.");
+
+      // Update sopir for each item
+      for (const item of items) {
+        if (item.id_vendor && item.sopir) {
+          await updateSopirVendor(item.id_vendor, item.sopir);
+        }
+      }
+
       history.push("/admin/data-pengajuan");
 
     } catch (error) {
@@ -290,23 +317,6 @@ function Transaksi() {
   }
 
 
-const updateSopirVendor = async (id_vendor, sopir) => {
-  if (!id_vendor || !sopir) return;
-  try {
-    await axios.patch(
-      `http://localhost:5001/vendor/${id_vendor}`,
-      { sopir }, 
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-  } catch (error) {
-    console.error("Gagal update sopir:", error);
-    toast.error("Gagal memperbarui nama sopir di database.");
-  }
-};
 
 
   const handleItemChange = (idx, field, value) => {
@@ -387,7 +397,7 @@ const updateSopirVendor = async (id_vendor, sopir) => {
   const getAntrean = async () => {
     try {
       // setLoading(true);
-      const response = await axios.get("http://10.70.10.131:5001/antrean-pengajuan", {
+      const response = await axios.get("http://localhost:5001/antrean-pengajuan", {
         headers: {
           Authorization: `Bearer ${token}`,
       },
@@ -437,7 +447,7 @@ const updateSopirVendor = async (id_vendor, sopir) => {
                         <Form.Control disabled type="text" value={selectedPengajuan?.id_pengajuan} />
                       </Form.Group>
                       <Form.Group className="mb-2">
-                        <label>Divisi</label>
+                        <label>Divisi Admin</label>
                         <Form.Control disabled type="text" value={userData.divisi} />
                       </Form.Group>
                       <Form.Group className="mb-2">
@@ -506,7 +516,7 @@ const updateSopirVendor = async (id_vendor, sopir) => {
                             onFocus={() => setShowDropdown(true)}
                             onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
                           />
-    
+
                           {showDropdown && filteredOptions.length > 0 && (
                             <div 
                                 style={{
@@ -522,29 +532,22 @@ const updateSopirVendor = async (id_vendor, sopir) => {
                                     boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
                                 }}
                             >
-                                
                             {filteredOptions.map((option) => (
                               <div
-                                  key={option.value}
-                                  onClick={() => handleSelect(option)}
-                                  style={{
-                                      padding: "8px 12px",
-                                      cursor: "pointer",
-                                      transition: "background 0.2s",
-                                  }}
-                                  onMouseEnter={(e) =>
-                                      (e.currentTarget.style.background = "#f5f5f5")
-                                  }
-                                  onMouseLeave={(e) =>
-                                      (e.currentTarget.style.background = "transparent")
-                                  }
+                                key={option.value}
+                                onClick={(e) => handleSelect(option, e, idx)}
+                                style={{
+                                  padding: "8px 12px",
+                                  cursor: "pointer",
+                                  transition: "background 0.2s",
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = "#f5f5f5")}
+                                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                               >
                                   {option.label}
                               </div>
                             ))}
                             </div>
-                                  
-                                  
                           )}
                           {vendorError && <span className="text-danger required-select">Vendor belum dipilih</span>}
                         </div>
@@ -587,11 +590,12 @@ const updateSopirVendor = async (id_vendor, sopir) => {
                         <label>Nama Sopir</label>
                         <Form.Control
                           type="text"
-                          value={sopir || ""} 
+                          value={item.sopir || sopir || ""} 
                           onChange={(e) => {
                             const newSopir = e.target.value.toUpperCase();
                             setItems((prev) => {
                               const copy = [...prev];
+                              // console.log("COPY SOPIR:", copy);
                               copy[idx] = {
                                 ...copy[idx],
                                 sopir: newSopir, 
@@ -599,7 +603,7 @@ const updateSopirVendor = async (id_vendor, sopir) => {
                               return copy;
                             });
 
-                            updateSopirVendor(item.id_vendor, newSopir);
+                            //  updateSopirVendor(item.id_vendor, newSopir);
                           }}
                         />
                       </Form.Group>

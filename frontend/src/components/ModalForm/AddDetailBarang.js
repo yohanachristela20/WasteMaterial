@@ -227,7 +227,7 @@ const AddDetailBarang = ({ showAddModal, setShowAddModal, onSuccess }) => {
 								<Row>
 									<Col md="12" className="mt-3 mb-2">
 										<Form.Group>
-												<label>ID Detail Barang</label>
+												<label>ID Kategori Barang</label>
 												<Form.Control
 														type="text"
 														value={id_kategori}

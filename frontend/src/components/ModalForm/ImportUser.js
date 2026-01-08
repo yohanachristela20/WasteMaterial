@@ -74,7 +74,7 @@ const ImportUser = ({showImportModal, setShowImportModal, onSuccess}) => {
       show={showImportModal}
       onHide={() => setShowImportModal(false)}>
     <Modal.Header className="text-center pb-1">
-      <h3 className="mt-2 mb-0">Import User</h3>
+      <h3 className="mt-2 mb-0">Impor User</h3>
     </Modal.Header>
     <Modal.Body className="text-left pt-0 mt-3">
       <div>
@@ -99,7 +99,7 @@ const ImportUser = ({showImportModal, setShowImportModal, onSuccess}) => {
             disabled={!file}
           >
             <FaFileImport style={{ marginRight: "8px" }} />
-            Import Data
+            Impor Data
           </Button>
         </div>
       </div>

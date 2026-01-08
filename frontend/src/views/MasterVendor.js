@@ -270,7 +270,7 @@ function MasterVendor() {
             hidden={role !== "Super Admin"}
             >
             <FaFileImport style={{ marginRight: '8px' }} />
-            Import Data
+            Impor Data
           </Button>
 
           <ImportVendor showImportModal={showImportModal} setShowImportModal={setShowImportModal} onSuccess={handleImportSuccess} />

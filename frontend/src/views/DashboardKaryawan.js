@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {FaFilePdf, FaTrashAlt, FaRegFileAlt, FaMoneyBillWave, FaHandHoldingUsd, FaHourglassStart, FaClipboardCheck, FaExclamationTriangle, FaFolder } from 'react-icons/fa'; 
+import {FaFilePdf, FaTrashAlt, FaRegFileAlt, FaMoneyBillWave, FaHandHoldingUsd, FaHourglassStart, FaClipboardCheck, FaExclamationTriangle, FaFolder, FaSortUp, FaSortDown } from 'react-icons/fa'; 
 import SearchBar from "components/Search/SearchBar.js";
 import axios from "axios";
 import { useHistory } from "react-router-dom"; 
@@ -110,6 +110,14 @@ import {
     (dataPengajuan.createdAt && String(dataPengajuan.createdAt).toLowerCase().includes(searchQuery))
   );
 
+  const handleSort = (key) => {
+    if (sortBy === key) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(key);
+      setSortOrder("asc");
+    }
+  }
 
   const getNestedValue = (obj, path) => {
     if (!obj || !path) return undefined;
@@ -450,12 +458,12 @@ import {
                         <table className="flex-table table table-striped table-hover">
                           <thead>
                             <tr>
-                              <th className="border-0">ID Pengajuan</th>
-                              <th className="border-0">Pemohon</th>
-                              <th className="border-0">Divisi</th>
-                              <th className="border-0">Jenis Pengajuan</th>
-                              <th className="border-0">Status</th>
-                              <th className="border-0">Diajukan</th>
+                              <th className="border-0" onClick={() => handleSort("id_pengajuan")}>ID Pengajuan {sortBy === "id_pengajuan" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                              <th className="border-0" onClick={() => handleSort("Pemohon.nama")}>Pemohon {sortBy === "Pemohon.nama" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                              <th className="border-0" onClick={() => handleSort("Pemohon.divisi")}>Divisi {sortBy === "Pemohon.divisi" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                              <th className="border-0" onClick={() => handleSort("jenis_pengajuan")}>Jenis Pengajuan {sortBy === "jenis_pengajuan" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                              <th className="border-0" onClick={() => handleSort("GeneratePengajuan.status")}>Status {sortBy === "GeneratePengajuan.status" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
+                              <th className="border-0" onClick={() => handleSort("createdAt")}>Diajukan {sortBy === "createdAt" && (sortOrder === "asc" ? <FaSortUp/> : <FaSortDown/>)}</th>
                               <th className="border-0">Aksi</th>   
                             </tr>
                           </thead>
